@@ -1,5 +1,5 @@
 /*
-  $NiH: image.c,v 1.7 2002/09/14 02:27:40 dillo Exp $
+  $NiH: image.c,v 1.8 2002/10/08 16:46:58 dillo Exp $
 
   image.c -- general image functions
   Copyright (C) 2002 Dieter Baron
@@ -160,7 +160,7 @@ image_cspace_merge(image_cspace *cst, int mask, const image_cspace *css)
 	cst->transparency = css->transparency;
     if (mask & IMAGE_INF_DEPTH)
 	cst->depth = css->depth;
-    if ((mask&IMAGE_INF_TYPE) && css->type == IMAGE_CS_INDEXED) {
+    if (css->type == IMAGE_CS_INDEXED) {
 	if (mask & IMAGE_INF_BASE_TYPE)
 	    cst->base_type = css->base_type;
 	if (mask & IMAGE_INF_BASE_DEPTH)

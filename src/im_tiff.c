@@ -1,5 +1,5 @@
 /*
-  $NiH: im_tiff.c,v 1.7 2002/10/08 01:28:48 dillo Exp $
+  $NiH: im_tiff.c,v 1.8 2002/10/08 16:51:15 dillo Exp $
 
   im_tiff.c -- TIFF image handling
   Copyright (C) 2002 Dieter Baron
@@ -43,6 +43,7 @@ struct image_tiff {
     int row;		/* current row (stripe in raw read) */
     char *buf;		/* buffer */
     int buf_size;	/* size of buffer (only valid in raw read) */
+    char *pal;		/* palette */
 };
 
 IMAGE_DECLARE(tiff);
@@ -53,6 +54,7 @@ void
 tiff_close(image_tiff *im)
 {
     free(im->buf);
+    free(im->pal);
     TIFFClose(im->tif);
     image_free((image *)im);
 }
@@ -62,7 +64,21 @@ tiff_close(image_tiff *im)
 char *
 tiff_get_palette(image_tiff *im)
 {
-    return NULL;
+    uint16 *pr, *pg, *pb, *p;
+    int i;
+
+    if (TIFFGetField(im->tif, TIFFTAG_COLORMAP, &pr, &pg, &pb) == 0)
+	throws(EINVAL, "cannot get palette");
+    p = xmalloc(image_cspace_palette_size(&im->im.i.cspace));
+
+    for (i=0; i<im->im.i.cspace.ncol; i++) {
+	p[3*i] = pr[i];
+	p[3*i+1] = pg[i];
+	p[3*i+2] = pb[i];
+    }
+
+    im->pal = (char *)p;
+    return (char *)p;
 }
 
 
@@ -100,7 +116,7 @@ tiff_open(char *fname)
     }
 
     im->tif = tif;
-    im->buf = NULL;
+    im->pal = im->buf = NULL;
 
     if (catch(&ex) == 0) {
 	if (TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &u32) == 0)

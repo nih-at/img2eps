@@ -1,5 +1,5 @@
 /*
-  $NiH: im_convert.c,v 1.5 2002/09/12 12:31:13 dillo Exp $
+  $NiH: im_convert.c,v 1.6 2002/09/14 02:27:38 dillo Exp $
 
   im_convert.c -- image conversion handling
   Copyright (C) 2002 Dieter Baron
@@ -10,11 +10,10 @@
 
 #include <errno.h>
 
-#define NOSUPP_RAW
-
 #include "config.h"
 #include "exceptions.h"
 #include "image.h"
+#include "xmalloc.h"
 
 
 
@@ -23,15 +22,20 @@ struct image_conv {
 
     image *oim;
     int mask;		/* which conversions are needed */
+
+    char *pal;		/* palette */
 };
 
 IMAGE_DECLARE(conv);
+
+static void _depth16to8(char *pd, char *ps, int n);
 
 
 
 void
 conv_close(image_conv *im)
 {
+    free (im->pal);
     image_close(im->oim);
     image_free((image *)im);
 }
@@ -44,7 +48,16 @@ conv_get_palette(image_conv *im)
     if (im->im.i.cspace.type != IMAGE_CS_INDEXED)
 	return NULL;
 
-    return image_get_palette(im->oim);
+    if (im->mask & IMAGE_INF_BASE_DEPTH) {
+	/* XXX: currently only 16->8 */
+	free(im->pal);
+	im->pal = xmalloc(image_cspace_palette_size(&im->im.i.cspace));
+	_depth16to8(im->pal, image_get_palette(im->oim),
+		    image_cspace_palette_size(&im->im.i.cspace));
+	return im->pal;
+    }
+    else
+	return image_get_palette(im->oim);
 }
 
 
@@ -60,9 +73,33 @@ conv_open(char *fname)
 
 
 int
+conv_raw_read(image_conv *im, char **bp)
+{
+    return image_raw_read(im->oim, bp);
+}
+
+
+
+void
+conv_raw_read_start(image_conv *im)
+{
+    image_raw_read_start(im->oim);
+}
+
+
+
+void
+conv_raw_read_finish(image_conv *im, int abortp)
+{
+    image_raw_read_finish(im->oim, abortp);
+}
+
+
+
+int
 conv_read(image_conv *im, char **bp)
 {
-    return -1;
+    return image_read(im->oim, bp);
 }
 
 
@@ -70,7 +107,7 @@ conv_read(image_conv *im, char **bp)
 void
 conv_read_start(image_conv *im)
 {
-    return;
+    image_read_start(im->oim);
 }
 
 
@@ -78,7 +115,7 @@ conv_read_start(image_conv *im)
 void
 conv_read_finish(image_conv *im, int abortp)
 {
-    return;
+    image_read_finish(im->oim, abortp);
 }
 
 
@@ -123,7 +160,9 @@ image_convert(image *oim, int mask, const image_info *i)
 
 	mask = (mask&~IMAGE_INF_CSPACE) | m2;
 
-	if (m2 & IMAGE_INF_CSPACE) {
+	if (mask & IMAGE_INF_CSPACE) {
+	    if ((m2 & IMAGE_INF_CSPACE) != IMAGE_INF_BASE_DEPTH
+		|| oim->i.cspace.base_depth != 16 || i->cspace.base_depth != 8)
 	    /* XXX: not yet */
 	    throwf(EOPNOTSUPP, "color space / depth conversion not supported");
 	}
@@ -132,10 +171,35 @@ image_convert(image *oim, int mask, const image_info *i)
     if (mask) {
 	im = image_create(conv, oim->fname);
 
-	/* XXX */
+	im->mask = mask;
+	im->oim = oim;
+	im->im.oi = oim->oi;
+	im->im.i = oim->i;
+	image_cspace_merge(&im->im.i.cspace, m2, &i->cspace);
+
+	if (mask & ~(IMAGE_INF_BASE_TYPE|IMAGE_INF_BASE_DEPTH))
+	    im->im.i.compression = IMAGE_CMP_NONE;
+
+	im->pal = NULL;
 
 	return (image *)im;
     }
     else
 	return oim;
+}
+
+
+
+static void
+_depth16to8(char *pdc, char *psc, int n)
+{
+    int i;
+    unsigned short *ps;
+    unsigned char *pd;
+
+    ps = (unsigned short *)psc;
+    pd = (unsigned char *)pdc;
+
+    for (i=0; i<n; i++)
+	pd[i] = ps[i]>>8;
 }
