@@ -1,3 +1,19 @@
+-*- text -*-
+
+			    Image Handling
+			   ---------------- 
+
+  This module provides a common interface to all supported image
+formats.  Support for image transformations (color space, depth, size)
+is also provided (although not all of it is implemented yet).
+
+  It is composed of one back end for each supported image format
+(im_FORMAT.c), one module for image transformation (im_convert.c) and
+some format independent functions (image.c).
+
+
+
+
 * image *image_open(char *fname);
 
   Open file FNAME.

@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.2 2002/09/08 00:27:49 dillo Exp $
+  $NiH: img2eps.c,v 1.3 2002/09/08 21:31:47 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002 Dieter Baron
@@ -16,6 +16,7 @@
 
 #include "config.h"
 #include "epsf.h"
+#include "exceptions.h"
 #include "image.h"
 #include "stream.h"
 #include "stream_types.h"
@@ -35,8 +36,10 @@ static const char help_tail[] = "\
   -1                use language level 1\n\
   -2                use language level 2\n\
   -3                use language level 3\n\
+  -a, --ascii ENC   use ENC ASCII encoding for binary data\n\
       --level L     use language level L\n\
   -c, --stdout      write EPSF to stdout\n\
+  -C, --compress C  use compression method C for image data\n\
   -g, --gray        force image to gray scale\n\
   -m, --margin M    set all margins to M\n\
   -o, --output FILE write EPSF to FILE\n\
@@ -45,26 +48,29 @@ static const char help_tail[] = "\
 Report bugs to <dillo@giga.or.at>.\n";
 
 static const char usage[] =
-"usage: %s [-hV] [-123c] [-m margin] [-o outfile] [-p paper] file [...]\n";
+"usage: %s [-hV] [-123c] [-a asc] [-C comp] [-m marg] [-o file] [-p paper] file [...]\n";
 
 
 enum {
     OPT_LEVEL = 256
 };
 
-#define OPTIONS "hV123cgm:o:p:"
+#define OPTIONS "hV123a:cC:gm:o:p:"
 
 static const struct option options[] = {
-    { "help",      0, 0, 'h' },
-    { "version",   0, 0, 'V' },
-    { "gray",      0, 0, 'g' },
-    { "grey",      0, 0, 'g' },
-    { "level",     1, 0, OPT_LEVEL },
-    { "margin",    1, 0, 'm' },
-    { "output",    1, 0, 'o' },
-    { "paper",     1, 0, 'P' },
-    { "stdout",    0, 0, 'c' },
-    { NULL,        0, 0, 0   }
+    { "help",         0, 0, 'h' },
+    { "version",      0, 0, 'V' },
+    { "ascii",        1, 0, 'a' },
+    { "compress",     1, 0, 'C' },
+    { "compression",  1, 0, 'C' },
+    { "gray",         0, 0, 'g' },
+    { "grey",         0, 0, 'g' },
+    { "level",        1, 0, OPT_LEVEL },
+    { "margin",       1, 0, 'm' },
+    { "output",       1, 0, 'o' },
+    { "paper",        1, 0, 'P' },
+    { "stdout",       0, 0, 'c' },
+    { NULL, 0, 0, 0 }
 };
 
 static char *extsubst(char *fname, char *newext);
@@ -74,10 +80,11 @@ static char *extsubst(char *fname, char *newext);
 int
 main(int argc, char *argv[])
 {
-    int c, i;
+    int c, i, ret;
     stream *st;
     epsf *par;
     char *outfile;
+    exception ex;
     int cat;
 
     prg = argv[0];
@@ -94,14 +101,30 @@ main(int argc, char *argv[])
 	case '3':
 	    par->level = c-'0';
 	    break;
+	case 'a':
+	    par->ascii = epsf_asc_num(optarg);
+	    if (par->ascii == EPSF_ASC_UNKNOWN) {
+		fprintf(stderr, "%s: unknown ASCII encoding `%s'\n",
+			prg, optarg);
+		exit(1);
+	    }
+	    break;
 	case 'c':
 	    cat = 1;
+	    break;
+	case 'C':
+	    par->i.compression = epsf_compression_num(optarg);
+	    if (par->i.compression == IMAGE_CMP_UNKNOWN) {
+		fprintf(stderr, "%s: unknown compression method `%s'\n",
+			prg, optarg);
+		exit(1);
+	    }
 	    break;
 	case 'g':
 	    par->i.cspace = IMAGE_CS_GRAY;
 	    break;
 	case 'm':
-	    i = atoi(optarg);
+	    i = epsf_parse_dimen(optarg);
 	    epsf_set_margins(par, i, i, i, i);
 	    break;
 	case 'o':
@@ -138,6 +161,8 @@ main(int argc, char *argv[])
 	exit(1);
     }
 
+    ret = 0;
+
     if (cat || outfile) {
 	if (optind != argc-1) {
 	    fprintf(stderr, "%s: cannot convert multpile files"
@@ -165,8 +190,17 @@ main(int argc, char *argv[])
 		exit(1);
 	    }
 	}
-	epsf_process(st, argv[optind], par);
+	if (catch(&ex) == 0) {
+	    epsf_process(st, argv[optind], par);
+	    drop();
+	}
 	stream_close(st);
+	if (ex.code) {
+	    fprintf(stderr, "%s: %s: %s\n",
+		    prg, argv[optind], (char *)ex.data);
+	    free(ex.data);
+	    ret = 1;
+	}
     }
     else {
 	for (i=optind; i<argc; i++) {
@@ -177,13 +211,23 @@ main(int argc, char *argv[])
 			prg, outfile, strerror(errno));
 		exit(1);
 	    }
-	    epsf_process(st, argv[i], par);
+	    if (catch(&ex) == 0) {
+		epsf_process(st, argv[i], par);
+		drop();
+	    }
 	    stream_close(st);
 	    free(outfile);
+
+	    if (ex.code) {
+		fprintf(stderr, "%s: %s: %s\n",
+			prg, argv[optind], (char *)ex.data);
+		free(ex.data);
+		ret = 1;
+	    }
 	}
     }
     
-    exit(0);
+    exit(ret);
 }
 
 

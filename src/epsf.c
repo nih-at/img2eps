@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.2 2002/09/08 00:27:48 dillo Exp $
+  $NiH: epsf.c,v 1.3 2002/09/08 21:31:44 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -8,17 +8,27 @@
   The author can be contacted at <dillo@giga.or.at>
 */
 
+#include <errno.h>
 #include <time.h>
 #include <stdio.h>
+#include <string.h>
 #include <string.h>
 
 #include "config.h"
 #include "epsf.h"
+#include "exceptions.h"
 #include "stream.h"
 #include "stream_types.h"
 
 #define DEFAULT_PAPER	"a4"
 #define DEFAULT_MARGIN	20
+
+#ifdef USE_LZW_COMPRESS
+#define DEFAULT_L2_CMP	IMAGE_CMP_LZW
+#else
+#define DEFAULT_L2_CMP	IMAGE_CMP_RLE
+#endif
+#define DEFAULT_L3_CMP	IMAGE_CMP_FLATE
 
 struct papersize {
     const char *name;
@@ -44,6 +54,75 @@ struct papersize papersize[] = {
     { NULL, 0, 0 }
 };
 
+struct dimen {
+    const char *name;	/* name of dimen */
+    int nom, denom;	/* scaling ratio (nominator/denominator) */
+};
+
+struct dimen dimen[] = {
+    { "cm",  7200,  254 },
+    { "in",    72,    1 },
+    { "mm", 72000, 2540 },
+    { "pt",     1,    1 },
+    { NULL, 0, 0 }
+};
+
+
+
+/*
+  In the following arrays, the first entry of each num must be the
+  name of the corresponding PostScript filters.
+*/
+
+const struct _epsf_nn _epsf_nn_asc[] = {
+    { EPSF_ASC_HEX, "ASCIIHex" },
+    { EPSF_ASC_85,  "ASCII85" },
+
+    { EPSF_ASC_HEX, "hex" },
+    { EPSF_ASC_85,  "85" },
+
+    { EPSF_ASC_UNKNOWN, NULL }
+};
+
+const struct _epsf_nn _epsf_nn_cspace[] = {
+    { IMAGE_CS_GRAY,         "DeviceGray" },
+    { IMAGE_CS_RGB,          "DeviceRGB" },
+    { IMAGE_CS_CMYK,         "DeviceCMYK" },
+    { IMAGE_CS_INDEXED_GRAY, "Indexed" },
+    { IMAGE_CS_INDEXED_RGB,  "Indexed" },
+    { IMAGE_CS_INDEXED_CMYK, "Indexed" },
+
+    { IMAGE_CS_GRAY,         "gray" },
+    { IMAGE_CS_GRAY,         "grey" },
+    { IMAGE_CS_RGB,          "rgb" },
+    { IMAGE_CS_CMYK,         "cmyk" },
+    { IMAGE_CS_INDEXED_GRAY, "indexed-gray" },
+    { IMAGE_CS_INDEXED_GRAY, "indexed-grey" },
+    { IMAGE_CS_INDEXED_RGB,  "indexed-rgb" },
+    { IMAGE_CS_INDEXED_CMYK, "indexed-cmyk" },
+
+    { IMAGE_CS_UNKNOWN, NULL }
+};
+
+const struct _epsf_nn _epsf_nn_compression[] = {
+    { IMAGE_CMP_NONE,        "none" },
+    { IMAGE_CMP_RLE,         "RunLength" },
+    { IMAGE_CMP_LZW,         "LZW" },
+    { IMAGE_CMP_FLATE,       "Flate" },
+    { IMAGE_CMP_CCITT,       "CCITTFax" },
+    { IMAGE_CMP_DCT,         "DCT" },
+
+    { IMAGE_CMP_RLE,         "rle" },
+    { IMAGE_CMP_LZW,         "gif" },
+    { IMAGE_CMP_FLATE,       "zlib" },
+    { IMAGE_CMP_FLATE,       "png" },
+    { IMAGE_CMP_CCITT,       "ccitt" },
+    { IMAGE_CMP_CCITT,       "fax" },
+    { IMAGE_CMP_DCT,         "jpeg" },
+
+    { IMAGE_CMP_UNKNOWN, NULL }
+};
+
 static void _calculate_bbox(epsf *ep);
 static int _write_image_dict(epsf *ep);
 static int _write_image_l1(epsf *ep);
@@ -52,17 +131,18 @@ static int _write_palette_array(epsf *ep);
 
 
 
-char *
-epsf_asc_name(epsf_ascii asc)
+int
+epsf_asc_langlevel(epsf_ascii asc)
 {
     switch (asc) {
     case EPSF_ASC_HEX:
-	return "/ASCIIHEX";
+	return 1;
+	
     case EPSF_ASC_85:
-	return "/ASCII85";
-
+	return 2;
+	
     default:
-	return NULL;
+	return 0;
     }
 }
 
@@ -71,36 +151,120 @@ epsf_asc_name(epsf_ascii asc)
 int
 epsf_calculate_parameters(epsf *ep)
 {
-    int level;
+    int level, level2;
     image *im;
 
-    if (ep->level == 1) {
-	if (IMAGE_CS_IS_INDEXED(ep->im->i.cspace)
-	    && ep->i.cspace == IMAGE_CS_UNKNOWN)
+    /* determine color space */
+
+    if (ep->i.cspace == IMAGE_CS_UNKNOWN) {
+	/* no /Indexed in LanguageLevel 1 */
+	if (ep->level == 1 && IMAGE_CS_IS_INDEXED(ep->im->i.cspace))
 	    ep->i.cspace = IMAGE_CS_BASE(ep->im->i.cspace);
     }
 
-    if ((im=image_convert(ep->im, &ep->i)) == NULL)
-	return -1;
-    ep->im = im;
+    level = epsf_cspace_langlevel(ep->i.cspace);
+    if (ep->level && ep->level < level)
+	throwf(1, "color space %s not supported in LanguageLevel %d",
+	       epsf_cspace_name(ep->i.cspace), ep->level);
 
-    level = epsf_cspace_langlevel(ep->im->i.cspace);
 
-    if (ep->level < level) {
-	if (ep->level) {
-	    /* requested unsupported features */
-	    return -1;
+    /* determine level needed by ascii encoding */
+
+    level2 = epsf_asc_langlevel(ep->ascii);
+    if (ep->level && ep->level < level2)
+	throwf(1, "encoding %s not supported in LanguageLevel %d",
+	       epsf_asc_name(ep->ascii), ep->level);
+    
+    level = level2 > level ? level2 : level;
+
+    
+    /* determine compression method */
+
+    if (ep->i.compression == IMAGE_CMP_UNKNOWN) {
+	/* default to method of image */
+	ep->i.compression = ep->im->i.compression;
+
+	/* don't use methods unavailable at forced LanguageLevel */
+	switch (ep->level) {
+	case 1:
+	    /* no compression in LanguageLevel 1 */
+	    ep->i.compression = IMAGE_CMP_NONE;
+	    break;
+	case 2:
+	    /* no /FlateDecode in LanguageLevel 2 */
+	    if (ep->i.compression == IMAGE_CMP_FLATE)
+		ep->i.compression = DEFAULT_L2_CMP;
+	    break;
 	}
-	else
-	    ep->level = level;
+
+	/* use best compression available */
+	if (ep->i.compression == IMAGE_CMP_NONE)
+	    switch (ep->level ? ep->level : level) {
+	    case 2:
+		ep->i.compression = DEFAULT_L2_CMP;
+		break;
+	    case 3:
+		ep->i.compression = DEFAULT_L3_CMP;
+		break;
+	    }
     }
+
+    level2 = epsf_compression_langlevel(ep->i.compression);
+    if (ep->level && ep->level < level2)
+	throwf(1, "compression method %s not supported in LanguageLevel %d",
+	       epsf_compression_name(ep->i.compression), ep->level);
+
+    level = level2 > level ? level2 : level;
+    
+    
+    /* set required LanguageLevel */
+	  
+    ep->level = level;
+    
+    
+    /* use best available encoding method */
 
     if (ep->ascii == EPSF_ASC_UNKNOWN)
 	ep->ascii = (ep->level > 1) ? EPSF_ASC_85 : EPSF_ASC_HEX;
 
+
+    /* set up image conversion */
+
+    if ((im=image_convert(ep->im, &ep->i)) == NULL) {
+	/* XXX: throw */
+	return -1;
+    }
+    ep->im = im;
+
+
+    /* calculate image placement and bounding box */
+
     _calculate_bbox(ep);
 
     return 0;
+}
+
+
+
+int
+epsf_compression_langlevel(image_compression cmp)
+{
+    switch (cmp) {
+    case IMAGE_CMP_NONE:
+	return 1;
+	
+    case IMAGE_CMP_RLE:
+    case IMAGE_CMP_LZW:
+    case IMAGE_CMP_CCITT:
+    case IMAGE_CMP_DCT:
+	return 2;
+	
+    case IMAGE_CMP_FLATE:
+	return 3;
+
+    default:
+	return 0;
+    }
 }
 
 
@@ -172,28 +336,6 @@ epsf_cspace_langlevel(image_cspace cs)
 
 
 
-char *
-epsf_cspace_name(image_cspace cspace)
-{
-    switch (cspace) {
-    case IMAGE_CS_GRAY:
-	return "/DeviceGray";
-    case IMAGE_CS_RGB:
-	return "/DeviceRGB";
-    case IMAGE_CS_CMYK:
-	return "/DeviceCMYK";
-    case IMAGE_CS_INDEXED_GRAY:
-    case IMAGE_CS_INDEXED_RGB:
-    case IMAGE_CS_INDEXED_CMYK:
-	return "/Indexed";
-
-    default:
-    return NULL;
-    }
-}
-
-
-
 void
 epsf_free(epsf *ep)
 {
@@ -203,23 +345,55 @@ epsf_free(epsf *ep)
 
 
 int
+epsf_parse_dimen(char *d)
+{
+    int i, l;
+    char *end;
+
+    l = strtol(d, &end, 10);
+
+    if (*end) {
+	for (i=0; dimen[i].name; i++) {
+	    if (strcasecmp(dimen[i].name, end) == 0)
+		return (l*dimen[i].nom)/dimen[i].denom;
+	}
+	return -1;
+    }
+
+    return l;
+}
+
+
+
+int
 epsf_process(stream *st, char *fname, epsf *par)
 {
     epsf *ep;
     image *im;
+    exception ex;
     
     if ((im=image_open(fname)) == NULL)
 	return -1;
 
-    ep = epsf_create(par, st, im);
-    epsf_calculate_parameters(ep);
-    epsf_write_header(ep);
-    epsf_write_setup(ep);
-    epsf_write_data(ep);
-    epsf_write_trailer(ep);
-    
+    if ((ep=epsf_create(par, st, im)) == NULL) {
+	image_close(im);
+	return -1;
+    }
+
+    if (catch(&ex) == 0) {
+	epsf_calculate_parameters(ep);
+	epsf_write_header(ep);
+	epsf_write_setup(ep);
+	epsf_write_data(ep);
+	epsf_write_trailer(ep);
+	drop();
+    }
+
     epsf_free(ep);
     image_close(im);
+
+    if (ex.code)
+	throw(&ex);
 
     return 0;
 }
@@ -273,14 +447,27 @@ epsf_write_data(epsf *ep)
 {
     int i, n;
     char *b;
-    stream *st;
+    stream *st, *st2;
 
     if (ep->ascii == EPSF_ASC_HEX)
-	st = stream_asciihex_open(ep->st, 0);
+	st2 = stream_asciihex_open(ep->st, ep->level > 1);
     else
-	st = stream_ascii85_open(ep->st, 1);
-    if (st == NULL)
-	return -1;
+	st2 = stream_ascii85_open(ep->st, 1);
+    if (st2 == NULL)
+	throwf(1, "cannot create %sEncode stream: %s",
+	       epsf_asc_name(ep->ascii), strerror(errno));
+
+    switch (ep->i.compression) {
+    case IMAGE_CMP_RLE:
+	if ((st=stream_runlength_open(st2)) == NULL)
+	    throwf(1, "cannot create %sEncode stream: %s",
+	       epsf_compression_name(ep->i.compression), strerror(errno));
+	break;
+	
+    default:
+	st = st2;
+	st2 = NULL;
+    }
 
     if (image_read_start(ep->im) < 0) {
 	stream_close(st);
@@ -292,13 +479,25 @@ epsf_write_data(epsf *ep)
 	if (image_read(ep->im, &b) < 0) {
 	    image_read_finish(ep->im, 1);
 	    stream_close(st);
-	    return -1;
+	    if (st2)
+		stream_close(st2);
+	    throwf(1, "cannot get image data: %s",
+	       epsf_compression_name(ep->i.compression), strerror(errno));
 	}
-	stream_write(st, b, n);
+	if (stream_write(st, b, n) < 0) {
+	    image_read_finish(ep->im, 1);
+	    stream_close(st);
+	    if (st2)
+		stream_close(st2);
+	    throwf(1, "cannot write image data: %s",
+	       epsf_compression_name(ep->i.compression), strerror(errno));
+	}
     }
 
     image_read_finish(ep->im, 0);
     stream_close(st);
+    if (st2)
+	stream_close(st2);
 
     return 0;
 }
@@ -344,7 +543,10 @@ epsf_write_setup(epsf *ep)
 		  ep->bbox.llx, ep->bbox.lly,
 		  ep->bbox.urx - ep->bbox.llx,
 		  ep->bbox.ury - ep->bbox.lly);
-    if (IMAGE_CS_IS_INDEXED(ep->im->i.cspace))
+
+    /* XXX: handle other compression methods */
+    if (IMAGE_CS_IS_INDEXED(ep->im->i.cspace)
+	|| ep->i.compression == IMAGE_CMP_RLE)
 	_write_image_dict(ep);
     else
 	_write_image_l1(ep);
@@ -358,6 +560,34 @@ epsf_write_trailer(epsf *ep)
 {
     stream_puts("showpage end restore\n", ep->st);
     return stream_puts("%%EOF\n", ep->st);
+}
+
+
+
+int
+_epsf_name_num(const struct _epsf_nn *t, const char *n)
+{
+    int i;
+
+    for (i=0; t[i].name; i++)
+	if (strcasecmp(t[i].name, n) == 0)
+	    break;
+
+    return t[i].num;
+}
+
+
+
+char *
+_epsf_num_name(const struct _epsf_nn *t, int n)
+{
+    int i;
+
+    for (i=0; t[i].name; i++)
+	if (t[i].num == n)
+	    break;
+
+    return t[i].name;
 }
 
 
@@ -399,14 +629,14 @@ _write_image_dict(epsf *ep)
     i = &ep->im->i;
 
     if (IMAGE_CS_IS_INDEXED(i->cspace)) {
-	stream_printf(ep->st, "[/Indexed %s %d <~\n", 
+	stream_printf(ep->st, "[/Indexed /%s %d ", 
 		      epsf_cspace_name(IMAGE_CS_BASE(i->cspace)),
 		      (1<<i->depth) - 1);
 	_write_palette_array(ep);
 	stream_puts("] setcolorspace\n", ep->st);
     }
     else
-	stream_printf(ep->st, "%s setcolorspace\n",
+	stream_printf(ep->st, "/%s setcolorspace\n",
 		      epsf_cspace_name(i->cspace));
 
     stream_printf(ep->st, "<<\n\
@@ -414,10 +644,14 @@ _write_image_dict(epsf *ep)
 /Width %d\n\
 /Height %d\n\
 /BitsPerComponent %d\n\
-/DataSource currentfile %sDecode filter\n\
-/ImageMatrix ",
+/DataSource currentfile /%sDecode filter",
 		  i->width, i->height, i->depth,
 		  epsf_asc_name(ep->ascii));
+    /* XXX: handle other compression methods */
+    if (ep->i.compression == IMAGE_CMP_RLE)
+	stream_printf(ep->st, " /%sDecode filter",
+		      epsf_compression_name(ep->i.compression));
+    stream_puts("\n/ImageMatrix \n", ep->st);
     _write_image_matrix(ep);
     stream_puts("\n/Decode [ ", ep->st);
     if (IMAGE_CS_IS_INDEXED(i->cspace))
@@ -441,14 +675,15 @@ _write_image_l1(epsf *ep)
 		  ep->im->i.depth);
     _write_image_matrix(ep);
     stream_puts("\n", ep->st);
-    if (ep->ascii == EPSF_ASC_HEX) {
+    if (ep->level == 1) {
 	stream_printf(ep->st, "/picstr %d string def\n",
 		      image_get_row_size(ep->im));
 	stream_puts("{ currentfile picstr readhexstring pop } bind\n",
 		    ep->st);
     }
     else
-	stream_puts("currentfile /ASCII85Decode filter\n", ep->st);
+	stream_printf(ep->st, "currentfile /%sDecode filter\n",
+		      epsf_asc_name(ep->ascii));
     if (ep->im->i.cspace == IMAGE_CS_GRAY)
 	stream_puts("image\n", ep->st);
     else
@@ -509,12 +744,20 @@ _write_palette_array(epsf *ep)
 
     if ((pal=image_get_palette(ep->im)) == NULL)
 	return -1;
+
+    if (ep->ascii == EPSF_ASC_HEX) {
+	stream_puts("<\n", ep->st);
+	st = stream_asciihex_open(ep->st, 1);
+    }
+    else {
+	stream_puts("<~\n", ep->st);
+	st = stream_ascii85_open(ep->st, 1);
+    }
     
-    if ((st=stream_ascii85_open(ep->st, 1)) == NULL)
+    if (st == NULL)
 	ret = -1;
     else
 	ret = stream_write(st, pal, image_get_palette_size(ep->im));
-			   
 
     stream_close(st);
     return ret;

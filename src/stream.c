@@ -1,5 +1,5 @@
 /*
-  $NiH$
+  $NiH: stream.c,v 1.1 2002/09/07 20:58:01 dillo Exp $
 
   stream.c -- general stream functions
   Copyright (C) 2002 Dieter Baron
@@ -57,6 +57,18 @@ stream_printf(stream *st, const char *fmt, ...)
     free(s);
 
     return ret;
+}
+
+
+
+int
+stream_putc(int c, stream *st)
+{
+    char b[1];
+
+    b[0] = c;
+    
+    return stream_write(st, b, 1);
 }
 
 

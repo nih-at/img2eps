@@ -3,6 +3,7 @@ bin_PROGRAMS=img2eps
 LDADD=@LIBOBJS@
 
 img2eps_SOURCES=epsf.c \
+		exceptions.c \
 		img2eps.c \
 		image.c \
 		im_convert.c \
@@ -14,9 +15,11 @@ img2eps_SOURCES=epsf.c \
 		st_ascii85.c \
 		st_asciihex.c \
 		st_file.c \
-		st_line.c
+		st_line.c \
+		st_runlength.c
 
 noinst_HEADERS=	epsf.h \
+		exceptions.h \
 		image.h \
 		stream.h \
 		stream_types.h

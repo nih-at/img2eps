@@ -2,7 +2,7 @@
 #define HAD_EPSF_H
 
 /*
-  $NiH: epsf.h,v 1.2 2002/09/08 00:27:48 dillo Exp $
+  $NiH: epsf.h,v 1.3 2002/09/08 21:31:45 dillo Exp $
 
   epsf.h -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -41,13 +41,36 @@ struct epsf {
 
 typedef struct epsf epsf;
 
+struct _epsf_nn {
+    int num;
+    char *name;
+};
+
+extern const struct _epsf_nn _epsf_nn_asc[];
+extern const struct _epsf_nn _epsf_nn_cspace[];
+extern const struct _epsf_nn _epsf_nn_compression[];
+
 
 
+int _epsf_name_num(const struct _epsf_nn *t, const char *n);
+char *_epsf_num_name(const struct _epsf_nn *t, int n);
+
+#define epsf_asc_name(a)	(_epsf_num_name(_epsf_nn_asc, (a)))
+#define epsf_cspace_name(a)	(_epsf_num_name(_epsf_nn_cspace, (a)))
+#define epsf_compression_name(a)	\
+				(_epsf_num_name(_epsf_nn_compression, (a)))
+#define epsf_asc_num(a)		(_epsf_name_num(_epsf_nn_asc, (a)))
+#define epsf_cspace_num(a)	(_epsf_name_num(_epsf_nn_cspace, (a)))
+#define epsf_compression_num(a)	(_epsf_name_num(_epsf_nn_compression, (a)))
+
+int epsf_asc_langlevel(epsf_ascii asc);
 int epsf_calculate_parameters(epsf *ep);
+int epsf_compression_langlevel(image_compression cmp);
 epsf *epsf_create(epsf *par, stream *st, image *im);
 epsf *epsf_create_defaults(void);
 int epsf_cspace_langlevel(image_cspace cs);
 void epsf_free(epsf *ep);
+int epsf_parse_dimen(char *d);
 int epsf_process(stream *st, char *fname, epsf *par);
 void epsf_set_margins(epsf *ep, int l, int r, int t, int b);
 int epsf_set_paper(epsf *ep, char *paper);

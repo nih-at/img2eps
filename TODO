@@ -1,4 +1,5 @@
-- error handling and reporting
+- man page, internal documentation
+- error handling and reporting (convert to exceptions)
 - compression support
 - rotation support
 - xpm, ... support
@@ -11,5 +12,6 @@
 - supply colorimage emulation for level1
 - masking (1-bit alpha channel)
 - preview
+- (optional) language level check in PostScript code
 
 + indexed png to grayscale conversion segfaults in libpng
