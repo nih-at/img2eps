@@ -1,6 +1,8 @@
 # tiff (bilevel), flate compression
+#   image: 1728x1082 gray 1bps
+#    EPSF: 1728x1082 gray 1bps, flate compressed, ASCII85, level 3
 #
-#	$NiH: tiff.test,v 1.1 2002/10/08 16:51:14 dillo Exp $
+#	$NiH: tiff.test,v 1.2 2002/10/10 15:20:31 dillo Exp $
 #
 features TIFF LIBZ
 return 0

@@ -1,6 +1,8 @@
 # gif, flate compression
+#   image: 320x200 indexed 8bps (rgb 8bps)
+#    EPSF: 320x200 indexed 8bps (rgb 8bps), flate compressed, ASCII85, level 3
 #
-#	$NiH$
+#	$NiH: gif.test,v 1.1 2002/10/10 18:08:48 dillo Exp $
 #
 features GIF LIBZ
 return 0

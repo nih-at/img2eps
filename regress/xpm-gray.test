@@ -1,6 +1,8 @@
 # xpm, converted to grayscale (via palette expansion), flate compression
+#   image: 64x64 indexed 8bps (rgb 8bps)
+#    EPSF: 64x64 gray 8bps, flate compressed, ASCII85, level 3
 #
-#	$NiH: xpm-gray.test,v 1.1 2002/10/10 08:39:02 dillo Exp $
+#	$NiH: xpm-gray.test,v 1.2 2002/10/10 15:20:32 dillo Exp $
 #
 features LIBZ
 return 0

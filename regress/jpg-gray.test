@@ -1,6 +1,8 @@
 # jpeg, grayscale, recompress with DCT
+#   image: 133x53 rgb 8bps, jpeg compressed
+#    EPSF: 133x53 gray 8bps, jpeg compressed, ASCII85, level 2
 #
-#	$NiH: jpg-gray.test,v 1.1 2002/10/08 00:18:15 dillo Exp $
+#	$NiH: jpg-gray.test,v 1.2 2002/10/10 15:20:28 dillo Exp $
 #
 features JPEG
 return 0

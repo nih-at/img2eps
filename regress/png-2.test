@@ -1,6 +1,8 @@
 # grayscale PNG, language level 2
+#   image: 100x122 gray 8bps, flate compressed
+#    EPSF: 100x122 gray 8bps, lzw compressed, ASCII85, level 2
 #
-#    $NiH: png-2.test,v 1.1 2002/09/12 00:08:23 dillo Exp $
+#    $NiH: png-2.test,v 1.2 2002/10/10 15:20:30 dillo Exp $
 #
 features PNG LZW_COMPRESS
 return 0

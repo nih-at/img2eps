@@ -1,6 +1,8 @@
 # xpm, runlength compression
+#   image: 64x64 indexed 8bps (rgb 8bps)
+#    EPSF: 64x64 indexed 8bps (rgb 8bps), rle compressed, ASCII85, level 2
 #
-#	$NiH$
+#	$NiH: xpm-rle.test,v 1.1 2002/09/12 12:31:10 dillo Exp $
 #
 return 0
 options -Crle

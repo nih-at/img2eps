@@ -1,6 +1,8 @@
 # jpeg, direct copy of compressed data
+#   image: 133x53 rgb 8bps, jpeg compressed
+#    EPSF: 133x53 rgb 8bps, jpeg compressed, ASCII85, level 2, direct copy
 #
-#	$NiH: jpg.test,v 1.1 2002/09/12 13:52:12 dillo Exp $
+#	$NiH: jpg.test,v 1.2 2002/10/10 15:20:29 dillo Exp $
 #
 features JPEG
 return 0

@@ -1,6 +1,8 @@
 # xpm, flate compression
+#   image: 64x64 indexed 8bps (rgb 8bps)
+#    EPSF: 64x64 indexed 8bps (rgb 8bps), flate compressed, ASCII85, level 3
 #
-#	$NiH: xpm-flate.test,v 1.1 2002/10/03 23:52:38 dillo Exp $
+#	$NiH: xpm-flate.test,v 1.2 2002/10/10 15:20:32 dillo Exp $
 #
 features LIBZ
 return 0
