@@ -1,5 +1,5 @@
 /*
-  $NiH: image.c,v 1.12 2002/10/11 00:53:45 dillo Exp $
+  $NiH: image.c,v 1.13 2002/10/12 00:02:09 dillo Exp $
 
   image.c -- general image functions
   Copyright (C) 2002 Dieter Baron
@@ -135,6 +135,7 @@ _image_create(struct image_functions *f, size_t size, const char *fname)
     image_init_info(&im->i);
 
     im->i.cspace.transparency = IMAGE_TR_NONE;
+    im->i.cspace.inverted = IMAGE_INV_DARKLOW;
     im->i.compression = IMAGE_CMP_NONE;
     im->i.order = IMAGE_ORD_ROW_LT;
     im->oi = im->i;
@@ -211,6 +212,9 @@ image_cspace_diffs(const image_cspace *cst, int mask, const image_cspace *css)
     if ((mask & IMAGE_INF_TRANSPARENCY)
 	&& cst->transparency != css->transparency)
 	m2 |= IMAGE_INF_TRANSPARENCY;
+    if ((mask & IMAGE_INF_INVERTED)
+	&& cst->inverted != css->inverted)
+	m2 |= IMAGE_INF_INVERTED;
     if ((mask & IMAGE_INF_TYPE) && css->type == IMAGE_CS_INDEXED) {
 	if ((mask & IMAGE_INF_BASE_TYPE) && cst->base_type != css->base_type)
 	    m2 |= IMAGE_INF_BASE_TYPE;
@@ -231,6 +235,8 @@ image_cspace_merge(image_cspace *cst, int mask, const image_cspace *css)
 	cst->type = css->type;
     if (mask & IMAGE_INF_TRANSPARENCY)
 	cst->transparency = css->transparency;
+    if (mask & IMAGE_INF_INVERTED)
+	cst->inverted = css->inverted;
     if (mask & IMAGE_INF_DEPTH)
 	cst->depth = css->depth;
     if (css->type == IMAGE_CS_INDEXED) {
@@ -294,6 +300,8 @@ image_info_mask(const image_info *i)
 	m |= IMAGE_INF_DEPTH;
     if (i->cspace.transparency != IMAGE_TR_UNKNOWN)
 	m |= IMAGE_INF_TRANSPARENCY;
+    if (i->cspace.inverted != IMAGE_INV_UNKNOWN)
+	m |= IMAGE_INF_INVERTED;
     if (i->cspace.type == IMAGE_CS_INDEXED) {
 	if (i->cspace.base_type != IMAGE_CS_UNKNOWN)
 	m |= IMAGE_INF_BASE_TYPE;
@@ -327,6 +335,10 @@ image_info_print(const image_info *i)
 		i->cspace.base_depth);
 	p += strlen(p);
     }
+    if (i->cspace.inverted == IMAGE_INV_BRIGHTLOW) {
+	sprintf(p, ", inverted");
+	p += strlen(p);
+    }
     if (i->compression != IMAGE_CMP_NONE) {
 	sprintf(p, ", %s compressed",
 		image_compression_name(i->compression));
@@ -347,6 +359,7 @@ image_init_info(image_info *i)
     i->cspace.type = IMAGE_CS_UNKNOWN;
     i->cspace.transparency = IMAGE_TR_UNKNOWN;
     i->cspace.depth = 0;
+    i->cspace.inverted = IMAGE_INV_UNKNOWN;
     i->cspace.base_type = IMAGE_CS_UNKNOWN;
     i->cspace.base_depth = 0;
     i->cspace.ncol = 0;

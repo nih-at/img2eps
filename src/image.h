@@ -2,7 +2,7 @@
 #define _HAD_IMAGE_H
 
 /*
-  $NiH: image.h,v 1.9 2002/10/11 00:53:46 dillo Exp $
+  $NiH: image.h,v 1.10 2002/10/12 00:02:10 dillo Exp $
 
   image.h -- image header
   Copyright (C) 2002 Dieter Baron
@@ -51,12 +51,21 @@ enum image_cs_type {		/* type of color space */
     IMAGE_CS_INDEXED		/* index into palette */
 };
 
+/* maximum number of components per pixel */
+#define IMAGE_MAX_COMPONENTS	5
+
 enum image_tr_type {		/* type of transparency */
     IMAGE_TR_UNKNOWN,
     IMAGE_TR_NONE,		/* none */
     IMAGE_TR_COLOR,		/* specific color (range) */
     IMAGE_TR_MASK,		/* bit mask */
     IMAGE_TR_ALPHA		/* full alpha channel */
+};
+
+enum image_inv_type {
+    IMAGE_INV_UNKNOWN,
+    IMAGE_INV_DARKLOW,		/* 0 is darkest colour */
+    IMAGE_INV_BRIGHTLOW		/* 0 is brightest colour */
 };
 
 /* keep in sync with _cmp_tab[] in stream.c */
@@ -85,6 +94,7 @@ enum image_order {
 
 typedef enum image_cs_type image_cs_type;
 typedef enum image_tr_type image_tr_type;
+typedef enum image_inv_type image_inv_type;
 typedef enum image_compression image_compression;
 typedef enum image_order image_order;
 
@@ -92,6 +102,7 @@ struct image_cspace {
     image_cs_type type;		/* type of color space */
     image_tr_type transparency;	/* type of transarency information */
     int depth;			/* number of pixels per component */
+    image_inv_type inverted;	/* 0 is bright, max. value is dark */
 
     image_cs_type base_type;	/* type of base color space for indexed */
     int base_depth;		/* depth of base color space */
@@ -105,10 +116,11 @@ typedef struct image_cspace image_cspace;
 #define IMAGE_INF_TRANSPARENCY	0x004
 #define IMAGE_INF_BASE_TYPE	0x008
 #define IMAGE_INF_BASE_DEPTH	0x010
-#define IMAGE_INF_CSPACE	0x01f	/* any member of cspace */
-#define IMAGE_INF_SIZE		0x020
-#define IMAGE_INF_ORDER		0x040
-#define IMAGE_INF_COMPRESSION	0x080
+#define IMAGE_INF_INVERTED	0x020
+#define IMAGE_INF_CSPACE	0x03f	/* any member of cspace */
+#define IMAGE_INF_SIZE		0x040
+#define IMAGE_INF_ORDER		0x080
+#define IMAGE_INF_COMPRESSION	0x100
 #define IMAGE_INF_ALL		0x0ff	/* all of the above */
 
 struct image_info {
