@@ -2,7 +2,7 @@
 #define HAD_EPSF_H
 
 /*
-  $NiH: epsf.h,v 1.9 2003/12/14 09:50:42 dillo Exp $
+  $NiH: epsf.h,v 1.10 2005/01/04 19:19:56 dillo Exp $
 
   epsf.h -- EPS file fragments
   Copyright (C) 2002, 2005 Dieter Baron
@@ -41,6 +41,17 @@
 #include "image.h"
 #include "stream.h"
 #include "util.h"
+
+#define EPSF_MARG_TOP		(1<<0)
+#define EPSF_MARG_LEFT		(1<<1)
+#define EPSF_MARG_RIGHT		(1<<2)
+#define EPSF_MARG_BOTTOM	(1<<3)
+#define EPSF_MARG_ALL		(EPSF_MARG_TOP|EPSF_MARG_LEFT|EPSF_MARG_RIGHT \
+				 |EPSF_MARG_BOTTOM)
+
+#define EPSF_SIZE_WIDTH		(1<<0)
+#define EPSF_SIZE_HEIGHT	(1<<1)
+#define EPSF_SIZE_BOTH		(EPSF_SIZE_WIDTH|EPSF_SIZE_HEIGHT)
 
 enum epsf_orientation {
     EPSF_ORI_UNKNOWN = -1,
@@ -86,9 +97,10 @@ typedef struct epsf_bbox epsf_bbox;
 struct epsf_placement {
     int paper_width, paper_height;
     int left_margin, right_margin, top_margin, bottom_margin;
-    int resolution;
+    int image_width, image_height;
+    int resolution_x, resolution_y;
     epsf_orientation orientation;
-    epsf_gravity gravity;
+    double gravity_x, gravity_y;
 };
 
 typedef struct epsf_placement epsf_placement;
@@ -133,13 +145,13 @@ epsf *epsf_create(const epsf *, stream *, image *);
 epsf *epsf_create_defaults(void);
 int epsf_cspace_langlevel(const image_cspace *);
 void epsf_free(epsf *);
-int epsf_parse_dimen(const char *);
 void epsf_print_parameters(const epsf *);
 int epsf_process(stream *, const char *, const epsf *);
 int epsf_set_gravity(epsf *, const char *);
-void epsf_set_margins(epsf *, int, int, int, int);
+int epsf_set_image_size(epsf *, const char *, int);
+int epsf_set_margins(epsf *, const char *, int);
 int epsf_set_orientation(epsf *, const char *);
-void epsf_set_resolution(epsf *, int);
+int epsf_set_resolution(epsf *, const char *);
 int epsf_set_paper(epsf *, const char *);
 int epsf_write_data(epsf *);
 int epsf_write_header(epsf *);

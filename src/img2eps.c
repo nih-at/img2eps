@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.15 2005/01/04 19:39:28 dillo Exp $
+  $NiH: img2eps.c,v 1.16 2005/01/06 17:02:04 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002, 2005 Dieter Baron
@@ -74,6 +74,7 @@ static const char help_tail[] = "\
   -c, --stdout           write EPSF to stdout\n\
   -G, --gravity G        set gravity to G\n\
   -g, --gray             force image to gray scale\n\
+      --height H         set image height to H\n\
       --left-margin M    set left margin to M\n\
       --level L          use language level L\n\
   -m, --margin M         set all margins to M\n\
@@ -82,24 +83,28 @@ static const char help_tail[] = "\
   -P, --paper P          set paper size to P\n\
   -r, --resolution R     set resolution to R\n\
       --right-margin M   set right margin to M\n\
+  -S, --size S           set image size to S\n\
       --top-margin M     set top margin to M\n\
   -v, --verbose          be verbose\n\
+      --width W          set image width to W\n\
 \n\
 Report bugs to <dillo@giga.or.at>.\n";
 
 static const char usage[] =
-"usage: %s [-hV] [-123cgv] [-a asc] [-C comp] [-G grav] [-m marg] [-O ori] [-o file] [-P paper] file [...]\n";
+"usage: %s [-hV] [-123cgv] [-a asc] [-C comp] [-G grav] [-m marg] [-O ori] [-o file] [-P paper] [-S size] file [...]\n";
 
 
 enum {
     OPT_BOTTOMM = 256,
+    OPT_HEIGHT,
     OPT_LEFTM,
     OPT_LEVEL,
     OPT_RIGHTM,
-    OPT_TOPM
+    OPT_TOPM,
+    OPT_WIDTH
 };
 
-#define OPTIONS "hV123a:cC:gG:m:o:O:P:r:v"
+#define OPTIONS "hV123a:cC:gG:m:o:O:P:r:S:v"
 
 static const struct option options[] = {
     { "help",          0, 0, 'h' },
@@ -111,17 +116,20 @@ static const struct option options[] = {
     { "gravity",       1, 0, 'G' },
     { "gray",          0, 0, 'g' },
     { "grey",          0, 0, 'g' },
-    { "left-margin", 1, 0, OPT_LEFTM },
+    { "height",        1, 0, OPT_HEIGHT },
+    { "left-margin",   1, 0, OPT_LEFTM },
     { "level",         1, 0, OPT_LEVEL },
     { "margin",        1, 0, 'm' },
     { "orientation",   1, 0, 'O' },
     { "output",        1, 0, 'o' },
     { "paper",         1, 0, 'P' },
     { "resolution",    1, 0, 'r' },
-    { "right-margin", 1, 0, OPT_RIGHTM },
+    { "right-margin",  1, 0, OPT_RIGHTM },
+    { "size",          1, 0, 'S' },
     { "top-margin",    1, 0, OPT_TOPM },
     { "stdout",        0, 0, 'c' },
     { "verbose",       0, 0, 'v' },
+    { "width",         1, 0, OPT_WIDTH },
     
     { NULL, 0, 0, 0 }
 };
@@ -181,8 +189,8 @@ main(int argc, char *argv[])
 	    par->i.cspace.type = IMAGE_CS_GRAY;
 	    break;
 	case 'm':
-	    i = epsf_parse_dimen(optarg);
-	    epsf_set_margins(par, i, i, i, i);
+	    epsf_set_margins(par, optarg, EPSF_MARG_ALL);
+	    /* XXX: check for error */
 	    break;
 	case 'O':
 	    epsf_set_orientation(par, optarg);
@@ -196,16 +204,27 @@ main(int argc, char *argv[])
 	    /* XXX: check for error */
 	    break;
 	case 'r':
-	    epsf_set_resolution(par, atoi(optarg));
+	    epsf_set_resolution(par, optarg);
+	    /* XXX: check for error */
+	    break;
+	case 'S':
+	    epsf_set_image_size(par, optarg, EPSF_SIZE_BOTH);
+	    /* XXX: check for error */
 	    break;
 	case 'v':
 	    par->flags |= EPSF_FLAG_VERBOSE;
 	    break;
 	case OPT_BOTTOMM:
-	    epsf_set_margins(par, -1, -1, -1, epsf_parse_dimen(optarg));
+	    epsf_set_margins(par, optarg, EPSF_MARG_BOTTOM);
+	    /* XXX: check for error */
+	    break;
+	case OPT_HEIGHT:
+	    epsf_set_image_size(par, optarg, EPSF_SIZE_HEIGHT);
+	    /* XXX: check for error */
 	    break;
 	case OPT_LEFTM:
-	    epsf_set_margins(par, epsf_parse_dimen(optarg), -1, -1, -1);
+	    epsf_set_margins(par, optarg, EPSF_MARG_LEFT);
+	    /* XXX: check for error */
 	    break;
 	case OPT_LEVEL:
 	    i = atoi(optarg);
@@ -216,10 +235,16 @@ main(int argc, char *argv[])
 	    par->level = i;
 	    break;
 	case OPT_RIGHTM:
-	    epsf_set_margins(par, -1, epsf_parse_dimen(optarg), -1, -1);
+	    epsf_set_margins(par, optarg, EPSF_MARG_RIGHT);
+	    /* XXX: check for error */
 	    break;
 	case OPT_TOPM:
-	    epsf_set_margins(par, -1, -1, epsf_parse_dimen(optarg), -1);
+	    epsf_set_margins(par, optarg, EPSF_MARG_TOP);
+	    /* XXX: check for error */
+	    break;
+	case OPT_WIDTH:
+	    epsf_set_image_size(par, optarg, EPSF_SIZE_WIDTH);
+	    /* XXX: check for error */
 	    break;
 
 	case 'V':
