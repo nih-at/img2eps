@@ -27,6 +27,7 @@ enhancements:
 . [epsf] pdf output
 
 other:
++ [config] remove --disable-lzw (patent expired)
 + [regress] fix tiff.test (image format not recognized on danbala)
 - [???] image_info: bit order
 - [regress] more tests
