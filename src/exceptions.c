@@ -1,5 +1,5 @@
 /*
-  $NiH: exceptions.c,v 1.1 2002/09/09 12:42:33 dillo Exp $
+  $NiH: exceptions.c,v 1.2 2002/09/10 14:05:50 dillo Exp $
 
   exceptions.c -- exception (catch/throw) system
   Copyright (C) 2002 Dieter Baron
@@ -78,7 +78,7 @@ drop(void)
 
 
 void
-throw(exception *ex)
+throw(const exception *ex)
 {
     if (stack.next == NULL) {
 	/* XXX: provide hook */
@@ -95,21 +95,41 @@ throw(exception *ex)
 
 
 void
-throwf(int code, char *fmt, ...)
+throwf(int code, const char *fmt, ...)
 {
-    exception *ex;
+    static exception nomemex = {
+	ENOMEM, "out of memory allocating exception message"
+    };
+
+    char *s;
     va_list argp;
 
-    if ((ex=malloc(sizeof(*ex))) == NULL) {
-	/* XXX: handle error */
-	throw(NULL);
-    }
+    va_start(argp, fmt);
+    vasprintf((char **)s, fmt, argp);
+    va_end(argp);
+
+    if (s == NULL)
+	throw(&nomemex);
+
+    throws(code, s);
+}
+
+
+
+void
+throws(int code, const char *msg)
+{
+    static exception nomemex = {
+	ENOMEM, "out of memory allocating exception"
+    };
+    
+    exception *ex;
+
+    if ((ex=malloc(sizeof(*ex))) == NULL)
+	throw(&nomemex);
 
     ex->code = code;
-    
-    va_start(argp, fmt);
-    vasprintf((char **)&ex->data, fmt, argp);
-    va_end(argp);
+    ex->data = (void *)msg;
 
     throw(ex);
 }
