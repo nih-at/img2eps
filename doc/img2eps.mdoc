@@ -1,4 +1,4 @@
-.\"  $NiH: img2eps.mdoc,v 1.11 2005/01/06 17:02:05 dillo Exp $
+.\"  $NiH: img2eps.mdoc,v 1.12 2005/01/07 11:30:35 dillo Exp $
 .\"
 .\"  img2eps.mdoc -- man page for img2eps(1)
 .\"  Copyright (C) 2002, 2005 Dieter Baron and Thomas Klausner
@@ -88,7 +88,7 @@ XPM
 .Pp
 If possible, the compressed image data is copied directly to the EPS file.
 .Sh The Options
-.Bl -tag -width XXXXXXXXXXXXX -offset indent -compact
+.Bl -tag -width XXXXXXXXXXXXXXXXXX -offset indent -compact
 .It Fl 1
 Use only features present in PostScript language level 1.
 .It Fl 2
@@ -161,7 +161,7 @@ bottom-right
 .It Fl -gray
 Convert image to grayscale.
 .It Fl height Ar H
-Specfify the height of the image to be
+Specify the height of the image to be
 .Ar H ,
 which should be a dimen (see below).
 The width will be computed to keep the aspect ratio of the original image.
@@ -241,7 +241,7 @@ tabloid
 Specify the resolution to print the image at, in dpi (dots per inch).
 .Ar R
 can be a number to specify equal horizontal and vertical resolution
- or a pair of numbers (see below) to specify horzontal and vertical
+or a pair of numbers (see below) to specify horizontal and vertical
 resolutions separately.
 .It Fl -right-margin Ar M
 Set right margin to
@@ -260,7 +260,7 @@ which should be a dimen (see below).
 .It Fl -version
 Display version number.
 .It Fl width Ar W
-Specfify the width of the image to be
+Specify the width of the image to be
 .Ar W ,
 which should be a dimen (see below).
 The height will be computed to keep the aspect ratio of the original image.
@@ -280,7 +280,11 @@ pt (PostScript point, 1/72in)
 .El
 If no unit is specified, pt is assumed.
 .Pp
-A pair of numbers should be separated by any one of `x', `*', `,'.
+A pair of numbers should be separated by any one of
+.Sq x ,
+.Sq * ,
+or
+.Sq \&, .
 .Pp
 A pair of dimens is a pair of numbers optionally followed by a unit,
 which applies to both numbers of the pair.
