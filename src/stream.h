@@ -2,7 +2,7 @@
 #define _HAD_STREAM_H
 
 /*
-  $NiH: stream.h,v 1.4 2002/09/14 02:27:41 dillo Exp $
+  $NiH: stream.h,v 1.5 2002/10/12 00:02:13 dillo Exp $
 
   stream.h -- stream header
   Copyright (C) 2002 Dieter Baron
@@ -67,16 +67,16 @@ struct stream_functions name##_functions  = {		\
 					st))
 
 /* create and initialize stream structure */
-stream *_stream_create(struct stream_functions *f, size_t size, stream *st);
-void stream_free(stream *st);
+stream *_stream_create(struct stream_functions *, size_t, stream *);
+void stream_free(stream *);
 
 /* external interface */
 
-stream *stream_ascii_open(stream *ost, int type, int eodmarker);
-stream *stream_compression_open(stream *ost, int type, void *params);
-int stream_printf(stream *st, const char *fmt, ...);
-int stream_putc(int c, stream *st);
-int stream_puts(const char *s, stream *st);
+stream *stream_ascii_open(stream *, int, int);
+stream *stream_compression_open(stream *, int, void *);
+int stream_printf(stream *, const char *, ...);
+int stream_putc(int, stream *);
+int stream_puts(const char *, stream *);
 
 #define stream_close(st)	(((stream *)(st))->f->close(st))
 #define stream_write(st, b, n)	(((stream *)(st))->f->write((st), (b), (n)))

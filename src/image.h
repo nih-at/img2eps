@@ -2,7 +2,7 @@
 #define _HAD_IMAGE_H
 
 /*
-  $NiH: image.h,v 1.11 2002/10/13 00:25:07 dillo Exp $
+  $NiH: image.h,v 1.12 2002/10/13 01:25:09 dillo Exp $
 
   image.h -- image header
   Copyright (C) 2002 Dieter Baron
@@ -159,9 +159,9 @@ struct image_functions {
 #define IMAGE_CS_EQUAL(field, new, old) \
 		    ((new)->field == 0 || (new)->field == (old)->field)
 
-int _image_notsup_cspace(image *im, int mask, const image_cspace *cspace);
+int _image_notsup_cspace(image *, int, const image_cspace *);
 int _image_notsup_raw(image *, int, int);
-int _image_notsup_scale(image *im, int w, int h);
+int _image_notsup_scale(image *, int, int);
 
 #ifdef NOSUPP_CSPACE
 #define IMAGE_DECL_CSPACE(name)
@@ -243,21 +243,21 @@ extern const struct _num_name _image_nn_compression[];
 image *_image_create(struct image_functions *f, size_t size,
 		     const char *fname);
 
-int image_cspace_components(const image_cspace *cspace, int base);
-int image_cspace_diffs(const image_cspace *cst,
-		       int mask, const image_cspace *css);
-void image_cspace_merge(image_cspace *cst, int mask, const image_cspace *css);
-int image_cspace_palette_size(const image_cspace *cspace);
-void image_free(image *im);
-int image_get_row_size(const image *im);
-int image_info_mask(const image_info *cs);
-char *image_info_print(const image_info *i);
+int image_cspace_components(const image_cspace *, int);
+int image_cspace_diffs(const image_cspace *,
+		       int, const image_cspace *);
+void image_cspace_merge(image_cspace *, int, const image_cspace *);
+int image_cspace_palette_size(const image_cspace *);
+void image_free(image *);
+int image_get_row_size(const image *);
+int image_info_mask(const image_info *);
+char *image_info_print(const image_info *);
 
 /* external interface */
 
-image *image_convert(image *oim, int mask, const image_info *i);
-void image_init_info(image_info *i);
-image *image_open(const char *fname);
+image *image_convert(image *, int, const image_info *);
+void image_init_info(image_info *);
+image *image_open(const char *);
 
 #define IMAGE_METH0(name, im)		(((image *)(im))->f->name\
 						((image *)(im)))

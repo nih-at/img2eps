@@ -2,7 +2,7 @@
 #define _HAD_STREAM_TYPES_H
 
 /*
-  $NiH: stream_types.h,v 1.9 2002/10/08 00:18:17 dillo Exp $
+  $NiH: stream_types.h,v 1.10 2002/10/12 00:02:14 dillo Exp $
 
   stream_types.h -- specific stream open functions
   Copyright (C) 2002 Dieter Baron
@@ -42,14 +42,14 @@
 
 #include "image.h"
 
-stream *stream_ascii85_open(stream *st, int eodmark);
-stream *stream_asciihex_open(stream *st, int eodmark);
-stream *stream_dct_open(stream *ost, void *params);
-stream *stream_file_fopen(FILE *f, int closep);
-stream *stream_file_open(const char *fname);
-stream *stream_flate_open(stream *ost, void *params);
-stream *stream_line_open(stream *st);
-stream *stream_lzw_open(stream *ost, void *params);
-stream *stream_runlength_open(stream *ost, void *params);
+stream *stream_ascii85_open(stream *, int);
+stream *stream_asciihex_open(stream *, int);
+stream *stream_dct_open(stream *, void *);
+stream *stream_file_fopen(FILE *, int);
+stream *stream_file_open(const char *);
+stream *stream_flate_open(stream *, void *);
+stream *stream_line_open(stream *);
+stream *stream_lzw_open(stream *, void *);
+stream *stream_runlength_open(stream *, void *);
 
 #endif /* stream_types.h */

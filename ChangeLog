@@ -1,3 +1,12 @@
+2003-12-14  Dieter Baron  <dillo@danbala.tuwien.ac.at>
+
+	* src/epsf.h, src/exceptions.h, src/image.h src/stream.h,
+	src/stream_types.h, src/util.h, src/xmalloc.h: remove parameter
+	names from prototypes.
+
+	* src/img2eps.c (main): don't free ex.data, not all strings are
+	allocated.
+	
 2002-11-13  Dieter Baron  <dillo@danbala.tuwien.ac.at>
 
 	* configure.in, src/Makefile.am, src/image.c, src/im_jpeg2000.c:
@@ -15,3 +24,6 @@
 
 	* src/st_ascii85.c: remove unused variable hex.
 
+2002-10-16  Dieter Baron  <dillo@danbala.tuwien.ac.at>
+
+	* configure.in: step version to 0.1.

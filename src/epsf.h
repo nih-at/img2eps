@@ -2,7 +2,7 @@
 #define HAD_EPSF_H
 
 /*
-  $NiH: epsf.h,v 1.7 2002/10/11 00:53:45 dillo Exp $
+  $NiH: epsf.h,v 1.8 2002/10/12 00:02:06 dillo Exp $
 
   epsf.h -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -84,22 +84,22 @@ extern const struct _num_name _epsf_nn_asc[];
 #define epsf_cspace_name(a)	(num2name(_image_nn_cspace, (a), 1))
 #define epsf_compression_name(a) (num2name(_image_nn_compression, (a), 1))
 
-int epsf_asc_langlevel(epsf_ascii asc);
-int epsf_calculate_parameters(epsf *ep);
-int epsf_compression_langlevel(image_compression cmp);
-epsf *epsf_create(const epsf *par, stream *st, image *im);
+int epsf_asc_langlevel(epsf_ascii);
+int epsf_calculate_parameters(epsf *);
+int epsf_compression_langlevel(image_compression);
+epsf *epsf_create(const epsf *, stream *, image *);
 epsf *epsf_create_defaults(void);
-int epsf_cspace_langlevel(const image_cspace *cs);
-void epsf_free(epsf *ep);
-int epsf_parse_dimen(const char *d);
-void epsf_print_parameters(const epsf *ep);
-int epsf_process(stream *st, const char *fname, const epsf *par);
-void epsf_set_margins(epsf *ep, int l, int r, int t, int b);
-int epsf_set_paper(epsf *ep, const char *paper);
-int epsf_write_data(epsf *ep);
-int epsf_write_header(epsf *ep);
-int epsf_write_setup(epsf *ep);
-int epsf_write_trailer(epsf *ep);
+int epsf_cspace_langlevel(const image_cspace *);
+void epsf_free(epsf *);
+int epsf_parse_dimen(const char *);
+void epsf_print_parameters(const epsf *);
+int epsf_process(stream *, const char *, const epsf *);
+void epsf_set_margins(epsf *, int, int, int, int);
+int epsf_set_paper(epsf *, const char *);
+int epsf_write_data(epsf *);
+int epsf_write_header(epsf *);
+int epsf_write_setup(epsf *);
+int epsf_write_trailer(epsf *);
 
 #endif /* epsf.h */
 

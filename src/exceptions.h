@@ -2,7 +2,7 @@
 #define HAD_EXCEPTIONS_H
 
 /*
-  $NiH: exceptions.h,v 1.3 2002/10/12 00:02:07 dillo Exp $
+  $NiH: exceptions.h,v 1.4 2002/11/13 01:35:48 dillo Exp $
 
   exceptions.h -- exceptions (catch/throw) header
   Copyright (C) 2002 Dieter Baron
@@ -49,11 +49,11 @@ struct exception_s {
 typedef struct exception_s exception;
 
 #define catch(ex)	(_catch(setjmp((ex)->buf), (ex)))
-int _catch(int phase, exception *ex);
+int _catch(int, exception *);
 void drop(void);
-void throw(const exception *ex);
-void throwf(int code, const char *fmt, ...);
-void throws(int code, const char *msg);
+void throw(const exception *);
+void throwf(int, const char *, ...);
+void throws(int, const char *);
 
 /*
   example:

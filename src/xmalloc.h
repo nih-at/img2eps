@@ -2,7 +2,7 @@
 #define HAD_XMALLOC_H
 
 /*
-  $NiH: xmalloc.h,v 1.1 2002/09/10 14:05:54 dillo Exp $
+  $NiH: xmalloc.h,v 1.2 2002/10/12 00:02:15 dillo Exp $
 
   xmalloc.h -- allocation functions with exceptions
   Copyright (C) 2002 Dieter Baron
@@ -40,7 +40,7 @@
 
 #include <stddef.h>
 
-void *xmalloc(size_t size);
-char *xstrdup(const char *s);
+void *xmalloc(size_t);
+char *xstrdup(const char *);
 
 #endif /* xmalloc.h */
