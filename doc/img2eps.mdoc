@@ -1,5 +1,6 @@
 .\" This man page written by Thomas Klausner <tk@giga.or.at> and
 .\" Dieter Baron <dillo@giga.or.at>.
+.\" $NiH$
 .Dd October 10, 2002
 .Dt IMG2EPS 1
 .Os
@@ -21,7 +22,7 @@
 .Ar file ...
 .Sh DESCRIPTION
 .Nm
-packages each 
+packages each
 .Ar file
 into an EPS (Embedded PostScript) file, using whatever PostScript
 features are advantageous.
@@ -77,7 +78,7 @@ and
 .Fl 3
 options.
 .It Fl m Ar M
-.It Fl -margin Ar M 
+.It Fl -margin Ar M
 Set all margins to
 .Ar M .
 .It Fl o Ar FILE
@@ -130,6 +131,15 @@ compression method is used.
 The
 .Nm
 utility exits 0 on success, and \*[Gt]0 if an error occurs.
+.Sh SEE ALSO
+.Xr gs 1
+.Sh AUTHORS
+.Nm
+was written by
+.An Dieter Baron Aq dillo@giga.or.at .
+.Pp
+The LZW compression routines and various library function replacements
+(for portability) were taken from the NetBSD Project.
 .Sh BUGS
 Emulation of the colorimage operator is provided only for 8bit RGB
 images.
@@ -140,12 +150,3 @@ Predictor functions (for LZW or Flate compression) are not supported.
 TIFF images that include transparency information (extra samples), or use
 separated planar or tiled layout, are not supported.
 Multi-page GIF images are not supported.
-.Sh SEE ALSO
-.Xr gs 1
-.Sh AUTHORS
-.Nm
-was written by
-.An Dieter Baron Aq dillo@giga.or.at .
-.Pp
-The LZW compression routines and various library function replacements
-(for portability) were taken from the NetBSD Project.
