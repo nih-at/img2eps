@@ -1,5 +1,5 @@
 /*
-  $NiH: stream.c,v 1.2 2002/09/09 12:42:35 dillo Exp $
+  $NiH: stream.c,v 1.3 2002/09/10 14:05:54 dillo Exp $
 
   stream.c -- general stream functions
   Copyright (C) 2002 Dieter Baron
@@ -24,8 +24,7 @@ _stream_create(struct stream_functions *f, size_t size, stream *ost)
 {
     stream *st;
 
-    if ((st=malloc(size)) == NULL)
-	return NULL;
+    st = xmalloc(size);
 
     st->f = f;
     st->st = ost;

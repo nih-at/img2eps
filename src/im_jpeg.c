@@ -1,5 +1,5 @@
 /*
-  $NiH: im_jpeg.c,v 1.2 2002/09/08 21:31:45 dillo Exp $
+  $NiH: im_jpeg.c,v 1.3 2002/09/10 14:05:51 dillo Exp $
 
   im_jpeg.c -- JPEG image handling
   Copyright (C) 2002 Dieter Baron
@@ -12,6 +12,7 @@
 
 #ifdef USE_JPEG
 
+#include <errno.h>
 #include <setjmp.h>
 #include <stdio.h>
 
@@ -21,6 +22,7 @@
 
 #include "exceptions.h"
 #include "image.h"
+#include "xmalloc.h"
 
 static image_cspace cspace_jpg2img(int cs);
 static void error_exit(j_common_ptr cinfo);
@@ -35,7 +37,6 @@ struct image_jpeg {
     FILE *f;
     char *buf;
     int buflen;
-    jmp_buf jmp;
 };
 
 IMAGE_DECLARE(jpeg);
@@ -92,26 +93,22 @@ jpeg_open(char *fname)
     im->jerr = NULL;
     im->buf = NULL;
 
-    if ((im->cinfo=malloc(sizeof(*im->cinfo))) == NULL) {
-	image_free((image *)im);
-	return NULL;
-    }
-    if ((im->jerr=malloc(sizeof(*im->jerr))) == NULL) {
-	image_free((image *)im);
-	return NULL;
-    }
+    if (catch(&ex) == 0) {
+	im->cinfo = xmalloc(sizeof(*im->cinfo));
+	im->jerr= xmalloc(sizeof(*im->jerr));
     
-    im->cinfo->err = jpeg_std_error(im->jerr);
-    im->cinfo->client_data = im;
-    im->jerr->error_exit = error_exit;
-    jpeg_create_decompress(im->cinfo);
-    jpeg_stdio_src(im->cinfo, im->f);
-
-    if (setjmp(im->jmp) == 0) {
+	im->cinfo->err = jpeg_std_error(im->jerr);
+	im->cinfo->client_data = im;
+	im->jerr->error_exit = error_exit;
+	jpeg_create_decompress(im->cinfo);
+	jpeg_stdio_src(im->cinfo, im->f);
+	
 	if (jpeg_read_header(im->cinfo, TRUE) < 0) {
 	    image_free((image *)im);
 	    return NULL;
 	}
+
+	drop();
     }
     else {
 	image_free((image *)im);
@@ -145,12 +142,8 @@ jpeg_read(image_jpeg *im, char **bp)
     if (im->cinfo->output_scanline >= im->cinfo->output_height)
 	return -1;
 
-    if (setjmp(im->jmp) == 0) {
-	a[0] = im->buf;
-	jpeg_read_scanlines(im->cinfo, (JSAMPARRAY)a, 1);
-    }
-    else
-	return -1;
+    a[0] = im->buf;
+    jpeg_read_scanlines(im->cinfo, (JSAMPARRAY)a, 1);
 
     *bp = im->buf;
     return im->buflen;
@@ -162,16 +155,12 @@ int
 jpeg_read_finish(image_jpeg *im, int abortp)
 {
     free(im->buf);
-    im->buf = 0;
+    im->buf = NULL;
 
-    if (setjmp(im->jmp) == 0) {
-	if (abortp)
-	    jpeg_abort_decompress(im->cinfo);
-	else
-	    jpeg_finish_decompress(im->cinfo);
-    }
+    if (abortp)
+	jpeg_abort_decompress(im->cinfo);
     else
-	return -1;
+	jpeg_finish_decompress(im->cinfo);
 
     return 0;
 }
@@ -181,15 +170,10 @@ jpeg_read_finish(image_jpeg *im, int abortp)
 int
 jpeg_read_start(image_jpeg *im)
 {
-    if (setjmp(im->jmp) == 0)
-	jpeg_start_decompress(im->cinfo);
-    else
-	return -1;
+    jpeg_start_decompress(im->cinfo);
 
     im->buflen = image_get_row_size((image *)im);
-    if ((im->buf=malloc(im->buflen))
-	== NULL)
-	return -1;
+    im->buf = xmalloc(im->buflen);
 
     return 0;
 }		
@@ -262,7 +246,10 @@ cspace_jpg2img(int cs)
 static void
 error_exit(j_common_ptr cinfo)
 {
-    longjmp(((image_jpeg *)cinfo->client_data)->jmp, 1);
+    char b[8192];
+
+    cinfo->err->format_message (cinfo, b);
+    throws(errno ? errno : EINVAL, xstrdup(b));
 }
 
 #endif /* USE_JPEG */

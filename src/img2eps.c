@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.4 2002/09/09 12:42:34 dillo Exp $
+  $NiH: img2eps.c,v 1.5 2002/09/10 14:05:52 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002 Dieter Baron
@@ -200,13 +200,12 @@ main(int argc, char *argv[])
     }
     else {
 	for (i=optind; i<argc; i++) {
-	    outfile = extsubst(argv[i], "eps");
-
 	    st = NULL;
-	    
+	    outfile = NULL;
+		
 	    if (catch(&ex) == 0) {
+		outfile = extsubst(argv[i], "eps");
 		st = stream_file_open(outfile);
-
 		epsf_process(st, argv[i], par);
 		drop();
 	    }
@@ -217,7 +216,8 @@ main(int argc, char *argv[])
 	    if (ex.code) {
 		fprintf(stderr, "%s: %s: %s\n",
 			prg, argv[optind], (char *)ex.data);
-		free(ex.data);
+		/* XXX: not all strings are allocated */
+		/* free(ex.data); */
 		ret = 1;
 	    }
 	}
