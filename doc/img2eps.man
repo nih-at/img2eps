@@ -1,6 +1,8 @@
 .\"	\-*\- nroff \-*\-
 .\" This man page written by Thomas Klausner <tk@giga.or.at> and
 .\" Dieter Baron <dillo@giga.or.at>.
+.\" Converted with mdoc2man 0.2
+.\" from NiH: img2eps.mdoc,v 1.5 2002/10/13 01:24:48 dillo Exp 
 .\" $NiH: img2eps.mdoc,v 1.5 2002/10/13 01:24:48 dillo Exp $
 .TH IMG2EPS 1 "October 10, 2002" NiH
 .SH "NAME"
