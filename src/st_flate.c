@@ -1,8 +1,8 @@
 /*
-  $NiH: st_flate.c,v 1.5 2002/10/12 00:02:12 dillo Exp $
+  $NiH: st_flate.c,v 1.6 2002/10/15 03:03:50 dillo Exp $
 
   st_flate.c -- FlateEncode stream
-  Copyright (C) 2002 Dieter Baron
+  Copyright (C) 2002, 2005 Dieter Baron
 
   This file is part of img2eps, an image to EPS file converter.
   The author can be contacted at <dillo@giga.or.at>
@@ -37,6 +37,7 @@
 
 #include <errno.h>
 #include <stddef.h>
+#include <string.h>
 
 #include "config.h"
 #include "exceptions.h"

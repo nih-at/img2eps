@@ -1,8 +1,8 @@
 /*
-  $NiH: im_gif.c,v 1.9 2002/10/12 00:02:07 dillo Exp $
+  $NiH: im_gif.c,v 1.10 2002/11/10 04:22:29 dillo Exp $
 
   im_gif.c -- GIF image handling
-  Copyright (C) 2002 Dieter Baron
+  Copyright (C) 2002, 2005 Dieter Baron
 
   This file is part of img2eps, an image to EPS file converter.
   The author can be contacted at <dillo@giga.or.at>
@@ -41,6 +41,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <gif_lib.h>
 
