@@ -1,0 +1,4 @@
+img2eps was written by Dieter Baron <dillo@giga.or.at>.
+
+The LZW compression routines and various library function replacements
+(for portability) were taken from the NetBSD Project.
