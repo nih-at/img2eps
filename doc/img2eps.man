@@ -58,9 +58,9 @@ into an EPS (Embedded PostScript) file, using whatever PostScript
 features are advantageous.
 The default name for each output file is the name of the input file
 with its extension changed to
-.Em \&.eps.
+.I \&.eps.
 Supported image file formats are:
-
+.RS
 .IP \(bu 
 GIF
 .IP \(bu 
@@ -71,11 +71,11 @@ PNG
 TIFF
 .IP \(bu 
 XPM
-
+.RE
 .PP
 If possible, the compressed image data is copied directly to the EPS file.
 .SH "The Options"
-
+.RS
 .TP 15
 \fB\-1\fR
 Use only features present in PostScript language level 1.
@@ -93,21 +93,21 @@ Use
 \fBENC\fR
 ASCII encoding for binary data.
 Supported encodings are:
-
+.RS
 .IP \(bu 15
 ASCII85
 .IP \(bu 15
 ASCIIHEX
-
-.IP \(bu 15
+.RE
+.TP 15
 \fB\-C\fR \fBC\fR
-.IP \(bu 15
+.TP 15
 \fB\-\-compress\fR \fBC\fR
 Use compression method
 \fBC\fR
 for image data.
 Supported compression methods are:
-
+.RS
 .IP \(bu 15
 DCT (jpeg)
 .IP \(bu 15
@@ -116,24 +116,24 @@ Flate (zlib)
 LZW
 .IP \(bu 15
 RunLength (PackBits)
-
-.IP \(bu 15
+.RE
+.TP 15
 \fB\-c\fR
-.IP \(bu 15
+.TP 15
 \fB\-\-stdout\fR
 Write EPSF to standard output.
 If this option is used, only one input file may be specified.
-.IP \(bu 15
+.TP 15
 \fB\-g\fR
-.IP \(bu 15
+.TP 15
 \fB\-\-gray\fR
 Convert image to grayscale.
-.IP \(bu 15
+.TP 15
 \fB\-h\fR
-.IP \(bu 15
+.TP 15
 \fB\-\-help\fR
 Display a short help message.
-.IP \(bu 15
+.TP 15
 \fB\-\-level\fR \fBL\fR
 Use only features present in PostScript language level
 \fBL.\fR
@@ -143,15 +143,15 @@ Alternatively, you can also use the
 and
 \fB\-3\fR
 options.
-.IP \(bu 15
+.TP 15
 \fB\-m\fR \fBM\fR
-.IP \(bu 15
+.TP 15
 \fB\-\-margin\fR \fBM\fR
 Set all margins to
 \fBM,\fR
 which should be a number optionally followed by a unit.
 Supported units are:
-
+.RS
 .IP \(bu 15
 cm
 .IP \(bu 15
@@ -160,23 +160,23 @@ in
 mm
 .IP \(bu 15
 pt (PostScript point, 1/72in)
-
+.RE
 If no unit is specified, pt is assumed.
-.IP \(bu 15
+.TP 15
 \fB\-o\fR \fBFILE\fR
-.IP \(bu 15
+.TP 15
 \fB\-\-output\fR \fBFILE\fR
 Write EPSF to output file
 \fBFILE.\fR
 If this option is used, only one input file may be specified.
-.IP \(bu 15
+.TP 15
 \fB\-P\fR \fBP\fR
-.IP \(bu 15
+.TP 15
 \fB\-\-paper\fR \fBP\fR
 Set paper size to
 \fBP.\fR
 Supported sizes are:
-
+.RS
 .IP \(bu 15
 10x14
 .IP \(bu 15
@@ -199,13 +199,13 @@ quarto
 statement
 .IP \(bu 15
 tabloid
-
-.IP \(bu 15
+.RE
+.TP 15
 \fB\-V\fR
-.IP \(bu 15
+.TP 15
 \fB\-\-version\fR
 Display version number.
-
+.RE
 .SS "Language Levels"
 There are three major versions of PostScript, called Language Levels:
 .PP
