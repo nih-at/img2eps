@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.11 2002/10/05 01:54:14 dillo Exp $
+  $NiH: epsf.c,v 1.12 2002/10/08 00:18:16 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -164,6 +164,8 @@ epsf_calculate_parameters(epsf *ep)
 	else
 	    ep->i.cspace.type = ep->im->i.cspace.type;
     }
+    if (ep->i.cspace.type == IMAGE_CS_INDEXED)
+	ep->i.cspace.base_depth = 8;
 
     /* XXX: depth, unsupported color space types */
 
