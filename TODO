@@ -4,6 +4,8 @@
 - png: indexed to grayscale conversion segfaults in libpng
 - gif: data reading; compression, color space, and depth detection
 - tiff: jpeg, alpha, bit order
++ solaris: libpng needs -lm
++ solaris: missing vasprintf
 
 - png: raw read
 - predictors
