@@ -1,5 +1,4 @@
 - man page, internal documentation
-- compression support (dct copy done)
 - rotation support
 - support for more graphics formats
 - image_convert: cspace, depth, scale
