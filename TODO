@@ -4,7 +4,9 @@
 - image_convert: type, depth, base type, scale
 - image_info: inverted grayscale
 - compress palette
-- tiff: tiled, jpeg, raw jpeg/lzw/ccitt/flate, bit order
+- png: raw read
+- predictors
+- tiff: tiled, jpeg, alpha, planar, raw jpeg/lzw/ccitt/flate, bit order
 - gif: data reading; compression, color space, and depth detection
 - force specific color space / depth
 - force portrait/landscape/bbox
