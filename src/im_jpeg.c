@@ -1,5 +1,5 @@
 /*
-  $NiH: im_jpeg.c,v 1.7 2002/09/12 12:31:13 dillo Exp $
+  $NiH: im_jpeg.c,v 1.8 2002/09/12 13:52:14 dillo Exp $
 
   im_jpeg.c -- JPEG image handling
   Copyright (C) 2002 Dieter Baron
@@ -230,6 +230,7 @@ jpeg_set_cspace(image_jpeg *im, const image_cspace *cspace)
     switch (cspace->type) {
     case IMAGE_CS_GRAY:
 	im->cinfo->out_color_space = JCS_GRAYSCALE;
+	im->im.i.compression = IMAGE_CMP_NONE;
 	break;
 
     default:
@@ -252,6 +253,8 @@ jpeg_set_size(image_jpeg *im, int w, int h)
 	    im->cinfo->scale_denom = i;
 	    im->im.i.width = w;
 	    im->im.i.height = h;
+	    if (i != 1)
+		im->im.i.compression = IMAGE_CMP_NONE;
 	    return 0;
 	}
     }
