@@ -1,10 +1,11 @@
 - man page, internal documentation
 - rotation support
 - support for more graphics formats
-- image_convert: cspace, depth, scale
+- image_convert: type, depth, base type, scale
 - image_info: inverted grayscale
-- tiff: tiled, indexed, jpeg, raw jpeg/lzw/ccitt
-- gif: data reading, compression, color space, and depth detection
+- compress palette
+- tiff: tiled, jpeg, raw jpeg/lzw/ccitt/flate, bit order
+- gif: data reading; compression, color space, and depth detection
 - force specific color space / depth
 - force portrait/landscape/bbox
 - specify paper size as pair of dimens

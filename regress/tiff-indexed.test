@@ -1,0 +1,7 @@
+# tiff (indexed), raw copy rle
+#
+#	$NiH$
+#
+return 0
+input jello.tif
+output tiff-indexed.eps jello.eps
