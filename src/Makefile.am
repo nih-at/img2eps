@@ -31,4 +31,5 @@ noinst_HEADERS=	epsf.h \
 		xmalloc.h
 
 EXTRA_DIST=	getopt_long.c \
-		getopt.h
+		getopt.h \
+		snprintf.c

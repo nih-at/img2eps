@@ -5,8 +5,8 @@
 - gif: data reading; compression, color space, and depth detection
 - tiff: jpeg, alpha, bit order
 + solaris: libpng needs -lm
-+ solaris: missing vasprintf
 
+- verbose option (image info before & after, eps parameters)
 - png: raw read
 - predictors
 - tiff: tiled, planar, raw jpeg/lzw/ccitt/flate
