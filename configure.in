@@ -37,6 +37,7 @@ dnl compiler characteristics
 
 dnl library functions
 
+AC_SUBST(LIBOBJS)
 AC_CHECK_FUNCS(getopt_long, , [LIBOBJS="$LIBOBJS getopt1.o getopt.o"])
 
 dnl system services

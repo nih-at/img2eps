@@ -1,5 +1,7 @@
 bin_PROGRAMS=img2eps
 
+LDADD=@LIBOBJS@
+
 img2eps_SOURCES=epsf.c \
 		img2eps.c \
 		image.c \
