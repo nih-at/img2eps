@@ -1,4 +1,4 @@
-/*	$NiH$	*/
+/*	$NiH: getopt.h,v 1.3 2002/10/10 15:21:44 dillo Exp $	*/
 /*	$NetBSD: getopt.h,v 1.4 2000/07/07 10:43:54 ad Exp $	*/
 
 /*-

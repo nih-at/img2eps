@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.10 2002/10/11 00:53:47 dillo Exp $
+  $NiH: img2eps.c,v 1.11 2002/10/12 00:02:10 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002 Dieter Baron
@@ -36,12 +36,16 @@
 
 
 #include <errno.h>
-#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "config.h"
+#ifdef HAVE_GETOPT_LONG
+#include <getopt.h>
+#else
+#include "getopt_long.h"
+#endif
 #include "epsf.h"
 #include "exceptions.h"
 #include "image.h"
