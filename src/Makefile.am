@@ -18,6 +18,7 @@ img2eps_SOURCES=epsf.c \
 		st_file.c \
 		st_flate.c \
 		st_line.c \
+		st_lzw.c \
 		st_runlength.c \
 		xmalloc.c
 

@@ -1,0 +1,8 @@
+# jpeg, lzw compression
+#
+#	$NiH$
+#
+return 0
+options -Clzw
+input col.jpg
+output jpg-lzw.eps col.eps
