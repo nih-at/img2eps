@@ -1,5 +1,5 @@
 /*
-  $NiH: im_jpeg.c,v 1.1 2002/09/07 20:58:00 dillo Exp $
+  $NiH: im_jpeg.c,v 1.2 2002/09/08 21:31:45 dillo Exp $
 
   im_jpeg.c -- JPEG image handling
   Copyright (C) 2002 Dieter Baron
@@ -18,6 +18,8 @@
 #include <jpeglib.h>
 
 #define NOSUPP_DEPTH
+
+#include "exceptions.h"
 #include "image.h"
 
 static image_cspace cspace_jpg2img(int cs);
@@ -31,9 +33,9 @@ struct image_jpeg {
     struct jpeg_decompress_struct *cinfo;
     struct jpeg_error_mgr *jerr;
     FILE *f;
-    jmp_buf jmp;
     char *buf;
     int buflen;
+    jmp_buf jmp;
 };
 
 IMAGE_DECLARE(jpeg);
@@ -71,13 +73,18 @@ jpeg_open(char *fname)
 {
     image_jpeg *im;
     FILE *f;
+    exception ex;
 
     if ((f=fopen(fname, "rb")) == NULL)
 	return NULL;
 
-    if ((im=image_create(jpeg, fname)) == NULL) {
+    if (catch(&ex) == 0) {
+	im = image_create(jpeg, fname);
+	drop();
+    }
+    else {
 	fclose(f);
-	return NULL;
+	throw(&ex);
     }
 
     im->f = f;

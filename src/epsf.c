@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.3 2002/09/08 21:31:44 dillo Exp $
+  $NiH: epsf.c,v 1.4 2002/09/09 12:42:32 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -12,13 +12,13 @@
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
-#include <string.h>
 
 #include "config.h"
 #include "epsf.h"
 #include "exceptions.h"
 #include "stream.h"
 #include "stream_types.h"
+#include "xmalloc.h"
 
 #define DEFAULT_PAPER	"a4"
 #define DEFAULT_MARGIN	20
@@ -152,7 +152,6 @@ int
 epsf_calculate_parameters(epsf *ep)
 {
     int level, level2;
-    image *im;
 
     /* determine color space */
 
@@ -217,24 +216,23 @@ epsf_calculate_parameters(epsf *ep)
     level = level2 > level ? level2 : level;
     
     
+    /* use best available encoding method */
+
+    if (ep->ascii == EPSF_ASC_UNKNOWN) {
+	ep->ascii = ((ep->level ? ep->level : level) > 1)
+	    ? EPSF_ASC_85 : EPSF_ASC_HEX;
+	level2 = epsf_asc_langlevel(ep->ascii);
+	level = level2 > level ? level2 : level;
+    }
+
     /* set required LanguageLevel */
 	  
     ep->level = level;
     
     
-    /* use best available encoding method */
-
-    if (ep->ascii == EPSF_ASC_UNKNOWN)
-	ep->ascii = (ep->level > 1) ? EPSF_ASC_85 : EPSF_ASC_HEX;
-
-
     /* set up image conversion */
 
-    if ((im=image_convert(ep->im, &ep->i)) == NULL) {
-	/* XXX: throw */
-	return -1;
-    }
-    ep->im = im;
+    ep->im = image_convert(ep->im, &ep->i);
 
 
     /* calculate image placement and bounding box */
@@ -274,8 +272,7 @@ epsf_create(epsf *par, stream *st, image *im)
 {
     epsf *ep;
 
-    if ((ep=malloc(sizeof(*ep))) == NULL)
-	return NULL;
+    ep = xmalloc(sizeof(*ep));
 
     ep->st = st;
     ep->im = im;
@@ -298,8 +295,7 @@ epsf_create_defaults(void)
 {
     epsf *ep;
 
-    if ((ep=malloc(sizeof(*ep))) == NULL)
-	return NULL;
+    ep = xmalloc(sizeof(*ep));
 
     ep->ascii = EPSF_ASC_UNKNOWN;
     epsf_set_paper(ep, DEFAULT_PAPER);
@@ -371,16 +367,14 @@ epsf_process(stream *st, char *fname, epsf *par)
     epsf *ep;
     image *im;
     exception ex;
-    
-    if ((im=image_open(fname)) == NULL)
-	return -1;
 
-    if ((ep=epsf_create(par, st, im)) == NULL) {
-	image_close(im);
-	return -1;
-    }
+    im = NULL;
+    ep = NULL;
 
     if (catch(&ex) == 0) {
+	im = image_open(fname);
+	ep = epsf_create(par, st, im);
+
 	epsf_calculate_parameters(ep);
 	epsf_write_header(ep);
 	epsf_write_setup(ep);
@@ -389,8 +383,10 @@ epsf_process(stream *st, char *fname, epsf *par)
 	drop();
     }
 
-    epsf_free(ep);
-    image_close(im);
+    if (ep)
+	epsf_free(ep);
+    if (im)
+	image_close(im);
 
     if (ex.code)
 	throw(&ex);
@@ -448,57 +444,56 @@ epsf_write_data(epsf *ep)
     int i, n;
     char *b;
     stream *st, *st2;
+    volatile int imread_open;
+    exception ex, ex2, *exp;
 
-    if (ep->ascii == EPSF_ASC_HEX)
-	st2 = stream_asciihex_open(ep->st, ep->level > 1);
-    else
-	st2 = stream_ascii85_open(ep->st, 1);
-    if (st2 == NULL)
-	throwf(1, "cannot create %sEncode stream: %s",
-	       epsf_asc_name(ep->ascii), strerror(errno));
+    imread_open = 0;
+    if (catch(&ex) == 0) {
+	if (ep->ascii == EPSF_ASC_HEX)
+	    st2 = stream_asciihex_open(ep->st, ep->level > 1);
+	else
+	    st2 = stream_ascii85_open(ep->st, 1);
 
-    switch (ep->i.compression) {
-    case IMAGE_CMP_RLE:
-	if ((st=stream_runlength_open(st2)) == NULL)
-	    throwf(1, "cannot create %sEncode stream: %s",
-	       epsf_compression_name(ep->i.compression), strerror(errno));
-	break;
+	switch (ep->i.compression) {
+	case IMAGE_CMP_RLE:
+	    st = stream_runlength_open(st2);
+	    break;
+	    
+	default:
+	    st = st2;
+	    st2 = NULL;
+	}
+
+	image_read_start(ep->im);
+	imread_open = 1;
+
+	n = image_get_row_size(ep->im);
+	for (i=0; i<ep->im->i.height; i++) {
+	    image_read(ep->im, &b);
 	
-    default:
-	st = st2;
-	st2 = NULL;
+	    stream_write(st, b, n);
+	}
+
+	imread_open = 0;
+	image_read_finish(ep->im, 0);
+
+	drop();
     }
 
-    if (image_read_start(ep->im) < 0) {
+    exp = (ex.code ? &ex2 : &ex);
+    if (catch(exp) == 0) {
+	if (imread_open) {
+	    image_read_finish(ep->im, 0);
+	}
 	stream_close(st);
-	return -1;
+	if (st2)
+	    stream_close(st2);
+	drop();
     }
 
-    n = image_get_row_size(ep->im);
-    for (i=0; i<ep->im->i.height; i++) {
-	if (image_read(ep->im, &b) < 0) {
-	    image_read_finish(ep->im, 1);
-	    stream_close(st);
-	    if (st2)
-		stream_close(st2);
-	    throwf(1, "cannot get image data: %s",
-	       epsf_compression_name(ep->i.compression), strerror(errno));
-	}
-	if (stream_write(st, b, n) < 0) {
-	    image_read_finish(ep->im, 1);
-	    stream_close(st);
-	    if (st2)
-		stream_close(st2);
-	    throwf(1, "cannot write image data: %s",
-	       epsf_compression_name(ep->i.compression), strerror(errno));
-	}
-    }
-
-    image_read_finish(ep->im, 0);
-    stream_close(st);
-    if (st2)
-	stream_close(st2);
-
+    if (ex.code)
+	throw(&ex);
+    
     return 0;
 }
 
@@ -754,10 +749,7 @@ _write_palette_array(epsf *ep)
 	st = stream_ascii85_open(ep->st, 1);
     }
     
-    if (st == NULL)
-	ret = -1;
-    else
-	ret = stream_write(st, pal, image_get_palette_size(ep->im));
+    ret = stream_write(st, pal, image_get_palette_size(ep->im));
 
     stream_close(st);
     return ret;

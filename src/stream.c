@@ -1,5 +1,5 @@
 /*
-  $NiH: stream.c,v 1.1 2002/09/07 20:58:01 dillo Exp $
+  $NiH: stream.c,v 1.2 2002/09/09 12:42:35 dillo Exp $
 
   stream.c -- general stream functions
   Copyright (C) 2002 Dieter Baron
@@ -8,11 +8,13 @@
   The author can be contacted at <dillo@giga.or.at>
 */
 
+#include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "exceptions.h"
 #include "stream.h"
 
 
@@ -52,6 +54,9 @@ stream_printf(stream *st, const char *fmt, ...)
     va_start(argp, fmt);
     vasprintf(&s, fmt, argp);
     va_end(argp);
+
+    if (s == NULL)
+	throwf(ENOMEM, "out of memory");
 
     ret = stream_puts(s, st);
     free(s);

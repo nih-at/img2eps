@@ -1,5 +1,5 @@
 /*
-  $NiH: st_file.c,v 1.1 2002/09/07 20:58:01 dillo Exp $
+  $NiH: st_file.c,v 1.2 2002/09/08 00:27:49 dillo Exp $
 
   st_file.c -- stdio FILE stream
   Copyright (C) 2002 Dieter Baron
@@ -8,8 +8,11 @@
   The author can be contacted at <dillo@giga.or.at>
 */
 
+#include <errno.h>
 #include <stdio.h>
+#include <string.h>
 
+#include "exceptions.h"
 #include "stream.h"
 #include "stream_types.h"
 
@@ -30,7 +33,8 @@ int
 file_close(stream_file *st)
 {
     if (st->closep)
-	fclose(st->f);
+	if (fclose(st->f) == EOF)
+	    throwf(errno, "write error: %s", strerror(errno));
     
     stream_free((stream *)st);
 
@@ -44,8 +48,7 @@ stream_file_fopen(FILE *f, int closep)
 {
     stream_file *st;
 
-    if ((st=stream_create(file, NULL)) == NULL)
-	return NULL;
+    st = stream_create(file, NULL);
 
     st->f = f;
     st->closep = closep;
@@ -60,12 +63,19 @@ stream_file_open(char *fname)
 {
     FILE *f;
     stream *st;
+    exception ex;
 
     if ((f=fopen(fname, "w")) == NULL)
-	return NULL;
-    if ((st=stream_file_fopen(f, 1)) == NULL) {
+	throwf(errno, "cannot create `%s': %s", fname, strerror(errno));
+
+
+    if (catch(&ex) == 0) {
+	st = stream_file_fopen(f, 1);
+	drop();
+    }
+    else {
 	fclose(f);
-	return NULL;
+	throw(&ex);
     }
 
     return st;
@@ -76,13 +86,15 @@ stream_file_open(char *fname)
 int
 file_write(stream_file *st, const char *b, int n)
 {
+    const char *end;
     int nn;
 
-    while (n>0) {
-	if ((nn=fwrite(b, 1, n, st->f)) < 0)
-	    return -1;
+    end = b+n;
 
-	n -= nn;
+    while (b < end) {
+	if ((nn=fwrite(b, 1, end-b, st->f)) < 0)
+	    throwf(errno, "write error: %s", strerror(errno));
+
 	b += nn;
     }
 

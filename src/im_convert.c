@@ -1,5 +1,5 @@
 /*
-  $NiH$
+  $NiH: im_convert.c,v 1.1 2002/09/08 21:31:45 dillo Exp $
 
   im_convert.c -- image conversion handling
   Copyright (C) 2002 Dieter Baron
@@ -8,8 +8,10 @@
   The author can be contacted at <dillo@giga.or.at>
 */
 
-#include "config.h"
+#include <errno.h>
 
+#include "config.h"
+#include "exceptions.h"
 #include "image.h"
 
 
@@ -28,13 +30,10 @@ IMAGE_DECLARE(conv);
 int
 conv_close(image_conv *im)
 {
-    int ret;
-    
-    ret = image_close(im->oim);
-    
+    image_close(im->oim);
     image_free((image *)im);
 
-    return ret;
+    return 0;
 }
 
 
@@ -53,6 +52,8 @@ conv_get_palette(image_conv *im)
 image *
 conv_open(char *fname)
 {
+    throwf(EOPNOTSUPP, "cannot open image conversion from file");
+
     return NULL;
 }
 
@@ -114,38 +115,34 @@ image_convert(image *oim, image_info *i)
 
     need_conv = 0;
 
-    if (i->order != IMAGE_ORD_UNKNOWN && i->order != im->i.order) {
-	/* reordering of samples not supported */
-	return NULL;
-    }
+    if (i->order != IMAGE_ORD_UNKNOWN && i->order != im->i.order)
+	throwf(EOPNOTSUPP, "reordering of samples not supported");
 
     if ((i->width && i->width != oim->i.width)
 	|| (i->height && i->height != oim->i.height)) {
 	if (image_set_size(oim, i->width, i->height) < 0) {
 	    need_conv = 1;
 	    /* XXX: not yet */
-	    return NULL;
+	    throwf(EOPNOTSUPP, "scaling not supported");
 	}
     }
     if (i->cspace != IMAGE_CS_UNKNOWN && i->cspace != im->i.cspace) {
 	if (image_set_cspace(oim, i->cspace) < 0) {
 	    need_conv = 1;
 	    /* XXX: not yet */
-	    return NULL;
+	    throwf(EOPNOTSUPP, "color space conversion not supported");
 	}
     }
     if (i->depth && i->depth != im->i.depth) {
 	if (image_set_depth(oim, i->depth) < 0) {
 	    need_conv = 1;
 	    /* XXX: not yet */
-	    return NULL;
+	    throwf(EOPNOTSUPP, "depth conversion not supported");
 	}
     }
 
     if (need_conv) {
-	if ((im=image_create(conv, oim->fname)) == NULL) {
-	    return NULL;
-	}
+	im = image_create(conv, oim->fname);
 
 	/* XXX */
 

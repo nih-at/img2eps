@@ -1,5 +1,5 @@
 /*
-  $NiH$
+  $NiH: exceptions.c,v 1.1 2002/09/09 12:42:33 dillo Exp $
 
   exceptions.c -- exception (catch/throw) system
   Copyright (C) 2002 Dieter Baron
@@ -8,12 +8,17 @@
   The author can be contacted at <dillo@giga.or.at>
 */
 
+#include <errno.h>
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "exceptions.h"
+
+#define _throw(ex)	(longjmp((ex)->buf, 1))
+
 
 struct stack {
     struct stack *next;
@@ -31,8 +36,9 @@ _catch(int phase, exception *ex)
 
     if (phase == 0) {
 	if ((st=malloc(sizeof(*st))) == NULL) {
-	    /* XXX: handle error */
-	    return -1;
+	    ex->code = ENOMEM;
+	    ex->data = "out of memory allocating catch frame";
+	    _throw(ex);
 	}
 
 	ex->code = 0;
@@ -59,6 +65,12 @@ drop(void)
     struct stack *st;
 
     st = stack.next;
+
+    if (st == NULL) {
+	/* XXX: too many drops */
+	return;
+    }
+
     stack.next = st->next;
     free(st);
 }
@@ -68,9 +80,16 @@ drop(void)
 void
 throw(exception *ex)
 {
+    if (stack.next == NULL) {
+	/* XXX: provide hook */
+	fprintf(stderr, "uncaught exception <%d> (%s)\n",
+		ex->code, strerror(ex->code));
+	exit(3);
+    }
+
     stack.next->ex->code = ex->code;
     stack.next->ex->data = ex->data;
-    longjmp(stack.next->ex->buf, 1);
+    _throw(stack.next->ex);
 }
 
 

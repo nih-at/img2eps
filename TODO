@@ -13,5 +13,6 @@
 - masking (1-bit alpha channel)
 - preview
 - (optional) language level check in PostScript code
+- regression tests
 
 + indexed png to grayscale conversion segfaults in libpng

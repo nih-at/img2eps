@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.3 2002/09/08 21:31:47 dillo Exp $
+  $NiH: img2eps.c,v 1.4 2002/09/09 12:42:34 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002 Dieter Baron
@@ -176,25 +176,21 @@ main(int argc, char *argv[])
 	    exit(1);
 	}
 
-	if (cat) {
-	    if ((st=stream_file_fopen(stdout, 0)) == NULL) {
-		fprintf(stderr, "%s: cannot create stdout stream: %s\n",
-			prg, strerror(errno));
-		exit(1);
-	    }
-	}
-	else {
-	    if ((st=stream_file_open(outfile)) == NULL) {
-		fprintf(stderr, "%s: cannot open `%s': %s\n",
-			prg, outfile, strerror(errno));
-		exit(1);
-	    }
-	}
+	st = NULL;
+	
 	if (catch(&ex) == 0) {
+	    if (cat)
+		st = stream_file_fopen(stdout, 0);
+	    else
+		st = stream_file_open(outfile);
+
 	    epsf_process(st, argv[optind], par);
 	    drop();
 	}
-	stream_close(st);
+	
+	if (st)
+	    stream_close(st);
+	
 	if (ex.code) {
 	    fprintf(stderr, "%s: %s: %s\n",
 		    prg, argv[optind], (char *)ex.data);
@@ -206,16 +202,16 @@ main(int argc, char *argv[])
 	for (i=optind; i<argc; i++) {
 	    outfile = extsubst(argv[i], "eps");
 
-	    if ((st=stream_file_open(outfile)) == NULL) {
-		fprintf(stderr, "%s: cannot open `%s': %s\n",
-			prg, outfile, strerror(errno));
-		exit(1);
-	    }
+	    st = NULL;
+	    
 	    if (catch(&ex) == 0) {
+		st = stream_file_open(outfile);
+
 		epsf_process(st, argv[i], par);
 		drop();
 	    }
-	    stream_close(st);
+	    if (st)
+		stream_close(st);
 	    free(outfile);
 
 	    if (ex.code) {

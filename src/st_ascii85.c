@@ -1,5 +1,5 @@
 /*
-  $NiH: st_ascii85.c,v 1.1 2002/09/08 00:31:06 dillo Exp $
+  $NiH: st_ascii85.c,v 1.2 2002/09/08 01:34:49 dillo Exp $
 
   st_ascii85.c -- ASCII85Encode stream
   Copyright (C) 2002 Dieter Baron
@@ -8,6 +8,7 @@
   The author can be contacted at <dillo@giga.or.at>
 */
 
+#include "exceptions.h"
 #include "stream.h"
 #include "stream_types.h"
 
@@ -64,13 +65,17 @@ stream_ascii85_open(stream *ost, int eodmark)
 {
     stream_ascii85 *st;
     stream *lst;
+    exception ex;
 
-    if ((lst=stream_line_open(ost)) == NULL)
-	return NULL;
+    lst = stream_line_open(ost);
 
-    if ((st=stream_create(ascii85, ost)) == NULL) {
+    if (catch(&ex) == 0) {
+	st = stream_create(ascii85, ost);
+	drop();
+    }
+    else {
 	stream_close(lst);
-	return NULL;
+	throw(&ex);
     }
 
     st->lst = lst;
@@ -112,17 +117,14 @@ ascii85_write(stream_ascii85 *st, const char *b, int n)
 	    nrest = 0;
 	    
 	    if (i >= BLKSIZE-5) {
-		if (stream_write(st->lst, a, i) != 0)
-		    return -1;
+		stream_write(st->lst, a, i);
 		i = 0;
 	    }
 	}
     }
 
-    if (i>0) {
-	if (stream_write(st->lst, a, i) != 0)
-	    return -1;
-    }
+    if (i>0)
+	stream_write(st->lst, a, i);
 
     st->rest = l;
     st->nrest = nrest;

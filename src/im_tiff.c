@@ -1,5 +1,5 @@
 /*
-  $NiH$
+  $NiH: im_tiff.c,v 1.1 2002/09/08 21:31:46 dillo Exp $
 
   im_tiff.c -- TIFF image handling
   Copyright (C) 2002 Dieter Baron
@@ -63,6 +63,9 @@ tiff_open(char *fname)
     TIFF *tif;
     uint32 u32;
     uint16 u16;
+
+    TIFFSetErrorHandler(NULL);
+    TIFFSetWarningHandler(NULL);
 
     if ((tif=TIFFOpen(fname, "r")) == NULL)
 	return NULL;

@@ -16,13 +16,15 @@ img2eps_SOURCES=epsf.c \
 		st_asciihex.c \
 		st_file.c \
 		st_line.c \
-		st_runlength.c
+		st_runlength.c \
+		xmalloc.c
 
 noinst_HEADERS=	epsf.h \
 		exceptions.h \
 		image.h \
 		stream.h \
-		stream_types.h
+		stream_types.h \
+		xmalloc.h
 
 EXTRA_DIST=	getopt.c \
 		getopt.h \

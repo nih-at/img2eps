@@ -1,5 +1,5 @@
 /*
-  $NiH: image.c,v 1.1 2002/09/07 20:58:00 dillo Exp $
+  $NiH: image.c,v 1.2 2002/09/08 21:31:46 dillo Exp $
 
   image.c -- general image functions
   Copyright (C) 2002 Dieter Baron
@@ -8,10 +8,14 @@
   The author can be contacted at <dillo@giga.or.at>
 */
 
+#include <errno.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "config.h"
+#include "exceptions.h"
 #include "image.h"
+#include "xmalloc.h"
 
 #ifdef USE_GIF
 image *gif_open(char *);
@@ -49,9 +53,7 @@ _image_create(struct image_functions *f, size_t size, char *fname)
 {
     image *im;
 
-    if ((im=malloc(size)) == NULL)
-	return NULL;
-
+    im = xmalloc(size);
     im->f = f;
     im->fname = strdup(fname);
     image_init_info(&im->i);
@@ -145,10 +147,17 @@ image_open(char *fname)
     image *im;
     int i;
 
+    if (access(fname, R_OK) == -1)
+	throwf(errno, "cannot open image `%s': %s",
+	       fname, strerror(errno));
+
     for (i=0; open_tab[i]; i++) {
 	if ((im=open_tab[i](fname)) != NULL)
 	    return im;
     }
+
+    throwf(EOPNOTSUPP,
+	   "cannot open image `%s': format not recognized", fname);
 
     return NULL;
 }

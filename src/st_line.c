@@ -1,5 +1,5 @@
 /*
-  $NiH$
+  $NiH: st_line.c,v 1.1 2002/09/08 00:27:50 dillo Exp $
 
   st_line.c -- break ASCII stream into lines stream
   Copyright (C) 2002 Dieter Baron
@@ -43,8 +43,7 @@ stream_line_open(stream *ost)
 {
     stream_line *st;
 
-    if ((st=stream_create(line, ost)) == NULL)
-	return NULL;
+    st = stream_create(line, ost);
 
     st->llen = 0;
 
@@ -68,11 +67,10 @@ line_write(stream_line *st, const char *b, int n)
 	    nl = 0;
 	}
 	
-	if (stream_write(st->st.st, b, nn) != 0)
-	    return -1;
+	stream_write(st->st.st, b, nn);
+
 	if (nl)
-	    if (stream_puts("\n", st->st.st) != 0)
-		return -1;
+	    stream_puts("\n", st->st.st);
 
 	b += nn;
 	st->llen = (st->llen + nn) % LINELEN;

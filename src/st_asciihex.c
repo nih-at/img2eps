@@ -1,5 +1,5 @@
 /*
-  $NiH: st_asciihex.c,v 1.1 2002/09/07 20:58:01 dillo Exp $
+  $NiH: st_asciihex.c,v 1.2 2002/09/08 00:27:49 dillo Exp $
 
   st_asciihex.c -- ASCIIHexEncode stream
   Copyright (C) 2002 Dieter Baron
@@ -8,6 +8,7 @@
   The author can be contacted at <dillo@giga.or.at>
 */
 
+#include "exceptions.h"
 #include "stream.h"
 #include "stream_types.h"
 
@@ -49,12 +50,18 @@ stream_asciihex_open(stream *ost, int eodmark)
 {
     stream_asciihex *st;
     stream *lst;
+    exception ex;
 
-    if ((lst=stream_line_open(ost)) == NULL)
-	return NULL;
+    lst = stream_line_open(ost);
 
-    if ((st=stream_create(asciihex, ost)) == NULL)
-	return NULL;
+    if (catch(&ex) == 0) {
+	st = stream_create(asciihex, ost);
+	drop();
+    }
+    else {
+	stream_close(lst);
+	throw(&ex);
+    }
 
     st->lst = lst;
     st->eodmark = eodmark;
@@ -75,16 +82,13 @@ asciihex_write(stream_asciihex *st, const char *b, int n)
 	a[j++] = hex[((unsigned char)b[i]) >> 4];
 	a[j++] = hex[((unsigned char)b[i]) & 0xf];
 	if (j >= BLKSIZE-2) {
-	    if (stream_write(st->lst, a, j) != 0)
-		return -1;
+	    stream_write(st->lst, a, j);
 	    j = 0;
 	}
     }
 
-    if (j>0) {
-	if (stream_write(st->lst, a, j) != 0)
-	    return -1;
-    }
+    if (j>0)
+	stream_write(st->lst, a, j);
 
     return 0;
 }

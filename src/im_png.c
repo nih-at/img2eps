@@ -1,5 +1,5 @@
 /*
-  $NiH$
+  $NiH: im_png.c,v 1.1 2002/09/08 21:31:46 dillo Exp $
 
   im_png.c -- PNG image handling
   Copyright (C) 2002 Dieter Baron
@@ -18,6 +18,7 @@
 #include <png.h>
 
 #define NOSUPP_SCALE
+#include "exceptions.h"
 #include "image.h"
 
 
@@ -95,6 +96,7 @@ png_open(char *fname)
     image_png *im;
     char sig[8];
     FILE *f;
+    exception ex;
 
     if ((f=fopen(fname, "rb")) == NULL)
 	return NULL;
@@ -109,9 +111,13 @@ png_open(char *fname)
 	return NULL;
     }
 
-    if ((im=image_create(png, fname)) == NULL) {
+    if (catch(&ex) == 0) {
+	im = image_create(png, fname);
+	drop();
+    }
+    else {
 	fclose(f);
-	return NULL;
+	throw(&ex);
     }
 
     im->f = f;
