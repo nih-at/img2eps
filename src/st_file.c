@@ -1,5 +1,5 @@
 /*
-  $NiH$
+  $NiH: st_file.c,v 1.1 2002/09/07 20:58:01 dillo Exp $
 
   st_file.c -- stdio FILE stream
   Copyright (C) 2002 Dieter Baron
@@ -11,13 +11,15 @@
 #include <stdio.h>
 
 #include "stream.h"
+#include "stream_types.h"
 
 
 
 struct stream_file {
     stream st;
 
-    FILE *f;
+    FILE *f;		/* underlying file */
+    int closep;		/* close f on stream close? */
 };
 
 STREAM_DECLARE(file);
@@ -27,6 +29,9 @@ STREAM_DECLARE(file);
 int
 file_close(stream_file *st)
 {
+    if (st->closep)
+	fclose(st->f);
+    
     stream_free((stream *)st);
 
     return 0;
@@ -35,7 +40,7 @@ file_close(stream_file *st)
 
 
 stream *
-stream_file_open(FILE *f)
+stream_file_fopen(FILE *f, int closep)
 {
     stream_file *st;
 
@@ -43,8 +48,27 @@ stream_file_open(FILE *f)
 	return NULL;
 
     st->f = f;
+    st->closep = closep;
 
     return (stream *)st;
+}
+
+
+
+stream *
+stream_file_open(char *fname)
+{
+    FILE *f;
+    stream *st;
+
+    if ((f=fopen(fname, "w")) == NULL)
+	return NULL;
+    if ((st=stream_file_fopen(f, 1)) == NULL) {
+	fclose(f);
+	return NULL;
+    }
+
+    return st;
 }
 
 

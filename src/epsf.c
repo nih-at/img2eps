@@ -1,5 +1,5 @@
 /*
-  $NiH$
+  $NiH: epsf.c,v 1.1 2002/09/07 20:57:59 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -18,7 +18,7 @@
 #include "stream_types.h"
 
 #define DEFAULT_PAPER	"a4"
-#define DEFAULT_MARGIN	50
+#define DEFAULT_MARGIN	20
 
 struct papersize {
     const char *name;
@@ -63,6 +63,9 @@ epsf_calculate_parameters(epsf *ep)
     if (ep->i.compression == IMAGE_CMP_UNKNOWN)
 	ep->i.compression = ep->im->i.compression;
 
+    if (ep->ascii == EPSF_ASC_UNKNOWN)
+	ep->ascii = (ep->level > 1) ? EPSF_ASC_85 : EPSF_ASC_HEX;
+
     calculate_bbox(ep);
 }
 
@@ -80,6 +83,7 @@ epsf_create(epsf *par, stream *st, image *im)
     ep->im = im;
     ep->bbox.llx = ep->bbox.lly = ep->bbox.urx = ep->bbox.ury = 0;
 
+    ep->ascii = par->ascii;
     ep->paper_width = par->paper_width;
     ep->paper_height = par->paper_height;
     ep->paper_bbox = par->paper_bbox;
@@ -99,6 +103,7 @@ epsf_create_defaults(void)
     if ((ep=malloc(sizeof(*ep))) == NULL)
 	return NULL;
 
+    ep->ascii = EPSF_ASC_UNKNOWN;
     epsf_set_paper(ep, DEFAULT_PAPER);
     epsf_set_margins(ep,
 		     DEFAULT_MARGIN, DEFAULT_MARGIN,
@@ -115,6 +120,30 @@ void
 epsf_free(epsf *ep)
 {
     free(ep);
+}
+
+
+
+int
+epsf_process(stream *st, char *fname, epsf *par)
+{
+    epsf *ep;
+    image *im;
+    
+    if ((im=image_open(fname)) == NULL)
+	return -1;
+
+    ep = epsf_create(par, st, im);
+    epsf_calculate_parameters(ep);
+    epsf_write_header(ep);
+    epsf_write_setup(ep);
+    epsf_write_data(ep);
+    epsf_write_trailer(ep);
+    
+    epsf_free(ep);
+    image_close(im);
+
+    return 0;
 }
 
 
@@ -168,7 +197,11 @@ epsf_write_data(epsf *ep)
     char *b;
     stream *st;
 
-    if ((st=stream_asciihex_open(ep->st, 0)) == NULL)
+    if (ep->ascii == EPSF_ASC_HEX)
+	st = stream_asciihex_open(ep->st, 0);
+    else
+	st = stream_ascii85_open(ep->st, 1);
+    if (st == NULL)
 	return -1;
 
     if (image_read_start(ep->im) < 0) {
@@ -219,6 +252,8 @@ epsf_write_header(epsf *ep)
     stream_printf(ep->st, "%%%%BoundingBox: %d %d %d %d\n",
 		  ep->bbox.llx, ep->bbox.lly,
 		  ep->bbox.urx, ep->bbox.ury);
+    if (ep->level > 1)
+	stream_printf(ep->st, "%%%%LanguageLevel: %d\n", ep->level);
     stream_puts(trailer, ep->st);
 
     return 0;
@@ -235,7 +270,6 @@ epsf_write_setup(epsf *ep)
     slen = (slen*8 + ep->i.depth-1) / ep->i.depth;
 
     stream_puts("save 20 dict begin\n", ep->st);
-    stream_printf(ep->st, "/picstr %d string def\n", slen);
     stream_printf(ep->st, "%d %d translate %d %d scale\n",
 		  ep->bbox.llx, ep->bbox.lly,
 		  ep->bbox.urx - ep->bbox.llx,
@@ -245,9 +279,16 @@ epsf_write_setup(epsf *ep)
 		  ep->i.height,
 		  ep->i.depth);
     write_image_matrix(ep);
-    stream_puts("\n{ currentfile picstr readhexstring pop } bind\n"
-		"false 3 colorimage\n",
-		ep->st);
+    stream_puts("\n", ep->st);
+    if (ep->ascii == EPSF_ASC_HEX) {
+	stream_printf(ep->st, "/picstr %d string def\n", slen);
+	stream_puts("{ currentfile picstr readhexstring pop } bind\n",
+		    ep->st);
+    }
+    else
+	stream_puts("currentfile /ASCII85Decode filter\n", ep->st);
+    stream_printf(ep->st, "false %d colorimage\n",
+		  image_cspace_components(ep->i.cspace));
 
     return 0;
 }

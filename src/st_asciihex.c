@@ -1,5 +1,5 @@
 /*
-  $NiH$
+  $NiH: st_asciihex.c,v 1.1 2002/09/07 20:58:01 dillo Exp $
 
   st_asciihex.c -- ASCIIHexEncode stream
   Copyright (C) 2002 Dieter Baron
@@ -9,13 +9,14 @@
 */
 
 #include "stream.h"
+#include "stream_types.h"
 
 
 
 struct stream_asciihex {
     stream st;
 
-    int llen;		/* length of partial line */
+    stream *lst;	/* line stream */
     int eodmark;	/* wether to end stream with an EOD marker */
 };
 
@@ -23,7 +24,6 @@ STREAM_DECLARE(asciihex);
 
 
 #define BLKSIZE 2048	/* buffer size */
-#define LINELEN 72	/* line length */
 
 static const char hex[16] = "0123456789ABCDEF";
 
@@ -32,11 +32,10 @@ static const char hex[16] = "0123456789ABCDEF";
 int
 asciihex_close(stream_asciihex *st)
 {
-    if (st->llen)
-	stream_write(st->st.st, "\n", 1);
+    stream_close(st->lst);
     
     if (st->eodmark)
-	stream_write(st->st.st, ">\n", 2);
+	stream_puts(">\n", st->st.st);
 
     stream_free((stream *)st);
 
@@ -49,12 +48,16 @@ stream *
 stream_asciihex_open(stream *ost, int eodmark)
 {
     stream_asciihex *st;
+    stream *lst;
+
+    if ((lst=stream_line_open(ost)) == NULL)
+	return NULL;
 
     if ((st=stream_create(asciihex, ost)) == NULL)
 	return NULL;
 
+    st->lst = lst;
     st->eodmark = eodmark;
-    st->llen = 0;
 
     return (stream *)st;
 }
@@ -71,23 +74,17 @@ asciihex_write(stream_asciihex *st, const char *b, int n)
     for (i=0; i<n; i++) {
 	a[j++] = hex[((unsigned char)b[i]) >> 4];
 	a[j++] = hex[((unsigned char)b[i]) & 0xf];
-	if ((j+st->llen) % LINELEN == 0) {
-	    a[j++] = '\n';
-	    --st->llen;
-	}
-	if (j >= BLKSIZE-3) {
-	    if (stream_write(st->st.st, a, j) != 0)
+	if (j >= BLKSIZE-2) {
+	    if (stream_write(st->lst, a, j) != 0)
 		return -1;
-	    st->llen = (j+st->llen) % LINELEN;
 	    j = 0;
 	}
     }
 
     if (j>0) {
-	if (stream_write(st->st.st, a, j) != 0)
+	if (stream_write(st->lst, a, j) != 0)
 	    return -1;
     }
 
-    st->llen = (j+st->llen) % LINELEN;
     return 0;
 }

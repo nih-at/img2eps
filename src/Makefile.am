@@ -6,8 +6,10 @@ img2eps_SOURCES=epsf.c \
 		im_gif.c \
 		im_jpeg.c \
 		stream.c \
+		st_ascii85.c \
 		st_asciihex.c \
-		st_file.c
+		st_file.c \
+		st_line.c
 
 noinst_HEADERS=	epsf.h \
 		image.h \

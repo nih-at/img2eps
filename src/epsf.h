@@ -2,7 +2,7 @@
 #define HAD_EPSF_H
 
 /*
-  $NiH$
+  $NiH: epsf.h,v 1.1 2002/09/07 20:57:59 dillo Exp $
 
   epsf.h -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -13,6 +13,14 @@
 
 #include "stream.h"
 #include "image.h"
+
+enum epsf_ascii {
+    EPSF_ASC_UNKNOWN,
+    EPSF_ASC_HEX,
+    EPSF_ASC_85
+};
+
+typedef enum epsf_ascii epsf_ascii;
 
 struct epsf_bbox {
     int llx, lly, urx, ury;
@@ -26,6 +34,7 @@ struct epsf {
     int paper_width, paper_height;	/* size of paper */
     epsf_bbox paper_bbox;		/* bounding box of printable area */
     epsf_bbox bbox;			/* bounding box of image */
+    epsf_ascii ascii;			/* desired ascii encoding */
     int level;				/* minimum LanguageLevel to support */
     image_info i;			/* desired image properties */
 };
@@ -38,11 +47,13 @@ void epsf_calculate_parameters(epsf *ep);
 epsf *epsf_create(epsf *par, stream *st, image *im);
 epsf *epsf_create_defaults(void);
 void epsf_free(epsf *ep);
+int epsf_process(stream *st, char *fname, epsf *par);
 void epsf_set_margins(epsf *ep, int l, int r, int t, int b);
 int epsf_set_paper(epsf *ep, char *paper);
 int epsf_write_data(epsf *ep);
 int epsf_write_header(epsf *ep);
 int epsf_write_setup(epsf *ep);
+int epsf_write_trailer(epsf *ep);
 
 #endif /* epsf.h */
 
