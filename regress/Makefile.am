@@ -22,6 +22,7 @@ TESTCASES=	gif.test \
 		xpm-rle.test
 
 INPUTS=		col.jpg \
+		col.tif \
 		dump.tif \
 		fax2d.tif \
 		idx1.xpm \
