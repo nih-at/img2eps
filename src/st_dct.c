@@ -1,5 +1,5 @@
 /*
-  $NiH: st_dct.c,v 1.1 2002/10/08 00:18:17 dillo Exp $
+  $NiH: st_dct.c,v 1.2 2002/10/12 00:02:11 dillo Exp $
 
   st_dct.c -- DCTEncode stream
   Copyright (C) 2002 Dieter Baron
@@ -176,7 +176,7 @@ stdest_init(j_compress_ptr cinfo)
     stream_dct *st;
 
     st = cinfo->client_data;
-    cinfo->dest->next_output_byte = st->b;
+    cinfo->dest->next_output_byte = (unsigned char *)st->b;
     cinfo->dest->free_in_buffer = BLKSIZE;
 }
 
@@ -189,7 +189,7 @@ stdest_empty(j_compress_ptr cinfo)
 
     st = cinfo->client_data;
     stream_write(st->st.st, st->b, BLKSIZE);
-    cinfo->dest->next_output_byte = st->b;
+    cinfo->dest->next_output_byte = (unsigned char *)st->b;
     cinfo->dest->free_in_buffer = BLKSIZE;
     return TRUE;
 }
