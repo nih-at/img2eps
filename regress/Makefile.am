@@ -1,9 +1,10 @@
 EXTRA_DIST=runtest ${TESTCASES} ${INPUTS} ${OUTPUTS}
 
-TESTCASES=jpg.test jpg-gray.test jpg-lzw.test png-1.test png-2.test \
+TESTCASES=jpg.test jpg-gray.test jpg-lzw.test pal-gray.test \
+	png-1.test png-2.test \
 	tiff.test tiff-indexed.test xpm-flate.test xpm-rle.test
-INPUTS=col.jpg fax2d.tif jello.tif nih.png links.xpm
-OUTPUTS=jpg.eps jpg-gray.eps jpg-lzw.eps png-1.eps png-2.eps \
+INPUTS=col.jpg fax2d.tif jello.tif links.xpm nih.png pal4.png
+OUTPUTS=jpg.eps jpg-gray.eps jpg-lzw.eps pal-gray.eps png-1.eps png-2.eps \
 	tiff.eps tiff-indexed.eps xpm-flate.eps xpm-rle.eps
 
 check:

@@ -1,0 +1,8 @@
+# png 2bit indexed, converted to grayscale (indexed)
+#
+#	$NiH$
+#
+return 0
+options -g -Crle
+input pal4.png
+output pal-gray.eps pal4.eps
