@@ -1,5 +1,5 @@
 - man page, internal documentation
-- compression support
+- compression support (dct copy done)
 - rotation support
 - support for more graphics formats
 - image_convert: cspace, depth, scale
@@ -11,8 +11,7 @@
 - masking (1-bit alpha channel)
 - preview
 - (optional) language level check in PostScript code
-- regression tests
-- different depth for base of indexed color spaces
+- more regression tests
 
 + indexed png to grayscale conversion segfaults in libpng
 + depth 12 requires level 2
