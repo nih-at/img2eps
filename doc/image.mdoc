@@ -6,14 +6,15 @@
 . Pp
 ..
 .Dd October 15, 2002
-.Dt "IMAGE HANDLING" 3 "img2eps Internal Documentation"
+.Dt "IMAGE HANDLING" 3
+.ds vT img2eps Internal Documentation
 .Sh NAME
 .Nm "IMAGE HANDLING"
 .Sh INTROUCTION
 .Pp
 This module provides a common interface to all supported image
-formats.  Support for image transformations (colour space, depth, size)
-is also provided (although not all of it is implemented yet).
+formats.  Support for image transformations (colour space, depth,
+size) is also provided (although not all of it is implemented yet).
 .Pp
 It is composed of one back end for each supported image format
 .Fa ( im_FORMAT.c ) ,
