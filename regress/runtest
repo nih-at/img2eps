@@ -1,0 +1,208 @@
+#!/bin/sh
+
+#  $NiH$
+#
+#  runtest -- run regression tests
+#  Copyright (C) 2002 Dieter Baron and Thomas Klausner
+#
+#  This file is part of img2eps, an image to EPS file converter.
+#  The authors can be contacted at <nih@giga.or.at>
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+# runtest TESTNAME
+#
+# files: 
+#   TESTNAME.test: test scenario
+#
+# test scenario:
+#    Lines beginning with # are comments.
+#
+#    The following four commands are recognized; return and input must
+#    appear exactly once, the others are optional.
+#
+#	retrun RET
+#	    RET is the expected exit code of img2eps
+#
+#	input FILE
+#	    run img2eps on image FILE 
+#
+#	options OPTION ...
+#	    run img2eps with options OPTION
+#	
+#	output EXPECTED-FILE CREATED-FILE
+#	    CREATED-FILE names the output file created by img2eps,
+#	    which will be compared to EXPECTED-FILE
+#
+#	error TEXT
+#	    img2pes is expected to produce the error message TEXT.  If
+#	    multiple error commands are used, the messages are
+#	    expected in the order given. 
+#   
+# environment variables:
+#   VERBOSE: if set, be more verbose (e. g., output diffs)
+#   NOCLEANUP: if set, don't delete directory test is run in
+
+die() {
+	echo "$0: $*" >&2;
+	cleanup;
+	exit 2;
+}
+
+fail() {
+	echo "${TEST} -- FAILED: $*";
+	cleanup;
+	exit 1;
+}
+
+succeed() {
+	if [ ! -z "${VERBOSE}" ]
+	then
+		echo "${TEST} -- passed";
+	fi
+	cleanup;
+	exit 0;
+}
+
+cleanup() {
+	cd ..;
+	if [ -z "${NOCLEANUP}" ]
+	then
+		rm -r ${DIR};
+	fi
+}
+
+checkfile() {
+    WEED='sed -e /^%%CreationDate/d -e /^%%Title/d'
+    if [ ! -f "$2" ]
+    then
+	fail "missing output file: '$2'"
+    else
+	if [ -f "$1" ]
+	then
+	    ${WEED} "$1" > expected
+	elif [ -f "$1.gz" ]
+	then
+	    zcat "$1" | ${WEED} > expected
+	else
+	    die "cannot find input file $1"
+	fi
+	
+	${WEED} "$2" > got
+	diff expected got > /dev/null
+	if [ $? -ne 0 ]
+	then
+	    if [ ! -z "${VERBOSE}" ]
+	    then
+		diff -u expected got
+	    fi
+	    fail "$3"
+	fi
+    fi
+}
+
+test_empty() {
+    if [ ! -z "$1" ]
+    then
+	die "directive $2 appeared twice in test file"
+    fi
+}
+
+test_set() {
+    if [ -z "$1" ]
+    then
+	die "required directive $2 missing in test file"
+    fi
+}
+
+TEST=`echo $1 | sed 's/\.test$//'`
+shift
+
+DIR=${TEST}.d$$
+if [ -z "${srcdir}" ]
+then
+    srcdir=..
+else
+	# XXX: fix for absolute srcdir?
+	srcdir=../${srcdir}
+fi
+
+if [ -z "${IMG2EPS}" ]
+then
+    IMG2EPS=../../src/img2eps
+fi
+
+# XXX: set up trap to cleanup
+
+mkdir ${DIR} || ( die "cannot create test directory ${DIR}" )
+cd ${DIR} || ( die "cannot cd to test directory ${DIR}" )
+
+{
+
+RET=''
+OPTIONS=''
+INPUT=''
+OUTPUT=''
+
+while read cmd arg
+do
+  case $cmd in
+  #*) ;;
+  return)
+    test_empty "${RET}" return
+    RET="$arg";;
+  options)
+    OPTIONS="${OPTIONS} $arg";;
+  input)
+    test_empty "${INPUT}" input
+    INPUT="$arg";;
+  output)
+    test_empty "${OUTPUT}" output
+    OUTPUT="$arg";;
+  error)
+    echo "${IMG2EPS}: $arg" >> errors
+  esac
+done
+
+test_set "${RET}" return
+test_set "${INPUT}" input
+
+ARGS="${OPTIONS} ${srcdir}/${INPUT}"
+
+if [ ! -z "${VERBOSE}" ]
+then
+	echo "running: ${IMG2EPS} ${ARGS}"
+fi
+${IMG2EPS} ${ARGS} > img2eps.out 2>&1
+ret=$?
+
+if [ $ret -ne ${RET} ]
+then
+	fail "unexpected exit status: got $ret, expected ${RET}"
+fi
+
+if [ -f errors ]
+then
+    checkfile errors img2eps.out "unexpected output"
+fi
+
+if [ ! -z "${OUTPUT}" ]
+then
+    checkfile ${srcdir}/${OUTPUT} "diffs in EPSF"
+fi
+
+succeed
+
+} < ${srcdir}/${TEST}.test

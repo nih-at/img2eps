@@ -115,4 +115,4 @@ else
 fi
 
 
-AC_OUTPUT(Makefile src/Makefile)
+AC_OUTPUT(Makefile src/Makefile regress/Makefile)

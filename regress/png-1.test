@@ -1,0 +1,8 @@
+# grayscale PNG, language level 1
+#
+#    $NiH$
+#
+return 0
+input nih.png
+options -1
+output png-1.eps nih.eps
