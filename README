@@ -3,7 +3,7 @@ REQUIREMENTS:
 img2eps does not require the following packages, but certain features
 will be omitted if they are missing:
 
-  For image format support: png, jpeg, tiff, and either giflib or
+  For image format support: libpng, jpeg, tiff, and either giflib or
 libungif.
 
   For compression support: zlib (FlateEncode), jpeg (DCTEncode).
