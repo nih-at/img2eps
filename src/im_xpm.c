@@ -1,5 +1,5 @@
 /*
-  $NiH: im_xpm.c,v 1.2 2002/09/10 21:50:42 dillo Exp $
+  $NiH: im_xpm.c,v 1.3 2002/09/11 22:44:19 dillo Exp $
 
   im_xpm.c -- XPM (X Pixmap) image handling
   Copyright (C) 2002 Dieter Baron
@@ -20,6 +20,7 @@
 */
 
 #define NOSUPP_SCALE
+#define NOSUPP_RAW
 
 #include "exceptions.h"
 #include "image.h"
@@ -64,20 +65,16 @@ void _parse_colors(image_xpm *im);
 
 
 
-int
+void
 xpm_close(image_xpm *im)
 {
-    int ret;
-
     free(im->pal);
     free(im->cname);
     free(im->col);
     free(im->buf);
-    ret = fclose(im->f);
+    fclose(im->f);
     
     image_free((image *)im);
-
-    return ret;
 }
 
 
@@ -182,6 +179,7 @@ xpm_open(char *fname)
 	im->im.i.cspace.base_type = (im->flags & GOT_RGB
 				     ? IMAGE_CS_RGB
 				     : IMAGE_CS_GRAY);
+	im->im.i.cspace.base_depth = (im->flags & (GOT_RGB|GOT_GRAY) ? 8 : 4);
 	
 	for (i=1; im->ncol > (1<<i); i*=2)
 	    if (i>16)
@@ -252,22 +250,19 @@ xpm_read(image_xpm *im, char **bp)
 
 
 
-int
+void
 xpm_read_start(image_xpm *im)
 {
     im->buf = xmalloc(image_get_row_size((image *)im));
-    return 0;
 }
 
 
 
-int
+void
 xpm_read_finish(image_xpm *im, int abortp)
 {
     free (im->buf);
     im->buf = NULL;
-
-    return 0;
 }
 
 
@@ -278,7 +273,8 @@ xpm_set_cspace(image_xpm *im, const image_cspace *cspace)
     int i, depth, base_depth;
 
     base_depth = depth = 0;
-    switch (cspace->type) {
+    switch (cspace->type == IMAGE_CS_UNKNOWN
+	    ? im->im.i.cspace.type : cspace->type) {
     case IMAGE_CS_GRAY:
 	if (cspace->depth != 1 || !(im->flags&GOT_MONO))
 	    return -1;
@@ -287,7 +283,8 @@ xpm_set_cspace(image_xpm *im, const image_cspace *cspace)
     case IMAGE_CS_INDEXED:
 	if (cspace->depth && im->ncol > (1<<cspace->depth))
 	    return -1;
-	switch (cspace->base_type) {
+	switch (cspace->base_type == IMAGE_CS_UNKNOWN
+		? im->im.i.cspace.base_type : cspace->base_type) {
 	case IMAGE_CS_GRAY:
 	    if ((im->flags&(GOT_GRAY|GOT_GRAY4)) == 0)
 		return -1;

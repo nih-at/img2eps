@@ -1,5 +1,5 @@
 /*
-  $NiH: im_jpeg.c,v 1.5 2002/09/10 21:40:47 dillo Exp $
+  $NiH: im_jpeg.c,v 1.6 2002/09/11 22:44:18 dillo Exp $
 
   im_jpeg.c -- JPEG image handling
   Copyright (C) 2002 Dieter Baron
@@ -17,6 +17,8 @@
 #include <stdio.h>
 
 #include <jpeglib.h>
+
+#define NOSUPP_RAW
 
 #include "exceptions.h"
 #include "image.h"
@@ -41,20 +43,16 @@ IMAGE_DECLARE(jpeg);
 
 
 
-int
+void
 jpeg_close(image_jpeg *im)
 {
-    int ret;
-
     if (im->cinfo)
 	jpeg_destroy_decompress(im->cinfo);
     free(im->cinfo);
     free(im->jerr);
-    ret = fclose(im->f);
+    fclose(im->f);
     free(im->buf);
     image_free((image *)im);
-
-    return ret;
 }
 
 
@@ -142,7 +140,7 @@ jpeg_read(image_jpeg *im, char **bp)
 
 
 
-int
+void
 jpeg_read_finish(image_jpeg *im, int abortp)
 {
     free(im->buf);
@@ -152,21 +150,17 @@ jpeg_read_finish(image_jpeg *im, int abortp)
 	jpeg_abort_decompress(im->cinfo);
     else
 	jpeg_finish_decompress(im->cinfo);
-
-    return 0;
 }
 
 
 
-int
+void
 jpeg_read_start(image_jpeg *im)
 {
     jpeg_start_decompress(im->cinfo);
 
     im->buflen = image_get_row_size((image *)im);
     im->buf = xmalloc(im->buflen);
-
-    return 0;
 }		
 
 

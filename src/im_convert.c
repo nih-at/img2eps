@@ -1,5 +1,5 @@
 /*
-  $NiH: im_convert.c,v 1.3 2002/09/10 21:40:47 dillo Exp $
+  $NiH: im_convert.c,v 1.4 2002/09/11 22:44:18 dillo Exp $
 
   im_convert.c -- image conversion handling
   Copyright (C) 2002 Dieter Baron
@@ -9,6 +9,8 @@
 */
 
 #include <errno.h>
+
+#define NOSUPP_RAW
 
 #include "config.h"
 #include "exceptions.h"
@@ -27,13 +29,11 @@ IMAGE_DECLARE(conv);
 
 
 
-int
+void
 conv_close(image_conv *im)
 {
     image_close(im->oim);
     image_free((image *)im);
-
-    return 0;
 }
 
 
@@ -67,18 +67,18 @@ conv_read(image_conv *im, char **bp)
 
 
 
-int
+void
 conv_read_start(image_conv *im)
 {
-    return 0;
+    return;
 }
 
 
 
-int
+void
 conv_read_finish(image_conv *im, int abortp)
 {
-    return 0;
+    return;
 }
 
 

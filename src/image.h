@@ -2,7 +2,7 @@
 #define _HAD_IMAGE_H
 
 /*
-  $NiH: image.h,v 1.3 2002/09/10 21:40:49 dillo Exp $
+  $NiH: image.h,v 1.4 2002/09/11 22:44:20 dillo Exp $
 
   image.h -- image header
   Copyright (C) 2002 Dieter Baron
@@ -88,12 +88,15 @@ struct image {
 typedef struct image image;
 
 struct image_functions {
-    int (*close)(image *);
+    void (*close)(image *);
     char *(*get_palette)(image *);
     image *(*open)(char *);
+    int (*raw_read)(image *, char **);
+    void (*raw_read_finish)(image *, int);
+    void (*raw_read_start)(image *);
     int (*read)(image *, char **);
-    int (*read_finish)(image *, int);
-    int (*read_start)(image *);
+    void (*read_finish)(image *, int);
+    void (*read_start)(image *);
     int (*set_cspace)(image *, const image_cspace *);
     int (*set_size)(image *, int, int);
 };
@@ -102,6 +105,7 @@ struct image_functions {
 		    ((new)->field == 0 || (new)->field == (old)->field)
 
 int _image_notsup(image *, int, int);
+int _image_notsup_raw(image *, int, int);
 
 #ifdef NOSUPP_CSPACE
 #define IMAGE_DECL_CSPACE(name)
@@ -119,24 +123,48 @@ int name##_set_cspace(image_##name *, const image_cspace *);
 int name##_set_size(image_##name *, int, int);
 #define IMAGE_METH_SCALE(name)	(int (*)())name##_set_size
 #endif
+#ifdef NOSUPP_RAW
+#define IMAGE_DECL_RAWS(name)
+#define IMAGE_DECL_RAW(name)
+#define IMAGE_DECL_RAWF(name)
+#define IMAGE_METH_RAWS(name)	(void (*)())_image_notsup_raw
+#define IMAGE_METH_RAW(name)	(int (*)())_image_notsup_raw
+#define IMAGE_METH_RAWF(name)	(void (*)())_image_notsup_raw
+#else
+#define IMAGE_DECL_RAWS(name)	\
+void name##_raw_read_start(image_##name *);
+#define IMAGE_DECL_RAW(name)	\
+int name##_raw_read(image_##name *, char **);
+#define IMAGE_DECL_RAWF(name)	\
+void name##_raw_read_finish(image_##name *, int);
+#define IMAGE_METH_RAWS(name)	(void (*)())name##_raw_read_start
+#define IMAGE_METH_RAW(name)	(int (*)())name##_raw_read
+#define IMAGE_METH_RAWF(name)	(void (*)())name##_raw_read_finish
+#endif
 
 #define IMAGE_DECLARE(name)			\
 typedef struct image_##name image_##name;	\
-int name##_close(image_##name *);		\
+void name##_close(image_##name *);		\
 char *name##_get_palette(image_##name *);	\
 image *name##_open(char *);			\
 int name##_read(image_##name *, char **);	\
-int name##_read_finish(image_##name *, int);	\
-int name##_read_start(image_##name *);		\
+void name##_read_finish(image_##name *, int);	\
+void name##_read_start(image_##name *);		\
 IMAGE_DECL_CSPACE(name)				\
 IMAGE_DECL_SCALE(name)				\
+IMAGE_DECL_RAWS(name)				\
+IMAGE_DECL_RAW(name)				\
+IMAGE_DECL_RAWF(name)				\
 struct image_functions name##_functions  = {	\
-    (int (*)())name##_close,			\
+    (void (*)())name##_close,			\
     (char *(*)())name##_get_palette,		\
     name##_open,				\
+    IMAGE_METH_RAW(name),			\
+    IMAGE_METH_RAWF(name),			\
+    IMAGE_METH_RAWS(name),			\
     (int (*)())name##_read,			\
-    (int (*)())name##_read_finish,		\
-    (int (*)())name##_read_start,		\
+    (void (*)())name##_read_finish,		\
+    (void (*)())name##_read_start,		\
     IMAGE_METH_CSPACE(name),			\
     IMAGE_METH_SCALE(name)			\
 }

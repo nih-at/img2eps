@@ -1,5 +1,5 @@
 /*
-  $NiH: im_png.c,v 1.5 2002/09/11 22:44:19 dillo Exp $
+  $NiH: im_png.c,v 1.6 2002/09/11 23:55:02 dillo Exp $
 
   im_png.c -- PNG image handling
   Copyright (C) 2002 Dieter Baron
@@ -18,6 +18,7 @@
 #include <png.h>
 
 #define NOSUPP_SCALE
+#define NOSUPP_RAW
 #include "exceptions.h"
 #include "image.h"
 #include "xmalloc.h"
@@ -46,12 +47,9 @@ static void _warn_fn(png_structp png, png_const_charp msg);
 
 
 
-int
+void
 png_close(image_png *im)
 {
-    if (setjmp(png_jmpbuf(im->png)) != 0)
-	return -1;
-    
     if (im->png)
 	png_destroy_read_struct(&im->png, &im->info, &im->endinfo);
     if (im->f)
@@ -61,8 +59,6 @@ png_close(image_png *im)
     free(im->pal);
 
     image_free((image *)im);
-
-    return 0;
 }
 
 
@@ -223,20 +219,18 @@ png_read(image_png *im, char **bp)
 
 
 
-int
+void
 png_read_finish(image_png *im, int abortp)
 {
     free(im->buf);
     im->buf = NULL;
     free(im->rows);
     im->rows = NULL;
-
-    return 0;
 }
 
 
 
-int
+void
 png_read_start(image_png *im)
 {
     int i, n;
@@ -288,8 +282,6 @@ png_read_start(image_png *im)
 	im->buf = NULL;
 	throw(&ex);
     }
-    
-    return 0;
 }		
 
 

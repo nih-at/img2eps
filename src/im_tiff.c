@@ -1,5 +1,5 @@
 /*
-  $NiH: im_tiff.c,v 1.3 2002/09/10 21:40:48 dillo Exp $
+  $NiH: im_tiff.c,v 1.4 2002/09/11 22:44:19 dillo Exp $
 
   im_tiff.c -- TIFF image handling
   Copyright (C) 2002 Dieter Baron
@@ -20,6 +20,7 @@
 
 #define NOSUPP_CSPACE
 #define NOSUPP_SCALE
+#define NOSUPP_RAW
 #include "image.h"
 
 
@@ -34,15 +35,11 @@ IMAGE_DECLARE(tiff);
 
 
 
-int
+void
 tiff_close(image_tiff *im)
 {
-    int ret;
-
     TIFFClose(im->tif);
     image_free((image *)im);
-
-    return ret;
 }
 
 
@@ -96,18 +93,18 @@ tiff_read(image_tiff *im, char **bp)
 
 
 
-int
+void
 tiff_read_finish(image_tiff *im, int abortp)
 {
-    return 0;
+    return;
 }
 
 
 
-int
+void
 tiff_read_start(image_tiff *im)
 {
-    return -1;
+    return;
 }		
 
 #endif /* USE_TIFF */

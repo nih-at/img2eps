@@ -1,5 +1,5 @@
 /*
-  $NiH: im_gif.c,v 1.3 2002/09/10 14:05:51 dillo Exp $
+  $NiH: im_gif.c,v 1.4 2002/09/10 21:40:47 dillo Exp $
 
   im_gif.c -- GIF image handling
   Copyright (C) 2002 Dieter Baron
@@ -16,6 +16,7 @@
 
 #define NOSUPP_CSPACE
 #define NOSUPP_SCALE
+#define NOSUPP_RAW
 
 #include "exceptions.h"
 #include "image.h"
@@ -32,17 +33,15 @@ IMAGE_DECLARE(gif);
 
 
 
-int
+void
 gif_close(image_gif *im)
 {
     int ret;
-
+    
     ret = (DGifCloseFile(im->gif) == GIF_OK) ? 0 : -1;
     /* XXX: throw */
 
     image_free((image *)im);
-
-    return ret;
 }
 
 
@@ -91,18 +90,18 @@ gif_read(image_gif *im, char **bp)
 
 
 
-int
+void
 gif_read_start(image_gif *im)
 {
-    return 0;
+    return;
 }
 
 
 
-int
+void
 gif_read_finish(image_gif *im, int abortp)
 {
-    return 0;
+    return;
 }
 
 #endif /* USE_GIF */

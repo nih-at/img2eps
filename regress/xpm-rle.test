@@ -1,0 +1,8 @@
+# xpm, runlength compression
+#
+#	$NiH$
+#
+return 0
+options -Crle
+input links.xpm
+output xpm-rle.eps links.eps
