@@ -3,7 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl init
 
 AC_PREREQ(2.50)
-AC_REVISION($NiH$)
+AC_REVISION([$NiH: configure.in,v 1.7 2002/10/05 02:54:34 dillo Exp $])
 AC_INIT([img2eps], [0.0])
 AC_CONFIG_SRCDIR([src/im_gif.c])
 AC_CONFIG_HEADERS([config.h])
