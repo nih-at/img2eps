@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#  $NiH: runtest,v 1.2 2002/09/14 02:27:35 dillo Exp $
+#  $NiH: runtest,v 1.3 2002/10/10 15:20:31 dillo Exp $
 #
 #  runtest -- run regression tests
 #  Copyright (C) 2002 Dieter Baron and Thomas Klausner
@@ -46,6 +46,11 @@
 #	    CREATED-FILE names the output file created by img2eps,
 #	    which will be compared to EXPECTED-FILE
 #
+#	stdout TEXT
+#	    img2pes is expected print TEXT to stdout.  If multiple
+#	    error commands are used, the messages are expected in
+#	    the order given. 
+#   
 #	error TEXT
 #	    img2pes is expected to produce the error message TEXT.  If
 #	    multiple error commands are used, the messages are
@@ -198,6 +203,8 @@ do
     OUTPUT="$arg";;
   features)
     FEATURES="${FEATURES} $arg";;
+  stdout)
+    echo "$arg" >> stdout;;
   error)
     echo "${IMG2EPS}: $arg" >> errors
   esac
@@ -225,7 +232,7 @@ if [ ! -z "${VERBOSE}" ]
 then
 	echo "running: ${IMG2EPS} ${ARGS}"
 fi
-${IMG2EPS} ${ARGS} > img2eps.out 2>&1
+${IMG2EPS} ${ARGS} > img2eps.out 2> img2eps.err
 ret=$?
 
 if [ $ret -ne ${RET} ]
@@ -237,9 +244,14 @@ then
     fail "unexpected exit status: got $ret, expected ${RET}"
 fi
 
+if [ -f stdout ]
+then
+    checkfile stdout img2eps.out "unexpected output"
+fi
+
 if [ -f errors ]
 then
-    checkfile errors img2eps.out "unexpected output"
+    checkfile errors img2eps.err "unexpected error output"
 fi
 
 if [ ! -z "${OUTPUT}" ]
