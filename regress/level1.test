@@ -1,0 +1,10 @@
+# uncompressed tiff, defaults to level 1
+#   image: 16x16 rgb 8bps
+#    EPSF: 16x16 rgb 8bps, ASCIIHex, level 1
+#
+#	$NiH$
+#
+features TIFF
+return 0
+input dump.tif
+output level1.eps dump.eps

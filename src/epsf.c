@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.17 2002/10/11 23:26:06 dillo Exp $
+  $NiH: epsf.c,v 1.18 2002/10/12 00:02:05 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -249,6 +249,9 @@ epsf_calculate_parameters(epsf *ep)
 	/* use best compression available */
 	if (ep->i.compression == IMAGE_CMP_UNKNOWN)
 	    switch (ep->level ? ep->level : level) {
+	    case 1:
+		ep->i.compression = IMAGE_CMP_NONE;
+		break;
 	    case 2:
 		ep->i.compression = DEFAULT_L2_CMP;
 		break;
