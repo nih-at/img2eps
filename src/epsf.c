@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.24 2005/01/06 17:05:30 dillo Exp $
+  $NiH: epsf.c,v 1.25 2005/01/07 11:30:14 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002, 2005 Dieter Baron
@@ -556,7 +556,7 @@ epsf_set_gravity(epsf *ep, const char *g)
 {
     int i;
     double x, y;
-    char *p;
+    char *p, *q;
 
     i = epsf_grav_num(g);
 
@@ -569,9 +569,9 @@ epsf_set_gravity(epsf *ep, const char *g)
     x = strtod(g, &p);
     if (*p == '\0' || strchr(PAIR_SEPARATORS, *p) == NULL)
 	return -1;
-    y = strtod(p+1, NULL);
+    y = strtod(p+1, &q);
 
-    if (x < 0 || x > 1 || y < 0 || y > 1)
+    if (x < 0 || x > 1 || y < 0 || y > 1 || (q && *q) || p==g || q==p+1)
 	return -1;
 
     ep->placement.gravity_x = x;
@@ -661,13 +661,20 @@ int
 epsf_set_resolution(epsf *ep, const char *r)
 {
     int x, y;
-    char *p;
+    char *p, *q;
 
     x = strtoul(r, &p, 10);
-    if (*p == '\0' || strchr(PAIR_SEPARATORS, *p) == NULL)
+    if (p == r)
+	return -1;
+    if (*p == '\0')
 	y = x;
-    else
-	y = strtoul(p+1, NULL, 10);
+    else if (strchr(PAIR_SEPARATORS, *p) == NULL)
+	return -1;
+    else {
+	y = strtoul(p+1, &q, 10);
+	if ((q && *q) || q==p+1)
+	    return -1;
+    }
 
     ep->placement.resolution_x = x;
     ep->placement.resolution_y = y;

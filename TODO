@@ -1,7 +1,6 @@
 bugs:
-+ [ui] error out on illegal arguments to options
-+ [jpeg] fix PostScript error with pictures from Canon EOS 300D (direct copy)
 + [epsf] fix order transformation matrices
++ [jpeg] fix PostScript error with pictures from Canon EOS 300D (direct copy)
 - [jpeg] fix direct-copy broken on level2 printers
 - [jpeg] 12bit DCT encode produces broken image data (jpeg lib limitation)
 . [jpeg2000] testfiles_jp2/file3.jp2: error reading component 1 of row 0

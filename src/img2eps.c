@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.16 2005/01/06 17:02:04 dillo Exp $
+  $NiH: img2eps.c,v 1.17 2005/01/07 11:30:14 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002, 2005 Dieter Baron
@@ -134,7 +134,8 @@ static const struct option options[] = {
     { NULL, 0, 0, 0 }
 };
 
-static char *extsubst(char *fname, char *newext);
+static char *extsubst(const char *, const char *);
+static void illegal_argument(const char *, const char *);
 
 
 
@@ -144,7 +145,7 @@ main(int argc, char *argv[])
     int c, i, ret;
     stream *st;
     epsf *par;
-    char *outfile;
+    char *outfile, *end;
     exception ex;
     int cat;
 
@@ -164,87 +165,79 @@ main(int argc, char *argv[])
 	    break;
 	case 'a':
 	    par->ascii = epsf_asc_num(optarg);
-	    if (par->ascii == EPSF_ASC_UNKNOWN) {
-		fprintf(stderr, "%s: unknown ASCII encoding `%s'\n",
-			prg, optarg);
-		exit(1);
-	    }
+	    if (par->ascii == EPSF_ASC_UNKNOWN)
+		illegal_argument("ASCII encoding", optarg);
 	    break;
 	case 'C':
 	    par->i.compression = image_compression_num(optarg);
-	    if (par->i.compression == IMAGE_CMP_UNKNOWN) {
-		fprintf(stderr, "%s: unknown compression method `%s'\n",
-			prg, optarg);
-		exit(1);
-	    }
+	    if (par->i.compression == IMAGE_CMP_UNKNOWN)
+		illegal_argument("compression method", optarg);
 	    break;
 	case 'c':
 	    cat = 1;
 	    break;
 	case 'G':
-	    epsf_set_gravity(par, optarg);
-	    /* XXX: check for error */
+	    if (epsf_set_gravity(par, optarg) < 0)
+		illegal_argument("gravity", optarg);
 	    break;
 	case 'g':
 	    par->i.cspace.type = IMAGE_CS_GRAY;
 	    break;
 	case 'm':
-	    epsf_set_margins(par, optarg, EPSF_MARG_ALL);
-	    /* XXX: check for error */
+	    if (epsf_set_margins(par, optarg, EPSF_MARG_ALL) < 0)
+		illegal_argument("margin", optarg);
 	    break;
 	case 'O':
-	    epsf_set_orientation(par, optarg);
-	    /* XXX: check for error */
+	    if (epsf_set_orientation(par, optarg) < 0)
+		illegal_argument("orientation", optarg);
 	    break;
 	case 'o':
 	    outfile = optarg;
 	    break;
 	case 'P':
-	    epsf_set_paper(par, optarg);
-	    /* XXX: check for error */
+	    if (epsf_set_paper(par, optarg) < 0)
+		illegal_argument("paper size", optarg);
 	    break;
 	case 'r':
-	    epsf_set_resolution(par, optarg);
-	    /* XXX: check for error */
+	    if (epsf_set_resolution(par, optarg) < 0)
+		illegal_argument("resolution", optarg);
 	    break;
 	case 'S':
-	    epsf_set_image_size(par, optarg, EPSF_SIZE_BOTH);
-	    /* XXX: check for error */
+	    if (epsf_set_image_size(par, optarg, EPSF_SIZE_BOTH) < 0)
+		illegal_argument("image size", optarg);
 	    break;
 	case 'v':
 	    par->flags |= EPSF_FLAG_VERBOSE;
 	    break;
 	case OPT_BOTTOMM:
-	    epsf_set_margins(par, optarg, EPSF_MARG_BOTTOM);
-	    /* XXX: check for error */
+	    if (epsf_set_margins(par, optarg, EPSF_MARG_BOTTOM) < 0)
+		illegal_argument("margin", optarg);
 	    break;
 	case OPT_HEIGHT:
-	    epsf_set_image_size(par, optarg, EPSF_SIZE_HEIGHT);
-	    /* XXX: check for error */
+	    if (epsf_set_image_size(par, optarg, EPSF_SIZE_HEIGHT) < 0)
+		illegal_argument("image height", optarg);
 	    break;
 	case OPT_LEFTM:
-	    epsf_set_margins(par, optarg, EPSF_MARG_LEFT);
-	    /* XXX: check for error */
+	    if (epsf_set_margins(par, optarg, EPSF_MARG_LEFT) < 0)
+		illegal_argument("margin", optarg);
 	    break;
 	case OPT_LEVEL:
-	    i = atoi(optarg);
-	    if (i<1 || i>3) {
-		fprintf(stderr, usage, prg);
-		exit(1);
-	    }
+	    i = strtoul(optarg, &end, 10);
+	    if (i<1 || i>3 || (end && *end))
+		illegal_argument("language level", optarg);
 	    par->level = i;
 	    break;
 	case OPT_RIGHTM:
-	    epsf_set_margins(par, optarg, EPSF_MARG_RIGHT);
-	    /* XXX: check for error */
+	    if (epsf_set_margins(par, optarg, EPSF_MARG_RIGHT) < 0)
+		illegal_argument("margin", optarg);
 	    break;
 	case OPT_TOPM:
-	    epsf_set_margins(par, optarg, EPSF_MARG_TOP);
-	    /* XXX: check for error */
+	    if (epsf_set_margins(par, optarg, EPSF_MARG_TOP) < 0)
+		illegal_argument("margin", optarg);
 	    break;
 	case OPT_WIDTH:
-	    epsf_set_image_size(par, optarg, EPSF_SIZE_WIDTH);
-	    /* XXX: check for error */
+	    if (epsf_set_image_size(par, optarg, EPSF_SIZE_WIDTH) < 0)
+		illegal_argument("image width", optarg);
 	    break;
 
 	case 'V':
@@ -338,9 +331,10 @@ main(int argc, char *argv[])
 
 
 static char *
-extsubst(char *fname, char *newext)
+extsubst(const char *fname, const char *newext)
 {
-    char *p, *q, *s;
+    const char *p, *q;
+    char *s, *r;
 
     p = strrchr(fname, '/');
     if (p)
@@ -355,9 +349,19 @@ extsubst(char *fname, char *newext)
     s = xmalloc(q-p + strlen(newext) + 2);
 
     strncpy(s, p, q-p);
-    q = s + (q-p);
-    *(q++) = '.';
-    strcpy(q, newext);
+    r = s + (q-p);
+    *(r++) = '.';
+    strcpy(r, newext);
 
     return s;
+}
+
+
+
+static void
+illegal_argument(const char *type, const char *arg)
+{
+    fprintf(stderr, "%s: illegal %s `%s'\n",
+	    prg, type, arg);
+    exit(1);
 }

@@ -1,5 +1,13 @@
 2005-01-07  Dieter Baron  <dillo@danbala.tuwien.ac.at>
 
+	* src/epsf.c (epsf_set_gravity, epsf_set_resolution): stricter
+	validation of argument.
+	* src/img2eps.c (illegal_argument): new function.
+	* src/img2eps.c (main): print error message and exit for illegal
+	argument to option.
+	
+	* src/img2eps.c (extsubst): constify.
+
 	* src/epsf.h (epsf_placement): represent gravity as pair of
 	floats, add image size, separate resolution for x and y.
 	* src/epsf.c (epsf_set_gravity): allow gravity to be specified as
