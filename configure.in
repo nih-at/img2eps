@@ -3,7 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl init
 
 AC_PREREQ(2.50)
-AC_REVISION([$NiH: configure.in,v 1.14 2002/10/16 11:53:17 dillo Exp $])
+AC_REVISION([$NiH: configure.in,v 1.15 2002/10/16 13:32:26 dillo Exp $])
 AC_INIT([img2eps], [0.1])
 AC_CONFIG_SRCDIR([src/im_gif.c])
 AC_CONFIG_HEADERS([config.h])
@@ -20,6 +20,9 @@ AC_ARG_WITH(png,
 AC_ARG_WITH(jpeg,
     [  --without-jpeg          don't include JPEG support],,
     with_jpeg=yes)
+AC_ARG_WITH(jpeg2000,
+    [  --without-jpeg2000      don't include JPEG 2000 support],,
+    with_jpeg2000=yes)
 AC_ARG_WITH(tiff,
     [  --without-tiff          don't include TIFF support],,
     with_tiff=yes)
@@ -53,6 +56,10 @@ fi
 if test "$with_tiff" = "yes"
 then
   AC_CHECK_LIB(tiff, TIFFOpen)
+fi
+if test "$with_jpeg2000" = "yes"
+then
+  AC_CHECK_LIB(jasper, jas_init)
 fi
 
 dnl header files
@@ -91,6 +98,21 @@ then
     if test "$ac_cv_lib_jpeg_jpeg_read_header" = "yes"
     then
 	AC_DEFINE(USE_JPEG, , [define if JPEG support should be compiled])
+	AC_MSG_RESULT([yes])
+    else
+	AC_MSG_RESULT([no])
+    fi
+else
+    AC_MSG_RESULT([disabled])
+fi
+
+AC_MSG_CHECKING([for JPEG 2000 support])
+if test "$with_jpeg2000" = "yes"
+then
+    if test "$ac_cv_lib_jasper_jas_init" = "yes"
+    then
+	AC_DEFINE(USE_JPEG2000, ,
+                  [define if JPEG 2000 support should be compiled])
 	AC_MSG_RESULT([yes])
     else
 	AC_MSG_RESULT([no])

@@ -1,3 +1,11 @@
+2002-11-13  Dieter Baron  <dillo@danbala.tuwien.ac.at>
+
+	* configure.in, src/Makefile.am, src/image.c, src/im_jpeg2000.c:
+	add support for JPEG 2000 image format.
+
+	* src/exceptions.h: rename struct exception to struct exception_s
+	to avoid conflict with math.h.
+
 2002-11-10  Dieter Baron  <dillo@danbala.tuwien.ac.at>
 
 	* src/im_gif.c (gif_read, gif_read_start): deinterlace interlaced

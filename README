@@ -4,7 +4,8 @@
 using whatever PostScript features are advantageous.  If possible, the
 compressed image data is copied directly to the EPS file.
 
-  Supported image file formats are GIF, JPEG, PNG, TIFF, and XPM.
+  Supported image file formats are GIF, JPEG, JPEG 2000, PNG, TIFF,
+and XPM.
 
   For generic installation instructions, see file `INSTALL'; for
 documentation read the man page; for internal documentation see the
@@ -26,8 +27,8 @@ REQUIREMENTS:
   img2eps does not require the following packages, but certain
 features will be omitted if they are missing:
 
-  For image format support: libpng, jpeg, tiff, and either giflib or
-libungif.
+  For image format support: libpng, jpeg, jasper, tiff, and either
+giflib or libungif.
 
   For compression support: zlib (FlateEncode), jpeg (DCTEncode).
 

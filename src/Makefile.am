@@ -9,6 +9,7 @@ img2eps_SOURCES=epsf.c \
 		im_convert.c \
 		im_gif.c \
 		im_jpeg.c \
+		im_jpeg2000.c \
 		im_png.c \
 		im_tiff.c \
 		im_xpm.c \
