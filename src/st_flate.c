@@ -1,5 +1,5 @@
 /*
-  $NiH$
+  $NiH: st_flate.c,v 1.1 2002/10/03 23:52:39 dillo Exp $
 
   st_flate.c -- FlateEncode stream
   Copyright (C) 2002 Dieter Baron
@@ -16,13 +16,11 @@
 #include "stream.h"
 #include "stream_types.h"
 
-#ifdef HAVE_LIBZ
-#include "zlib.h"
-#endif
-
 
 
 #ifdef HAVE_LIBZ
+
+#include "zlib.h"
 
 #define BLKSIZE		8192
 
