@@ -24,3 +24,4 @@
 - more regression tests
 - force specific color space / depth
 - force portrait/landscape/bbox
+- force resolution
