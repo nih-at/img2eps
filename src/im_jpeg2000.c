@@ -1,5 +1,5 @@
 /*
-  $NiH$
+  $NiH: im_jpeg2000.c,v 1.1 2002/11/13 01:41:39 dillo Exp $
 
   im_jpeg2000.c -- JPEG 2000 image handling
   Copyright (C) 2002 Dieter Baron
@@ -117,6 +117,7 @@ jpeg2000_open(char *fname)
     if (!jasper_inited) {
 	if (jas_init())
 	    return NULL;
+	jas_setdbglevel(0);
 	jasper_inited = 1;
     }
 
