@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.15 2002/10/10 11:05:16 dillo Exp $
+  $NiH: epsf.c,v 1.16 2002/10/11 00:53:44 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -142,8 +142,10 @@ epsf_calculate_parameters(epsf *ep)
 	else
 	    ep->i.cspace.type = ep->im->i.cspace.type;
     }
-    if (ep->i.cspace.type == IMAGE_CS_INDEXED)
+    if (ep->i.cspace.type == IMAGE_CS_INDEXED) {
 	ep->i.cspace.base_depth = 8;
+	ep->i.cspace.base_type = ep->im->i.cspace.base_type;
+    }
     else if (ep->i.cspace.type == IMAGE_CS_GRAY) {
 	if (ep->level != 1 && ep->im->i.cspace.type == IMAGE_CS_INDEXED
 	    && ep->im->i.cspace.depth < 8) {
@@ -404,10 +406,13 @@ epsf_print_parameters(const epsf *ep)
     printf("%s:\n", ep->im->fname);
     printf("   image: %s\n",
 	   image_info_print(&ep->im->oi));
-    printf("    EPSF: %s, %s, level %d\n",
+    printf("    EPSF: %s, %s, level %d%s\n",
 	   image_info_print(&ep->i),
 	   epsf_asc_name(ep->ascii),
-	   ep->level);
+	   ep->level,
+	   ((ep->i.compression != IMAGE_CMP_NONE
+	     && ep->i.compression == ep->im->i.compression)
+	    ? ", direct copy" : ""));
     
     /* XXX: bbox */
 }
