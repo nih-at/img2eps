@@ -1,5 +1,5 @@
 /*
-  $NiH: im_gif.c,v 1.6 2002/09/14 02:27:38 dillo Exp $
+  $NiH: im_gif.c,v 1.7 2002/10/10 18:08:48 dillo Exp $
 
   im_gif.c -- GIF image handling
   Copyright (C) 2002 Dieter Baron
@@ -148,7 +148,7 @@ gif_read_start(image_gif *im)
 
     /* XXX: check that image uses whole screen */
 
-    im->n = image_get_row_size(im);
+    im->n = image_get_row_size((image *)im);
     im->p = im->gif->SavedImages[0].RasterBits;
     
     return;
