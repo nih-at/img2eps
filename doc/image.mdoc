@@ -27,9 +27,7 @@ Unless otherwise noted, an exception is thrown when an error occurs.
 Methods are supposed to be implemented by each back end, called
 .Fa FORMAT_NAME . 
 .Pp
-[XXX: Not all available functions are documented; all methods are,
-however.  Return values differ for some functions; this will be
-fixed.]
+[XXX: Return values differ for some functions; this will be fixed.]
 .Sh FUNCTIONS AND METHODS
 .Pp
 FUNCTION 
@@ -50,13 +48,126 @@ METHOD
 Close and free image
 .Fa im .
 .EF
+FUNCTION
+.Ft const char *
+.Fn image_compression_name "image_compression cmp"
+.BF
+Return name of compression method
+.Fa cmp
+as string.
+.EF
+FUNCTION
+.Ft image_compression
+.Fn iamge_compression_num "const char *cmpn"
+.BF
+Return compression method named
+.Fa cmpn .
+.EF
+FUNCTION
+.Ft int
+.Fn image_cspace_components "const image_cspace *cs" "int base"
+.BF
+Return the number of components used for colour space
+.Fa cs .
+If it is of type
+.Dv IMAGE_CS_INDEXED
+and
+.Fa base
+is non-zero, return the number of components used for the base colour
+type.
+.EF
+FUNCTION
+.Ft int
+.Fn image_cspace_diffs "const image_cspace *cst" "int mask" "const image_cspace *css"
+.BF
+Return a mask describing the colour space members included in
+.Fa mask
+that are set to different values in
+.Fa css
+and
+.Fa cst .
+These are the members that need to be converted to make
+.Fa cst
+conform to the colour space specified by
+.Fa css
+and
+.Fa mask .
+.EF
+FUNCTION
+.Ft void
+.Fn image_cspace_merge "image_cspace *cst" "int mask" "const image_cspace *css"
+.BF
+Set the colour space members included in
+.Fa mask
+in
+.Fa cst
+to their respective values in
+.Fa css .
+.EF
+FUNCTION
+.Ft int
+.Fn image_cspace_palette_size "const image_cspace *cspace"
+.BF
+Return the size of the palette for colour space
+.Fa cspace .
+This is the number of bytes returned by
+.Fn image_get_palette .
+.EF
+FUNCTION
+.Ft const char *
+.Fn image_cspace_name "image_cs_type cs"
+.BF
+Return name of colour space type
+.Fa cs
+as string.
+.EF
+FUNCTION
+.Ft image_cs_type
+.Fn iamge_cspace_num "const char *csn"
+.BF
+Return colour space type named
+.Fa csn .
+.EF
 METHOD
 .Ft char *
 .Fn image_get_palette "image *im"
 .BF
 Get palette of image as a row of samples.
 .Pp
+The returned string remains valid until the next call to
+.Fn image_close
+or
+.Fn image_get_palette
+on the same image.  It must not be modified or freed.
+.Pp
 Returns pointer to palette on success.
+.EF
+FUNCTION
+.Ft int
+.Fn image_get_row_size "const image *im"
+.BF
+Return the size of one row of image data for
+.Fa im .
+This is the number of bytes returned by
+.Fn image_read .
+.EF
+FUNCTION
+.Ft int
+.Fn image_info_mask "const image_info *cs"
+.BF
+Return a mask including all colour space members that are set to
+values other than `unknown' or 0 in
+.Fa cs .
+.EF
+FUNCTION
+.Ft char *
+.Fn image_info_print "const image_info *i"
+.BF
+Return a string representation of
+.Fa i
+suitable to display an image info to the user.
+.Pp The returned string is static and valid until the next call to
+.Fn image_info_print .
 .EF
 FUNCTION
 .Ft void
@@ -83,6 +194,13 @@ Read next chunk of raw (compressed) image data and point
 .Fa bp
 at it.
 .Pp
+The returned string remains valid until the next call to
+.Fn image_close ,
+.Fn image_raw_read ,
+or
+.Fn image_raw_read_finish
+on the same image.  It must not be modified or freed.
+.Pp
 Returns number of bytes read or 0 after all data has been read.
 .Pp
 If a back end does not support raw reading, it should define
@@ -104,10 +222,14 @@ and omit this method.
 .EF
 METHOD
 .Ft void
-.Fn image_read_start "image *im"
+.Fn image_raw_read_start "image *im"
 .BF
-Start reading image data.  This method must be called before calls to
+Prepare to read raw (compressed) image data.
+.Pp
+This method must be called before calls to
 .Fn image_raw_read .
+Reading of raw and uncompressed image data must not be interleaved.
+.Pp
 If the image's compression is
 .Dv IMAGE_CMP_NONE ,
 this method must not be called.
@@ -123,6 +245,13 @@ METHOD
 Read one row of image data and point
 .Fa bp
 at it.
+.Pp
+The returned string remains valid until the next call to
+.Fn image_close ,
+.Fn image_read ,
+or
+.Fn image_read_finish
+on the same image.  It must not be modified or freed.
 .Pp
 Returns number of bytes read or 0 after the last row has been read.
 [XXX: Most back ends always return 0 and rely on the caller to count
@@ -142,6 +271,7 @@ METHOD
 .BF
 Start reading image data.  Must be called before calls to
 .Fn image_read .
+Reading of raw and uncompressed image data must not be interleaved.
 .EF
 METHOD
 .Ft int
