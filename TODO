@@ -1,6 +1,5 @@
 - man page
 - image_info: inverted grayscale, bit order
-- png: indexed to grayscale conversion segfaults in libpng
 - tiff: alpha, bit order
 - tiff: flate: test if direct copy works
 + solaris: libpng needs -lm

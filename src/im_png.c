@@ -1,5 +1,5 @@
 /*
-  $NiH: im_png.c,v 1.10 2002/10/10 11:00:43 dillo Exp $
+  $NiH: im_png.c,v 1.11 2002/10/12 00:02:08 dillo Exp $
 
   im_png.c -- PNG image handling
   Copyright (C) 2002 Dieter Baron
@@ -346,6 +346,11 @@ png_set_cspace(image_png *im, int mask, const image_cspace *cspace)
 	    
 	case IMAGE_CS_GRAY:
 	case IMAGE_CS_RGB:
+	    if (im->im.oi.cspace.type == IMAGE_CS_INDEXED
+		&& cspace->type != im->im.oi.cspace.base_type) {
+		/* palette to grayscale doesn't work reliably */
+		break;
+	    }
 	    if ((mask & IMAGE_INF_DEPTH) == 0) {
 		if (im->im.i.cspace.type == IMAGE_CS_INDEXED)
 		    im->im.i.cspace.depth = im->im.oi.cspace.base_depth;

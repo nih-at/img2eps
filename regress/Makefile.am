@@ -7,9 +7,11 @@ TESTCASES=	gif.test \
 		jpg.test \
 		jpg-gray.test \
 		jpg-lzw.test \
+		level1.test \
 		pal-gray.test \
 		pal-gray12.test\
 		png-1.test \
+		png-gray1.test \
 		png-2.test \
 		tiff.test \
 		tiff-indexed.test \
@@ -20,6 +22,7 @@ TESTCASES=	gif.test \
 		xpm-rle.test
 
 INPUTS=		col.jpg \
+		dump.tif \
 		fax2d.tif \
 		idx1.xpm \
 		idx2.xpm \
@@ -39,9 +42,11 @@ OUTPUTS=	gif.eps \
 		jpg.eps \
 		jpg-gray.eps \
 		jpg-lzw.eps \
+		level1.eps \
 		pal-gray.eps \
 		pal-gray12.eps \
 		png-1.eps \
+		png-gray1.eps \
 		png-2.eps \
 		tiff.eps \
 		tiff-indexed.eps \

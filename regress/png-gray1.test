@@ -1,0 +1,11 @@
+# png indexed to grayscale
+#   image: 64x64 indexed 2bps (rgb 8bps), flate compressed
+#    EPSF: 64x64 gray 8bps, ASCIIHex, level 1
+#
+#	$NiH$
+#
+features PNG
+return 0
+options -g1
+input pal4.png
+output png-gray1.eps pal4.eps
