@@ -1,5 +1,5 @@
 /*
-  $NiH: im_convert.c,v 1.11 2002/10/10 11:01:46 dillo Exp $
+  $NiH: im_convert.c,v 1.12 2002/10/11 00:50:24 dillo Exp $
 
   im_convert.c -- image conversion handling
   Copyright (C) 2002 Dieter Baron
@@ -290,10 +290,33 @@ _convertable_cstype(image_cs_type stype, image_cs_type dtype)
 static int
 _convertable_depth(int sdepth, int ddepth)
 {
-    if ((sdepth == 8 || sdepth == 12 || sdepth == 16)
-	&& (ddepth == 8 || ddepth == 12 || ddepth == 16))
-	return 1;
-    return 0;
+    switch (sdepth) {
+    case 1:
+    case 2:
+    case 4:
+    case 8:
+    case 12:
+    case 16:
+	break;
+
+    default:
+	return 0;
+    }
+	
+    switch (ddepth) {
+    case 1:
+    case 2:
+    case 4:
+    case 8:
+    case 12:
+    case 16:
+	break;
+
+    default:
+	return 0;
+    }
+
+    return 1;
 }
 
 
@@ -301,8 +324,19 @@ _convertable_depth(int sdepth, int ddepth)
 static void
 _convert(image_conv *im, char *pdc, char *psc, int n, int basep)
 {
+    static const int mask[4] = { 0x1, 0x3, 0, 0xf };
+    static const unsigned short tab[4][16] = {
+	{ 0x0000, 0xffff },
+	{ 0x0000, 0x5555, 0xaaaa, 0xffff },
+	{ 0 },
+	{ 0x0000, 0x1111, 0x2222, 0x3333,
+	  0x4444, 0x5555, 0x6666, 0x7777,
+	  0x8888, 0x9999, 0xaaaa, 0xbbbb,
+	  0xcccc, 0xdddd, 0xeeee, 0xffff }
+    };
+
     int c[4];
-    int i, j, idx;
+    int i, j, idx, bs, bd;
     unsigned char *ps, *pd;
     struct conv_info *ci;
 
@@ -310,10 +344,21 @@ _convert(image_conv *im, char *pdc, char *psc, int n, int basep)
     ps = (unsigned char *)psc;
     pd = (unsigned char *)pdc;
 
+    bs = bd = 0;
     for (i=0; i<n; i++) {
 	/* extract source colour */
 	for (j=0; j<ci->sncomp; j++) {
 	    switch(ci->snbits) {
+	    case 1:
+	    case 2:
+	    case 4:
+		c[j] = tab[ci->snbits-1][(*ps>>(8-(1+bs)*ci->snbits))
+					 & mask[ci->snbits-1]];
+		if (++bs == 8/ci->snbits) {
+		    bs = 0;
+		    ps++;
+		}
+		break;
 	    case 8:
 		c[j] = (*ps<<8)+*ps;
 		ps++;
@@ -369,6 +414,17 @@ _convert(image_conv *im, char *pdc, char *psc, int n, int basep)
 	/* store destination colour */
 	for (j=0; j<im->ci[basep].dncomp; j++) {
 	    switch(im->ci[basep].dnbits) {
+	    case 1:
+	    case 2:
+	    case 4:
+		if (bd == 0)
+		    *pd = 0;
+		*pd |= (c[j]>>(16-ci->dnbits))<<(8-(1+bd)*ci->dnbits);
+		if (++bd == 8/ci->dnbits) {
+		    bd = 0;
+		    pd++;
+		}
+		break;
 	    case 8:
 		*pd = c[j]>>8;
 		pd++;

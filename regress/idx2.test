@@ -1,0 +1,10 @@
+# xpm 2bit indexed to grayscale, level 1
+#   image: 8x8 indexed 2bps (rgb 8bps)
+#    EPSF: 8x8 gray 8bps, ASCIIHex, level 1
+#
+#	$NiH$
+#
+return 0
+options -1g
+input idx2.xpm
+output idx2.eps idx2.eps

@@ -1,6 +1,9 @@
 EXTRA_DIST=runtest ${TESTCASES} ${INPUTS} ${OUTPUTS}
 
 TESTCASES=	gif.test \
+		idx1.test \
+		idx2.test \
+		idx4.test \
 		jpg.test \
 		jpg-gray.test \
 		jpg-lzw.test \
@@ -16,14 +19,20 @@ TESTCASES=	gif.test \
 
 INPUTS=		col.jpg \
 		fax2d.tif \
+		idx1.xpm \
+		idx2.xpm \
 		jello.tif \
 		links.xpm \
 		nih.png \
 		pal4.png \
 		pal4.tif \
-		porsche.gif
+		porsche.gif \
+		xpdf.xpm
 
 OUTPUTS=	gif.eps \
+		idx1.eps \
+		idx2.eps \
+		idx4.eps \
 		jpg.eps \
 		jpg-gray.eps \
 		jpg-lzw.eps \

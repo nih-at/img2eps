@@ -1,0 +1,10 @@
+# xpm 4bit indexed to grayscale, level 1
+#   image: 48x48 indexed 4bps (rgb 8bps)
+#    EPSF: 48x48 gray 8bps, ASCIIHex, level 1
+#
+#	$NiH$
+#
+return 0
+options -1g
+input xpdf.xpm
+output idx4.eps xpdf.eps
