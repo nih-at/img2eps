@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.7 2002/09/10 21:40:49 dillo Exp $
+  $NiH: img2eps.c,v 1.8 2002/09/11 22:44:20 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002 Dieter Baron
@@ -193,6 +193,8 @@ main(int argc, char *argv[])
 	    stream_close(st);
 	
 	if (ex.code) {
+	    if (outfile)
+		remove(outfile);
 	    fprintf(stderr, "%s: %s: %s\n",
 		    prg, argv[optind], (char *)ex.data);
 	    free(ex.data);
@@ -215,8 +217,9 @@ main(int argc, char *argv[])
 	    free(outfile);
 
 	    if (ex.code) {
+		remove(outfile);
 		fprintf(stderr, "%s: %s: %s\n",
-			prg, argv[optind], (char *)ex.data);
+			prg, argv[i], (char *)ex.data);
 		/* XXX: not all strings are allocated */
 		/* free(ex.data); */
 		ret = 1;
@@ -247,7 +250,7 @@ extsubst(char *fname, char *newext)
     s = xmalloc(q-p + strlen(newext) + 2);
 
     strncpy(s, p, q-p);
-    q = s+strlen(s);
+    q = s + (q-p);
     *(q++) = '.';
     strcpy(q, newext);
 
