@@ -4,7 +4,7 @@
 .Os
 .Sh NAME
 .Nm img2eps
-.Nd insert compressed graphics data into EPS files
+.Nd package graphics data into EPS file
 .Sh SYNOPSIS
 .Nm ""
 .Op Fl 123cghV
@@ -16,17 +16,19 @@
 .Op Fl o | Fl -output Ar FILE
 .Op Fl P | Fl -paper Ar P
 .Op Fl -version
+.Ar file ...
 .Sh DESCRIPTION
 .Nm
-inserts compressed graphics data into EPS files without converting it.
-Supported data formats are:
+packages graphics data into EPS (Embedded PostScript) files, using
+whatever PostScript features are advantageos.
+Supported image file formats are:
 .Bl -bullet -offset indent -compact
 .It
 GIF
 .It
 JPEG
 .It
-PNG (level 3 only)
+PNG
 .It
 TIFF
 .El
@@ -34,26 +36,26 @@ TIFF
 The options are:
 .Bl -tag -width XXXXXXXXXXXXX -offset indent -compact
 .It Fl 1
-Use PostScript language level 1.
+Use only features present in PostScript language level 1.
 .It Fl 2
-Use PostScript language level 2.
+Use only features present in PostScript language level 2.
 .It Fl 3
-Use PostScript language level 3.
+Explicitly allow the use of PostScript language level 3 features.
 .It Fl a Ar ENC
 .It Fl -ascii Ar ENC
 Use
 .Ar ENC
-ASCII encoding for binary data.
+ASCII encoding for binary data.  Supported encodings are ASCIIHEX and ASCII85.
 .It Fl C Ar C
 .It Fl -compress Ar C
 Use compression method
 .Ar C
 for image data.
 Supported compression methods are
-.Em XXX unknown.
+DCT (jpeg), RunLength, LZW, Flate (zlib).
 .It Fl c
 .It Fl -stdout
-Write EPSF to stdout (default).
+Write EPSF to stdout.
 .It Fl g
 .It Fl -gray
 Force image to grayscale.
@@ -61,7 +63,7 @@ Force image to grayscale.
 .It Fl -help
 Display a short help message.
 .It Fl -level Ar L
-Use PostScript language level
+Use only features present in PostScript language level
 .Ar L .
 Alternatively, you can also use the
 .Fl 1 ,
