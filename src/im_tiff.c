@@ -1,5 +1,5 @@
 /*
-  $NiH: im_tiff.c,v 1.14 2002/10/12 02:52:42 dillo Exp $
+  $NiH: im_tiff.c,v 1.15 2002/10/12 15:07:50 dillo Exp $
 
   im_tiff.c -- TIFF image handling
   Copyright (C) 2002 Dieter Baron
@@ -334,16 +334,20 @@ _get_cspace(image_tiff *im)
 	if (ex[0] == EXTRASAMPLE_UNASSALPHA) {
 	    im->im.i.cspace.transparency = IMAGE_TR_ALPHA;
 	}
-	else
-	    throwf(EINVAL, "unknown extra sample type `%d'", ex[0]);
+	else {
+	    /* XXX: alpha is ignored, and setting it makes conversion work */
+	    im->im.i.cspace.transparency = IMAGE_TR_ALPHA;
+	    /* throwf(EINVAL, "unknown extra sample type `%d'", ex[0]); */
+	}
     }
 
     /* colour space type */
 
     switch(type) {
     case PHOTOMETRIC_MINISWHITE:
+	im->im.i.cspace.inverted = IMAGE_INV_BRIGHTLOW;
+	/* fallthrough */
     case PHOTOMETRIC_MINISBLACK:
-	/* XXX: handle reversed grayscale */
 	type = IMAGE_CS_GRAY;
 	break;
     case PHOTOMETRIC_RGB:

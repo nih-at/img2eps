@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.18 2002/10/12 00:02:05 dillo Exp $
+  $NiH: epsf.c,v 1.19 2002/10/12 18:17:09 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -209,11 +209,6 @@ epsf_calculate_parameters(epsf *ep)
     ep->i.cspace.transparency = IMAGE_TR_NONE;
 
 
-    /* set up image conversion */
-
-    ep->im = image_convert(ep->im, image_info_mask(&ep->i), &ep->i);
-
-
     /* determine level needed by ascii encoding */
 
     level2 = epsf_asc_langlevel(ep->ascii);
@@ -224,6 +219,11 @@ epsf_calculate_parameters(epsf *ep)
     level = level2 > level ? level2 : level;
 
     
+    /* set up image conversion */
+
+    ep->im = image_convert(ep->im, image_info_mask(&ep->i), &ep->i);
+
+
     /* determine compression method */
 
     if (ep->i.compression == IMAGE_CMP_UNKNOWN) {
@@ -284,6 +284,19 @@ epsf_calculate_parameters(epsf *ep)
     ep->level = level;
     
     
+    /* handle inverted images */
+
+    if (ep->im->i.cspace.inverted == IMAGE_INV_BRIGHTLOW
+	&& ((ep->level ? ep->level : level) == 1
+	    || ep->i.cspace.type == IMAGE_CS_INDEXED)) {
+	/* inversion doesn't work in language level 1 or for indexd */
+	ep->i.cspace.inverted = IMAGE_INV_DARKLOW;
+	ep->im = image_convert(ep->im, image_info_mask(&ep->i), &ep->i);
+    }
+    else
+	ep->i.cspace.inverted = ep->im->i.cspace.inverted;
+
+
     /* calculate image placement and bounding box */
 
     _calculate_bbox(ep);
@@ -746,7 +759,8 @@ _write_image_dict(epsf *ep)
 	stream_printf(ep->st, "0 %d ", (1<<i->cspace.depth)-1);
     else
 	for (j=0; j<image_cspace_components(&i->cspace, 0); j++)
-	    stream_puts("0 1 ", ep->st);
+	    stream_puts((i->cspace.inverted == IMAGE_INV_DARKLOW
+			 ? "0 1 " : "1 0 "), ep->st);
     stream_puts("]\n>> image\n", ep->st);
 
     return 0;

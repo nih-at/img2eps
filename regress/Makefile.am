@@ -15,6 +15,8 @@ TESTCASES=	gif.test \
 		png-2.test \
 		tiff.test \
 		tiff-flate.test \
+		tiff-inv1.test \
+		tiff-inv2.test \
 		tiff-indexed.test \
 		tiff-jpeg.test \
 		tiff-lzw.test \
@@ -29,6 +31,7 @@ INPUTS=		col.jpg \
 		flate.tif \
 		idx1.xpm \
 		idx2.xpm \
+		inv.tif \
 		jello.tif \
 		links.xpm \
 		lzw.tif \
@@ -54,6 +57,8 @@ OUTPUTS=	gif.eps \
 		tiff.eps \
 		tiff-flate.eps \
 		tiff-indexed.eps \
+		tiff-inv1.eps \
+		tiff-inv2.eps \
 		tiff-jpeg.eps \
 		tiff-lzw.eps \
 		xpm-flate.eps \

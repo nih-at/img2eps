@@ -1,13 +1,12 @@
 - man page
-- image_info: inverted grayscale, bit order
-- tiff: alpha, bit order
 + solaris: libpng needs -lm
 
+- image_info: bit order
 - dry-run option (don't process, only print info)
 - png: raw read
 - gif: raw reading, depth always 8?
 - predictors
-- tiff: tiled, planar, raw jpeg/ccitt/flate
+- tiff: tiled, planar, raw jpeg/ccitt/flate, bit/byte order
 - specify paper size as pair of dimens
 - supply colorimage emulation for level1 (rgb-8 done)
 - internal documentation

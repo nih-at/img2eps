@@ -1,0 +1,11 @@
+# tiff inverted grayscale, level 2
+#   image: 121x33 gray 8bps, inverted, rle compressed
+#    EPSF: 121x33 gray 8bps, inverted, rle compressed, ASCII85, level 2,
+#	direct copy
+#
+#	$NiH$
+#
+features TIFF
+return 0
+input inv.tif
+output tiff-inv2.eps inv.eps

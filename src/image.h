@@ -2,7 +2,7 @@
 #define _HAD_IMAGE_H
 
 /*
-  $NiH: image.h,v 1.10 2002/10/12 00:02:10 dillo Exp $
+  $NiH: image.h,v 1.11 2002/10/13 00:25:07 dillo Exp $
 
   image.h -- image header
   Copyright (C) 2002 Dieter Baron
@@ -117,11 +117,12 @@ typedef struct image_cspace image_cspace;
 #define IMAGE_INF_BASE_TYPE	0x008
 #define IMAGE_INF_BASE_DEPTH	0x010
 #define IMAGE_INF_INVERTED	0x020
+#define IMAGE_INF_TYPEDEPTH	0x01b	/* {BASE,}{TYPE,DEPTH} */
 #define IMAGE_INF_CSPACE	0x03f	/* any member of cspace */
 #define IMAGE_INF_SIZE		0x040
 #define IMAGE_INF_ORDER		0x080
 #define IMAGE_INF_COMPRESSION	0x100
-#define IMAGE_INF_ALL		0x0ff	/* all of the above */
+#define IMAGE_INF_ALL		0x1ff	/* all of the above */
 
 struct image_info {
     int width, height;			/* dimensions */

@@ -1,5 +1,5 @@
 /*
-  $NiH: im_convert.c,v 1.13 2002/10/11 23:29:11 dillo Exp $
+  $NiH: im_convert.c,v 1.14 2002/10/12 00:02:07 dillo Exp $
 
   im_convert.c -- image conversion handling
   Copyright (C) 2002 Dieter Baron
@@ -48,6 +48,7 @@ struct conv_info {
     int palncomp;		/* number of components in palette */
     int sncomp, dncomp;		/* number of components */
     int snbits, dnbits;		/* number of bits per component */
+    int invert;			/* if component value inversion is needed */
     image_cs_type stype, dtype;	/* cspace type */
 };
 
@@ -68,6 +69,8 @@ struct image_conv {
 IMAGE_DECLARE(conv);
 
 #define MAKE2(i, j)	((i)<<16 | (j))
+#define NEED_IMAGE_CONVERSION(im)	\
+	((im)->mask & (IMAGE_INF_TYPE|IMAGE_INF_DEPTH) || (im)->ci[0].invert)
 
 static int _convertable_cstype(image_cs_type stype, image_cs_type dtype);
 static int _convertable_depth(int sdepth, int ddepth);
@@ -82,7 +85,8 @@ conv_close(image_conv *im)
 {
     free (im->buf);
     free (im->pal);
-    image_close(im->oim);
+    if (im->oim)
+	image_close(im->oim);
     image_free((image *)im);
 }
 
@@ -137,7 +141,7 @@ conv_read(image_conv *im, char **bp)
     
     image_read(im->oim, &b);
 
-    if (im->mask & (IMAGE_INF_TYPE|IMAGE_INF_DEPTH)) {
+    if (NEED_IMAGE_CONVERSION(im)) {
 	_convert(im, im->buf, b, im->im.i.width, 0);
 	b = im->buf;
     }
@@ -153,7 +157,7 @@ conv_read_start(image_conv *im)
 {
     image_read_start(im->oim);
 
-    if (im->mask & (IMAGE_INF_TYPE|IMAGE_INF_DEPTH)) {
+    if (NEED_IMAGE_CONVERSION(im)) {
 	im->buf = xmalloc(image_get_row_size((image *)im));
 	if (im->mask & IMAGE_INF_TYPE
 	    && im->oim->i.cspace.type == IMAGE_CS_INDEXED)
@@ -179,7 +183,77 @@ conv_read_finish(image_conv *im, int abortp)
 int
 conv_set_cspace(image_conv *im, int mask, const image_cspace *cspace)
 {
-    return mask;
+    int m2;
+    
+    m2 = image_set_cspace(im->oim, mask&IMAGE_INF_CSPACE, cspace);
+    image_cspace_merge(&im->im.i.cspace, mask&~m2, &im->oim->i.cspace);
+    mask = (mask&~IMAGE_INF_CSPACE) | m2;
+
+    if (mask & IMAGE_INF_TYPEDEPTH) {
+	if (((mask & IMAGE_INF_TYPE) ? cspace->type : im->oim->i.cspace.type)
+	    == IMAGE_CS_INDEXED) {
+	    /* conversion to indexed */
+	    if (im->oim->i.cspace.type != IMAGE_CS_INDEXED)
+		throws(EOPNOTSUPP,
+		       "colour space conversion not supported");
+	    if (((mask & (IMAGE_INF_BASE_TYPE|IMAGE_INF_BASE_DEPTH))
+		 && (!_convertable_cstype(
+			 im->oim->i.cspace.base_type,
+			 (mask & IMAGE_INF_BASE_TYPE
+			  ? cspace->base_type
+			  : im->oim->i.cspace.base_type))
+		     || (!_convertable_depth(
+			     im->oim->i.cspace.base_depth,
+			     (mask & IMAGE_INF_BASE_DEPTH
+			      ? cspace->base_depth
+			      : im->oim->i.cspace.base_depth))))))
+		throws(EOPNOTSUPP, "palette conversion not supported");
+	}
+	else if (im->oim->i.cspace.type == IMAGE_CS_INDEXED) {
+	    /* conversion from indexed to other */
+	    if (!_convertable_cstype(im->oim->i.cspace.base_type,
+				     cspace->type)
+		|| !_convertable_depth(im->oim->i.cspace.base_depth, 16)
+		|| !_convertable_depth(16,
+				       (mask&IMAGE_INF_DEPTH
+					? cspace->depth
+					: im->oim->i.cspace.depth)))
+		throws(EOPNOTSUPP,
+		       "colour space conversion not supported");
+	}
+	else {
+	    /* other to other */
+	    if ((mask & (IMAGE_INF_TYPE|IMAGE_INF_DEPTH))
+		&& (!_convertable_cstype(im->oim->i.cspace.type,
+					 (mask & IMAGE_INF_TYPE
+					  ? cspace->type
+					  : im->oim->i.cspace.type))
+		    || !_convertable_depth(im->oim->i.cspace.depth,
+					   (mask & IMAGE_INF_DEPTH
+					    ? cspace->depth
+					    : im->oim->i.cspace.depth))))
+		throws(EOPNOTSUPP,
+		       "colour space conversion not supported");
+	}
+	
+	if ((mask & IMAGE_INF_INVERTED)
+	    && im->oim->i.cspace.inverted == cspace->inverted)
+	    mask &= ~IMAGE_INF_INVERTED;
+    }
+    
+    image_cspace_merge(&im->im.i.cspace, mask, cspace);
+
+    im->mask = image_cspace_diffs(&im->oim->i.cspace,
+				  IMAGE_INF_ALL, &im->im.i.cspace);
+
+    if (im->mask & ~(IMAGE_INF_BASE_TYPE|IMAGE_INF_BASE_DEPTH))
+	im->im.i.compression = IMAGE_CMP_NONE;
+    else
+	im->im.i.compression = im->oim->i.compression;
+
+    _update_ci(im);
+
+    return 0;
 }
 
 
@@ -187,7 +261,10 @@ conv_set_cspace(image_conv *im, int mask, const image_cspace *cspace)
 int
 conv_set_size(image_conv *im, int w, int h)
 {
-    return -1;
+    if (im->im.i.width == w && im->im.i.height == h)
+	return 0;
+    
+    return image_set_size(im->oim, w, h);
 }
 
 
@@ -196,100 +273,42 @@ image *
 image_convert(image *oim, int mask, const image_info *i)
 {
     image_conv *im;
-    int m2;
 
     mask &= ~IMAGE_INF_COMPRESSION;
 
     if ((mask & IMAGE_INF_ORDER) && i->order != im->im.i.order)
 	throwf(EOPNOTSUPP, "reordering of samples not supported");
 
-    if ((mask & IMAGE_INF_SIZE)
-	&& ((oim->i.width != i->width) || (oim->i.height != i->height))) {
-	if (image_set_size(oim, i->width, i->height) == 0)
+    im = image_create(conv, oim->fname);
+    
+    im->mask = 0;
+    im->oim = oim;
+    im->im.oi = oim->oi;
+    im->im.i = oim->i;
+
+    im->pal = NULL;
+    im->buf = NULL;
+
+
+    if (mask & IMAGE_INF_SIZE) {
+	if (image_set_size((image *)im, i->width, i->height) == 0)
 	    mask &= ~IMAGE_INF_SIZE;
 	else {
 	    /* XXX: not yet */
 	    throwf(EOPNOTSUPP, "scaling not supported");
 	}
     }
-    else
-	mask &= ~IMAGE_INF_SIZE;
 
-    if (mask & IMAGE_INF_CSPACE) {
-	m2 = image_set_cspace(oim, mask&IMAGE_INF_CSPACE, &i->cspace);
+    if (mask & IMAGE_INF_CSPACE)
+	image_set_cspace((image *)im, mask&IMAGE_INF_CSPACE, &i->cspace);
 
-	mask = (mask&~IMAGE_INF_CSPACE) | m2;
-
-	if (mask & IMAGE_INF_CSPACE) {
-	    if (((mask & IMAGE_INF_TYPE) ? i->cspace.type : oim->i.cspace.type)
-		== IMAGE_CS_INDEXED) {
-		/* conversion to indexed */
-		if (oim->i.cspace.type != IMAGE_CS_INDEXED)
-		    throws(EOPNOTSUPP,
-			   "colour space conversion not supported");
-		if (((mask & (IMAGE_INF_BASE_TYPE|IMAGE_INF_BASE_DEPTH))
-		     && (!_convertable_cstype(
-			     oim->i.cspace.base_type,
-			     (mask & IMAGE_INF_BASE_TYPE
-			      ? i->cspace.base_type
-			      : oim->i.cspace.base_type))
-			 || (!_convertable_depth(
-				 oim->i.cspace.base_depth,
-				 (mask & IMAGE_INF_BASE_DEPTH
-				  ? i->cspace.base_depth
-				  : oim->i.cspace.base_depth))))))
-		    throws(EOPNOTSUPP, "palette conversion not supported");
-	    }
-	    else if (oim->i.cspace.type == IMAGE_CS_INDEXED) {
-		/* conversion from indexed to other */
-		if (!_convertable_cstype(oim->i.cspace.base_type,
-					 i->cspace.type)
-		    || !_convertable_depth(oim->i.cspace.base_depth, 16)
-		    || !_convertable_depth(16,
-					   (mask&IMAGE_INF_DEPTH
-					    ? i->cspace.depth
-					    : oim->i.cspace.depth)))
-		    throws(EOPNOTSUPP,
-			   "colour space conversion not supported");
-	    }
-	    else {
-		/* other to other */
-		if ((mask & (IMAGE_INF_TYPE|IMAGE_INF_DEPTH))
-		    && (!_convertable_cstype(oim->i.cspace.type,
-					     (mask & IMAGE_INF_TYPE
-					      ? i->cspace.type
-					      : oim->i.cspace.type))
-			|| !_convertable_depth(oim->i.cspace.depth,
-						(mask & IMAGE_INF_DEPTH
-						 ? i->cspace.depth
-						 : oim->i.cspace.depth))))
-		    throws(EOPNOTSUPP,
-			   "colour space conversion not supported");
-	    }
-	}
-    }
-
-    if (mask) {
-	im = image_create(conv, oim->fname);
-
-	im->mask = mask;
-	im->oim = oim;
-	im->im.oi = oim->oi;
-	im->im.i = oim->i;
-	image_cspace_merge(&im->im.i.cspace, m2, &i->cspace);
-
-	if (mask & ~(IMAGE_INF_BASE_TYPE|IMAGE_INF_BASE_DEPTH))
-	    im->im.i.compression = IMAGE_CMP_NONE;
-
-	im->pal = NULL;
-	im->buf = NULL;
-
-	_update_ci(im);
-
+    if (im->mask)
 	return (image *)im;
-    }
-    else
+    else {
+	im->oim = NULL;
+	image_close((image *)im);
 	return oim;
+    }
 }
 
 
@@ -362,7 +381,7 @@ _convert(image_conv *im, char *pdc, char *psc, int n, int basep)
 	  0xcccc, 0xdddd, 0xeeee, 0xffff }
     };
 
-    int c[4];
+    int c[IMAGE_MAX_COMPONENTS];
     int i, j, idx, bs, bd;
     unsigned char *ps, *pd;
     struct conv_info *ci;
@@ -416,7 +435,7 @@ _convert(image_conv *im, char *pdc, char *psc, int n, int basep)
 	}
 
 	/* convert */
-	switch (MAKE2(im->ci[basep].stype, im->ci[basep].dtype)) {
+	switch (MAKE2(ci->stype, ci->dtype)) {
 	case MAKE2(IMAGE_CS_RGB, IMAGE_CS_GRAY):
 	    c[0] = (c[0]*7+c[1]*38+c[2]*19)/64;
 	    break;
@@ -438,9 +457,15 @@ _convert(image_conv *im, char *pdc, char *psc, int n, int basep)
 	    break;
 	}
 
+	/* invert */
+	/* XXX: may need to be done before type conversion */
+	if (ci->invert)
+	    for (j=0; j<ci->dncomp; j++)
+		c[j] = 0xffff-c[j];
+
 	/* store destination colour */
-	for (j=0; j<im->ci[basep].dncomp; j++) {
-	    switch(im->ci[basep].dnbits) {
+	for (j=0; j<ci->dncomp; j++) {
+	    switch(ci->dnbits) {
 	    case 1:
 	    case 2:
 	    case 4:
@@ -490,7 +515,8 @@ _get_palette(image_conv *im, int intern)
     pal = image_get_palette(im->oim);
 
     if (im->oim->i.cspace.base_type != im->ci[1].dtype
-	|| im->oim->i.cspace.base_depth != im->ci[1].dnbits) {
+	|| im->oim->i.cspace.base_depth != im->ci[1].dnbits
+	|| im->ci[1].invert) {
 	free(im->pal);
 	im->pal = xmalloc(image_cspace_palette_size(&im->palcs));
 	_convert(im, im->pal, pal, 1<<im->palcs.depth, 1);
@@ -537,5 +563,20 @@ _update_ci(image_conv *im)
 	im->ci[1].dnbits = im->palcs.base_depth;
 	im->ci[1].stype = im->oim->i.cspace.base_type;
 	im->ci[1].dtype = im->palcs.base_type;
+    }
+
+    if (im->mask & IMAGE_INF_INVERTED) {
+	if (im->oim->i.cspace.type == IMAGE_CS_INDEXED) {
+	    im->ci[0].invert = 0;
+	    im->ci[1].invert = 1;
+	}
+	else {
+	    im->ci[0].invert = 1;
+	    im->ci[1].invert = 0;
+	}
+    }
+    else {
+	im->ci[0].invert = 0;
+	im->ci[1].invert = 0;
     }
 }
