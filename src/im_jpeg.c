@@ -1,5 +1,5 @@
 /*
-  $NiH: im_jpeg.c,v 1.10 2002/09/14 02:27:39 dillo Exp $
+  $NiH: im_jpeg.c,v 1.11 2002/10/12 00:02:08 dillo Exp $
 
   im_jpeg.c -- JPEG image handling
   Copyright (C) 2002 Dieter Baron
@@ -45,14 +45,31 @@
 
 #include <jpeglib.h>
 
+#ifdef USE_EXIF
+#include <libexif/exif-entry.h>
+#include <libexif/exif-utils.h>
+#endif
+
 #include "exceptions.h"
 #include "image.h"
 #include "xmalloc.h"
 
 #define BUFSIZE		4096	/* buffer size for raw reads */
 
-static image_cs_type cspace_jpg2img(int cs);
-static void error_exit(j_common_ptr cinfo);
+
+#ifdef USE_EXIF
+static const image_order order_exif2img[] = {
+    IMAGE_ORD_UNKNOWN,
+    IMAGE_ORD_ROW_LT,
+    IMAGE_ORD_ROW_RT,
+    IMAGE_ORD_ROW_RB,
+    IMAGE_ORD_ROW_LB,
+    IMAGE_ORD_COL_TL,
+    IMAGE_ORD_COL_TR,
+    IMAGE_ORD_COL_BR,
+    IMAGE_ORD_COL_BL,
+};
+#endif
 
 
 
@@ -68,6 +85,12 @@ struct image_jpeg {
 };
 
 IMAGE_DECLARE(jpeg);
+
+
+
+static image_cs_type cspace_jpg2img(int);
+static void error_exit(j_common_ptr);
+static void exif_order(image_jpeg *);
 
 
 
@@ -145,6 +168,8 @@ jpeg_open(char *fname)
     im->im.i.cspace.type = cspace_jpg2img(im->cinfo->jpeg_color_space);
     im->im.i.cspace.depth = 8; /* XXX: correct for compressed? */
     /* XXX: alpha */
+
+    exif_order(im);
 
     im->im.oi = im->im.i;
 
@@ -323,6 +348,40 @@ error_exit(j_common_ptr cinfo)
 
     cinfo->err->format_message (cinfo, b);
     throws(errno ? errno : EINVAL, xstrdup(b));
+}
+
+
+
+static void
+exif_order(image_jpeg *im)
+{
+#ifdef USE_EXIF
+    ExifData *d;
+    ExifEntry *e;
+    int val;
+
+    if ((d=exif_data_new_from_file(im->im.fname)) == NULL)
+	return;
+	
+    if ((e=exif_data_get_entry(d, EXIF_TAG_ORIENTATION)) == NULL) {
+	exif_data_free(d);
+	return;
+    }
+    
+    if (e->format != EXIF_FORMAT_SHORT) {
+	exif_data_free(d);
+	return;
+    }
+
+    val = exif_get_short(e->data, exif_data_get_byte_order(d));
+
+    exif_data_free(d);
+
+    if (val < 1 || val >= sizeof(order_exif2img)/sizeof(order_exif2img[0]))
+	return;
+
+    im->im.i.order = order_exif2img[val];
+#endif
 }
 
 #endif /* USE_JPEG */
