@@ -1,0 +1,11 @@
+# tiff, lzw direct copy
+#   image: 64x64 indexed 8bps (rgb 16bps), lzw compressed
+#    EPSF: 64x64 indexed 8bps (rgb 8bps), lzw compressed, ASCII85, level 2,
+#	direct copy
+#
+#	$NiH$
+#
+features TIFF
+return 0
+input lzw.tif
+output tiff-lzw.eps lzw.eps
