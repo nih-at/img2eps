@@ -1,5 +1,5 @@
 /*
-  $NiH: im_jpeg2000.c,v 1.1 2002/11/13 01:41:39 dillo Exp $
+  $NiH: im_jpeg2000.c,v 1.2 2002/11/13 02:16:48 dillo Exp $
 
   im_jpeg2000.c -- JPEG 2000 image handling
   Copyright (C) 2002 Dieter Baron
@@ -45,11 +45,23 @@
 
 #include <jasper/jasper.h>
 
-/* compatibility defines for versions < 1.600 */
+#ifdef JAS_CLRSPC_FAM_GRAY
+#define CS_FAM(x)	((x)>>8)
+#else
+#define jas_image_clrspc	jas_image_colorspace
+#define CS_FAM(x)	(x)
+
 #ifndef JAS_IMAGE_CS_GRAY
-#define JAS_IMAGE_CS_UNKNOWN	JAS_IMAGE_CM_UNKNOWN
-#define JAS_IMAGE_CS_GRAY	JAS_IMAGE_CM_GRAY
-#define JAS_IMAGE_CS_RGB	JAS_IMAGE_CM_RGB
+/* compatibility defines for versions < 1.600 */
+#define JAS_CLRSPC_FAM_GRAY	JAS_IMAGE_CM_GRAY
+#define JAS_CLRSPC_FAM_RGB	JAS_IMAGE_CM_RGB
+#define JAS_CLRSPC_FAM_YCBCR	JAS_IMAGE_CM_YCBCR
+#else
+/* compatibility defines for versions < 1.700 */
+#define JAS_CLRSPC_FAM_GRAY	JAS_IMAGE_CS_GRAY
+#define JAS_CLRSPC_FAM_RGB	JAS_IMAGE_CS_RGB
+#define JAS_CLRSPC_FAM_YCBCR	JAS_IMAGE_CS_YCBCR
+#endif
 #endif
 
 #define NOSUPP_CSPACE
@@ -165,7 +177,7 @@ jpeg2000_open(char *fname)
     im->im.i.width = jas_image_cmptwidth(jp, 0);
     im->im.i.height = jas_image_cmptheight(jp, 0);
     im->im.i.compression = IMAGE_CMP_NONE;
-    im->im.i.cspace.type = cspace_jp2img(jas_image_colorspace(jp));
+    im->im.i.cspace.type = cspace_jp2img(jas_image_clrspc(jp));
     im->im.i.cspace.depth = jas_image_cmptprec(jp, 0);
     /* XXX: alpha */
 
@@ -239,11 +251,11 @@ jpeg2000_read_start(image_jpeg2000 *im)
 static image_cs_type
 cspace_jp2img(int cs)
 {
-    switch (cs) {
-    case JAS_IMAGE_CS_GRAY:
+    switch (CS_FAM(cs)) {
+    case JAS_CLRSPC_FAM_GRAY:
 	return IMAGE_CS_GRAY;
-    case JAS_IMAGE_CS_RGB:
-    case JAS_IMAGE_CS_YCBCR:
+    case JAS_CLRSPC_FAM_RGB:
+    case JAS_CLRSPC_FAM_YCBCR:
 	return IMAGE_CS_RGB;
 
     default:
