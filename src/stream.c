@@ -1,5 +1,5 @@
 /*
-  $NiH: stream.c,v 1.5 2002/09/10 21:40:50 dillo Exp $
+  $NiH: stream.c,v 1.6 2002/09/14 02:27:41 dillo Exp $
 
   stream.c -- general stream functions
   Copyright (C) 2002 Dieter Baron
@@ -35,7 +35,7 @@ stream *(*_cmp_tab[])(stream *, void *) = {
     NULL,
     stream_runlength_open,
     _cmp_unsupp, /* lzw */
-    _cmp_unsupp, /* flate */
+    stream_flate_open,
     _cmp_unsupp, /* ccitt */
     _cmp_unsupp, /* dct */
 };

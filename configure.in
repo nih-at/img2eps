@@ -42,6 +42,8 @@ then
   AC_CHECK_LIB(tiff, TIFFOpen)
 fi
 
+AC_CHECK_LIB(z, deflate)
+
 dnl header files
 
 dnl typedefs

@@ -2,7 +2,7 @@
 #define _HAD_STREAM_TYPES_H
 
 /*
-  $NiH: stream_types.h,v 1.5 2002/09/11 22:44:21 dillo Exp $
+  $NiH: stream_types.h,v 1.6 2002/09/14 02:27:41 dillo Exp $
 
   stream_types.h -- specific stream open functions
   Copyright (C) 2002 Dieter Baron
@@ -21,5 +21,6 @@ stream *stream_file_fopen(FILE *f, int closep);
 stream *stream_file_open(const char *fname);
 stream *stream_line_open(stream *st);
 stream *stream_runlength_open(stream *ost, void *params);
+stream *stream_flate_open(stream *ost, void *params);
 
 #endif /* stream_types.h */

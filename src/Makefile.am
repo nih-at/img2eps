@@ -16,6 +16,7 @@ img2eps_SOURCES=epsf.c \
 		st_ascii85.c \
 		st_asciihex.c \
 		st_file.c \
+		st_flate.c \
 		st_line.c \
 		st_runlength.c \
 		xmalloc.c

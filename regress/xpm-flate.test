@@ -1,0 +1,8 @@
+# xpm, flate compression
+#
+#	$NiH$
+#
+return 0
+options -Cflate
+input links.xpm
+output xpm-flate.eps links.eps
