@@ -1,5 +1,5 @@
 /*
-  $NiH: image.c,v 1.8 2002/10/08 16:46:58 dillo Exp $
+  $NiH: image.c,v 1.9 2002/10/09 14:46:44 dillo Exp $
 
   image.c -- general image functions
   Copyright (C) 2002 Dieter Baron
@@ -176,7 +176,8 @@ image_cspace_palette_size(const image_cspace *cspace)
     if (cspace->type != IMAGE_CS_INDEXED)
 	return 0;
 
-    return image_cspace_components(cspace, 1) * (1<<cspace->depth);
+    return (image_cspace_components(cspace, 1)
+	    * (1<<cspace->depth) * cspace->base_depth + 7) / 8;
 }
 
 
