@@ -1,5 +1,5 @@
 /*
-  $NiH: image.c,v 1.13 2002/10/12 00:02:09 dillo Exp $
+  $NiH: image.c,v 1.14 2002/10/13 00:25:06 dillo Exp $
 
   image.c -- general image functions
   Copyright (C) 2002 Dieter Baron
@@ -100,8 +100,10 @@ const struct _num_name _image_nn_cspace[] = {
 
 const struct _num_name _image_nn_compression[] = {
     { IMAGE_CMP_NONE,        "none" },
+
     { IMAGE_CMP_RLE,         "RunLength" },
     { IMAGE_CMP_RLE,         "rle" },
+    { IMAGE_CMP_RLE,         "PackBits" },
 
     { IMAGE_CMP_LZW,         "LZW" },
     { IMAGE_CMP_LZW,         "lzw" },
