@@ -1,5 +1,5 @@
 /*
-  $NiH: im_tiff.c,v 1.11 2002/10/11 00:51:56 dillo Exp $
+  $NiH: im_tiff.c,v 1.12 2002/10/12 00:02:08 dillo Exp $
 
   im_tiff.c -- TIFF image handling
   Copyright (C) 2002 Dieter Baron
@@ -70,6 +70,7 @@ IMAGE_DECLARE(tiff);
 
 static void _error_handler(const char* module, const char* fmt, va_list ap);
 static void _get_cspace(image_tiff *im);
+static int _lzw_pad(char *buf, int n);
 #if 0
 static image_order _order_tiff2img(int or);
 #endif
@@ -168,9 +169,10 @@ int
 tiff_raw_read(image_tiff *im, char **bp)
 {
     uint32 *bc;
-    int n;
+    int n, nstrip;
 
-    if (im->row >= TIFFNumberOfStrips(im->tif))
+    nstrip = TIFFNumberOfStrips(im->tif);
+    if (im->row >= nstrip)
 	return 0;
 
     if (TIFFGetField(im->tif, TIFFTAG_STRIPBYTECOUNTS, &bc) == 0)
@@ -179,11 +181,14 @@ tiff_raw_read(image_tiff *im, char **bp)
     n = bc[im->row];
     if (n > im->buf_size) {
 	free(im->buf);
-	im->buf = xmalloc(n);
+	im->buf = xmalloc(n+7);
 	im->buf_size = n;
     }
     if ((n=TIFFReadRawStrip(im->tif, im->row, im->buf, n)) == -1)
 	throwf(EIO, "tiff: error reading strip %d", im->row);
+
+    if (im->im.i.compression == IMAGE_CMP_LZW && im->row < nstrip-1)
+	n = _lzw_pad(im->buf, n);
 
     im->row++;
     *bp = im->buf;
@@ -303,7 +308,8 @@ _get_cspace(image_tiff *im)
 
     /* alpha channel */
 
-    if (TIFFGetField(im->tif, TIFFTAG_EXTRASAMPLES, &nex, &ex) == 1) {
+    if (TIFFGetField(im->tif, TIFFTAG_EXTRASAMPLES, &nex, &ex) == 1
+	&& nex > 0) {
 	if (nex > 1)
 	    throws(EOPNOTSUPP, "more than one extra sample not supported");
 	if (ex[0] == EXTRASAMPLE_UNASSALPHA) {
@@ -357,7 +363,12 @@ _get_cspace(image_tiff *im)
 	break;
     case COMPRESSION_JPEG:
     case COMPRESSION_OJPEG:
-	ocmp = cmp = IMAGE_CMP_DCT;
+	/* XXX: jpeg reading doesn't work with TIFFReadScanline, we
+	   would have to use TIFFReadEncodedStrip */
+	throws(EOPNOTSUPP, "TIFF files with jpeg compression not supported");
+	/* jpeg in tiff can be more complicated than a simple jpeg stream */
+	ocmp = IMAGE_CMP_DCT;
+	cmp = IMAGE_CMP_NONE;
 	break;
     case COMPRESSION_PACKBITS:
 	ocmp = cmp = IMAGE_CMP_RLE;
@@ -370,12 +381,54 @@ _get_cspace(image_tiff *im)
 	ocmp = cmp = IMAGE_CMP_NONE;
     }
     
-    if (TIFFNumberOfStrips(im->tif) > 1	&& cmp != IMAGE_CMP_RLE)
+    if (TIFFNumberOfStrips(im->tif) > 1 &&
+	cmp != IMAGE_CMP_RLE && cmp != IMAGE_CMP_LZW) {
+	/* simply concatenating compressed streams doesn't work for
+	   most schemes */
 	cmp = IMAGE_CMP_NONE;
+    }
 
     im->im.oi = im->im.i;
     im->im.i.compression = cmp;
     im->im.oi.compression = ocmp;
+}
+
+
+
+/*
+  post process LZW compressed strip so concatenation works:
+  replace EOI with CLEAR, and pad to byte boundary with CLEARs
+*/
+
+static int
+_lzw_pad(char *buf, int n)
+{
+    unsigned char *p;
+    int b, c;
+
+    p = (unsigned char *)buf+n-2;
+
+    /* find EOI (and thus number of free bits in last byte) */
+    c = p[0]<<8 | p[1];
+    p++;
+    for (b=0; b<8; b++) {
+	if (((c>>b) & 0x1ff) == 0x101)
+	    break;
+    }
+    if (b == 8)
+	throws(EINVAL, "EOI code not found in LZW stream");
+
+    /* convert EOI to CLEAR and clear free bits */
+    *p = 0;
+
+    /* pad to byte boundary with (9 bit) CLEAR codes */
+    while (b) {
+	*p++ |= 1<<--b;
+	*p = 0;
+	n++;
+    }
+
+    return n;
 }
 
 
