@@ -1,3 +1,4 @@
+/*	$NiH$	*/
 /*	$NetBSD: getopt_long.c,v 1.15 2002/01/31 22:43:40 tv Exp $	*/
 
 /*-
