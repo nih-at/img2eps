@@ -1,10 +1,11 @@
-.\" This man page written by Thomas Klausner <tk@giga.or.at>.
+.\" This man page written by Thomas Klausner <tk@giga.or.at> and
+.\" Dieter Baron <dillo@giga.or.at>.
 .Dd October 10, 2002
 .Dt IMG2EPS 1
 .Os
 .Sh NAME
 .Nm img2eps
-.Nd package graphics data into EPS file
+.Nd package raster images into EPS file
 .Sh SYNOPSIS
 .Nm ""
 .Op Fl 123cghV
@@ -15,12 +16,15 @@
 .Op Fl m | Fl -margin Ar M
 .Op Fl o | Fl -output Ar FILE
 .Op Fl P | Fl -paper Ar P
+.Op Fl v | Fl -verbose
 .Op Fl -version
 .Ar file ...
 .Sh DESCRIPTION
 .Nm
-packages graphics data into EPS (Embedded PostScript) files, using
-whatever PostScript features are advantageous.
+packages each 
+.Ar file
+into an EPS (Embedded PostScript) file, using whatever PostScript
+features are advantageous.
 Supported image file formats are:
 .Bl -bullet -offset indent -compact
 .It
@@ -53,13 +57,13 @@ Use compression method
 .Ar C
 for image data.
 Supported compression methods are
-DCT (jpeg), RunLength, LZW, and Flate (zlib).
+DCT (jpeg), RunLength (PackBits), LZW, and Flate (zlib).
 .It Fl c
 .It Fl -stdout
-Write EPSF to stdout.
+Write EPSF to standard output.
 .It Fl g
 .It Fl -gray
-Force image to grayscale.
+Convert image to grayscale.
 .It Fl h
 .It Fl -help
 Display a short help message.
@@ -73,14 +77,16 @@ and
 .Fl 3
 options.
 .It Fl m Ar M
-.It Fl -margin Ar M
+.It Fl -margin Ar M 
 Set all margins to
-.Ar M
-.Em XXX units?
+.Ar M .
 .It Fl o Ar FILE
 .It Fl -output Ar FILE
 Write EPSF to output file
 .Ar FILE .
+The default is the name of the input file with it's extension changed
+to
+.Em .eps .
 .It Fl P Ar P
 .It Fl -paper Ar P
 Set paper size to
@@ -91,7 +97,55 @@ Supported sizes are
 .It Fl -version
 Display version number.
 .El
+.Pp
+If possible, the compressed image data is copied directly to the EPS file.
+.Ss Default Parameters
+The default value for any parameter not specified via command line
+options is derived from the image:
+.Pp
+The color space type is taken from the image.
+However, for language level 1, indexed images are converted to their
+base color space.
+.Pp
+An unsupported depth is converted to the next higher supported depth,
+if it exists, or the highest supported depth (8 for language level 1,
+12 for language level 2 or 3).
+.Pp
+If direct copy of the compressed image data is supported, the
+compression method of the image is used.
+If the image is compressed with DCT (jpeg), DCT compression is used
+even if recompression is neccessary.
+Otherwise, the best lossless compression method available is used,
+which is Flate for language level 3, LZW (or RunLength if LZW encoding
+is disabled) for language level 2.
+Language level 1 disallows compression altogether.
+.Pp
+ASCII85 encoding is used for language level 2 or 3, ASCIIHEX for
+language level 1.
+.Pp
+If no language level is specified, the lowest level that supports the
+color space type, depth, and, for direct copy or DCT encoding, the
+compression method is used.
+.Sh EXIT STATUS
+The
+.Nm
+utility exits 0 on success, and \*[Gt]0 if an error occurs.
+.Sh BUGS
+Emulation of the colorimage operator is provided only for 8bit RGB
+images.
+(The presence of the operator is assumed for other color formats.)
+.Pp
+Predictor functions (for LZW or Flate compression) are not supported.
+.Pp
+TIFF images that include transparency information (extra samples), or use
+separated planar or tiled layout, are not supported.
+Multi-page GIF images are not supported.
 .Sh SEE ALSO
 .Xr gs 1
 .Sh AUTHORS
-.An Dieter Baron Aq dillo@giga.or.at
+.Nm
+was written by
+.An Dieter Baron Aq dillo@giga.or.at .
+.Pp
+The LZW compression routines and various library function replacements
+(for portability) were taken from the NetBSD Project.
