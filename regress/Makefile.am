@@ -1,8 +1,8 @@
 EXTRA_DIST=runtest ${TESTCASES} ${INPUTS} ${OUTPUTS}
 
-TESTCASES=png-1.test
+TESTCASES=png-1.test png-2.test
 INPUTS=nih.png
-OUTPUTS=png-1.eps
+OUTPUTS=png-1.eps png-2.eps
 
 check:
 	@failed=0; all=0; \
