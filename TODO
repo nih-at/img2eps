@@ -1,7 +1,7 @@
 - man page
 - image_info: inverted grayscale, bit order
 - png: indexed to grayscale conversion segfaults in libpng
-- tiff: jpeg, alpha, bit order
+- tiff: alpha, bit order
 - tiff: flate: test if direct copy works
 + solaris: libpng needs -lm
 
@@ -9,7 +9,7 @@
 - png: raw read
 - gif: raw reading, depth always 8?
 - predictors
-- tiff: tiled, planar, raw jpeg/lzw/ccitt/flate
+- tiff: tiled, planar, raw jpeg/ccitt/flate
 - specify paper size as pair of dimens
 - supply colorimage emulation for level1 (rgb-8 done)
 - internal documentation

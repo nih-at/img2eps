@@ -1,0 +1,10 @@
+# tiff, lzw direct copy
+#   image: 133x53 rgb 8bps, jpeg compressed
+#    EPSF: 133x53 rgb 8bps, jpeg compressed, ASCII85, level 2
+#
+#	$NiH$
+#
+features TIFF JPEG
+return 0
+input col.tif
+output tiff-jpeg.eps col.eps

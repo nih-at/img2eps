@@ -13,6 +13,7 @@ TESTCASES=	gif.test \
 		png-2.test \
 		tiff.test \
 		tiff-indexed.test \
+		tiff-jpeg.test \
 		tiff-lzw.test \
 		xpm-flate.test \
 		xpm-gray.test \
@@ -44,6 +45,7 @@ OUTPUTS=	gif.eps \
 		png-2.eps \
 		tiff.eps \
 		tiff-indexed.eps \
+		tiff-jpeg.eps \
 		tiff-lzw.eps \
 		xpm-flate.eps \
 		xpm-gray.eps \

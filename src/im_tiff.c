@@ -1,5 +1,5 @@
 /*
-  $NiH: im_tiff.c,v 1.13 2002/10/12 02:23:54 dillo Exp $
+  $NiH: im_tiff.c,v 1.14 2002/10/12 02:52:42 dillo Exp $
 
   im_tiff.c -- TIFF image handling
   Copyright (C) 2002 Dieter Baron
@@ -60,10 +60,12 @@ struct image_tiff {
 
     TIFF *tif;
 
-    int row;		/* current row (stripe in raw read) */
+    int row, strip;	/* current row / strip (while reading) */
+    int nrow, nstrip;	/* number of rows / strips */
     char *buf;		/* buffer */
-    int buf_size;	/* size of buffer (only valid in raw read) */
+    int row_size;	/* size of row */
     char *pal;		/* palette */
+    uint32 *sizes;	/* sizes of raw strips */
 };
 
 IMAGE_DECLARE(tiff);
@@ -168,30 +170,21 @@ tiff_open(char *fname)
 int
 tiff_raw_read(image_tiff *im, char **bp)
 {
-    uint32 *bc;
-    int n, nstrip;
+    int n;
 
-    nstrip = TIFFNumberOfStrips(im->tif);
-    if (im->row >= nstrip)
+    if (im->strip >= im->nstrip)
 	return 0;
 
-    if (TIFFGetField(im->tif, TIFFTAG_STRIPBYTECOUNTS, &bc) == 0)
-	throws(EINVAL, "tiff: cannot get size of strips");
+    n = im->sizes[im->strip];
+    if ((n=TIFFReadRawStrip(im->tif, im->strip, im->buf, n)) == -1)
+	throwf(EIO, "tiff: error reading strip %d", im->strip);
 
-    n = bc[im->row];
-    if (n > im->buf_size) {
-	free(im->buf);
-	im->buf = xmalloc(n+7);
-	im->buf_size = n;
-    }
-    if ((n=TIFFReadRawStrip(im->tif, im->row, im->buf, n)) == -1)
-	throwf(EIO, "tiff: error reading strip %d", im->row);
-
-    if (im->im.i.compression == IMAGE_CMP_LZW && im->row < nstrip-1)
+    if (im->im.i.compression == IMAGE_CMP_LZW && im->strip < im->nstrip-1)
 	n = _lzw_pad(im->buf, n);
 
-    im->row++;
+    im->strip++;
     *bp = im->buf;
+    
     return n;
 }
 
@@ -202,7 +195,6 @@ tiff_raw_read_finish(image_tiff *im, int abortp)
 {
     free(im->buf);
     im->buf = NULL;
-    im->buf_size = 0;
 }
 
 
@@ -210,10 +202,22 @@ tiff_raw_read_finish(image_tiff *im, int abortp)
 void
 tiff_raw_read_start(image_tiff *im)
 {
+    int i, n;
+    
+    im->strip = 0;
+    im->nstrip = TIFFNumberOfStrips(im->tif);
+    if (TIFFGetField(im->tif, TIFFTAG_STRIPBYTECOUNTS, &im->sizes) == 0)
+	throws(EINVAL, "tiff: cannot get size of strips");
+
+    n = 0;
+    for (i=0; i<im->nstrip; i++) {
+	if (im->sizes[i] > n)
+	    n = im->sizes[i];
+    }
+    
     free(im->buf);
-    im->buf = NULL;
-    im->buf_size = 0;
-    im->row = 0;
+    /* 7 bytes room for lzw padding */
+    im->buf = xmalloc(n+7);
 }
 
 
@@ -221,10 +225,17 @@ tiff_raw_read_start(image_tiff *im)
 int
 tiff_read(image_tiff *im, char **bp)
 {
-    if (TIFFReadScanline(im->tif, im->buf, (uint32)im->row, 0) == -1)
-	throwf(EIO, "tiff: error reading row %d", im->row);
+    if (im->row >= im->im.i.height)
+	return 0;
+    
+    if (im->row % im->nrow == 0) {
+	if (TIFFReadEncodedStrip(im->tif, im->strip,
+				 im->buf, (tsize_t)-1) == -1)
+	    throwf(EIO, "tiff: error reading strip %d", im->strip);
+	im->strip++;
+    }
 
-    *bp = im->buf;
+    *bp = im->buf+im->row_size*(im->row%im->nrow);
     im->row++;
 
     return 0;
@@ -237,8 +248,6 @@ tiff_read_finish(image_tiff *im, int abortp)
 {
     free(im->buf);
     im->buf = NULL;
-
-    return;
 }
 
 
@@ -246,10 +255,20 @@ tiff_read_finish(image_tiff *im, int abortp)
 void
 tiff_read_start(image_tiff *im)
 {
-    im->buf = xmalloc(image_get_row_size((image *)im));
-    im->row = 0;
+    uint32 u32;
+    
+    free(im->buf);
+    im->buf = xmalloc(TIFFStripSize(im->tif));
+    im->row_size = image_get_row_size((image *)im);
 
-    return;
+    if (TIFFGetField(im->tif, TIFFTAG_ROWSPERSTRIP, &u32) == 0)
+	throws(EINVAL, "unknown number of rows per strip");
+    if (u32 == 0xffffffff)
+	u32 = im->im.i.height;
+    im->row = im->strip = 0;
+    im->nrow = u32;
+    im->nstrip = TIFFNumberOfStrips(im->tif);
+
 }		
 
 
@@ -367,9 +386,6 @@ _get_cspace(image_tiff *im)
 	break;
     case COMPRESSION_JPEG:
     case COMPRESSION_OJPEG:
-	/* XXX: jpeg reading doesn't work with TIFFReadScanline, we
-	   would have to use TIFFReadEncodedStrip */
-	throws(EOPNOTSUPP, "TIFF files with jpeg compression not supported");
 	/* jpeg in tiff can be more complicated than a simple jpeg stream */
 	ocmp = IMAGE_CMP_DCT;
 	cmp = IMAGE_CMP_NONE;
