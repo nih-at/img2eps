@@ -1,5 +1,5 @@
 /*
-  $NiH: st_flate.c,v 1.2 2002/10/05 02:53:48 dillo Exp $
+  $NiH: st_flate.c,v 1.3 2002/10/06 16:08:49 dillo Exp $
 
   st_flate.c -- FlateEncode stream
   Copyright (C) 2002 Dieter Baron
@@ -20,7 +20,7 @@
 
 #ifdef HAVE_LIBZ
 
-#include "zlib.h"
+#include <zlib.h>
 
 #define BLKSIZE		8192
 
