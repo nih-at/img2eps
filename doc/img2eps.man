@@ -1,7 +1,7 @@
 .\"	\-*\- nroff \-*\-
 .\" This man page written by Thomas Klausner <tk@giga.or.at> and
 .\" Dieter Baron <dillo@giga.or.at>.
-.\" $NiH: img2eps.mdoc,v 1.3 2002/10/11 23:48:14 dillo Exp $
+.\" $NiH: img2eps.mdoc,v 1.5 2002/10/13 01:24:48 dillo Exp $
 .TH IMG2EPS 1 "October 10, 2002" NiH
 .SH "NAME"
 img2eps \- package raster images into EPS file
@@ -180,7 +180,7 @@ images.
 .PP
 Predictor functions (for LZW or Flate compression) are not supported.
 .PP
-TIFF images that include transparency information (extra samples), or use
+TIFF images that include more than one extra sample per pixel, or use
 separated planar or tiled layout, are not supported.
 Direct copy of LZW compressed TIFF images using the old (bit\-swapped)
 format is not supported and may result in broken EPS files.
