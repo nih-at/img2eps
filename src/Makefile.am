@@ -30,6 +30,5 @@ noinst_HEADERS=	epsf.h \
 		stream_types.h \
 		xmalloc.h
 
-EXTRA_DIST=	getopt.c \
+EXTRA_DIST=	getopt_long.c \
 		getopt.h \
-		getopt1.c
