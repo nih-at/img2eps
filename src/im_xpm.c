@@ -1,5 +1,5 @@
 /*
-  $NiH$
+  $NiH: im_xpm.c,v 1.1 2002/09/10 21:40:48 dillo Exp $
 
   im_xpm.c -- XPM (X Pixmap) image handling
   Copyright (C) 2002 Dieter Baron
@@ -8,6 +8,7 @@
   The author can be contacted at <dillo@giga.or.at>
 */
 
+#include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -407,6 +408,18 @@ _parse_colors(image_xpm *im)
 
 		case '%':
 		    throws(EOPNOTSUPP, "xpm: HSV colors not supported");
+
+		case 'n':
+		case 'N':
+		    if (strncasecmp(p, "one", 3) == 0
+			&& (p[3] == '\0' || isspace(p[3]))) {
+			/* XXX: mark as transparent */
+			im->col[i].r = 0xff;
+			im->col[i].g = 0xff;
+			im->col[i].b = 0xff;
+			break;
+		    }
+		    /* fallthrough */
 
 		default:
 		    throwf(EINVAL, "xpm: unrecognized RBG color code %c",
