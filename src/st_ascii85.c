@@ -1,5 +1,5 @@
 /*
-  $NiH$
+  $NiH: st_ascii85.c,v 1.1 2002/09/08 00:31:06 dillo Exp $
 
   st_ascii85.c -- ASCII85Encode stream
   Copyright (C) 2002 Dieter Baron
@@ -106,10 +106,11 @@ ascii85_write(stream_ascii85 *st, const char *b, int n)
 		    a[i+j] = l%85 + 33;
 		    l /= 85;
 		}
-		l = 0;
-		nrest = 0;
 		i += 5;
 	    }
+	    l = 0;
+	    nrest = 0;
+	    
 	    if (i >= BLKSIZE-5) {
 		if (stream_write(st->lst, a, i) != 0)
 		    return -1;
