@@ -1,5 +1,6 @@
 New in 0.2:
 
+* support for specifying resolution, orientation, and placement of image
 * support for JPEG 2000 image format
 * fix handling of interlaced GIF images
 
