@@ -1,7 +1,8 @@
 # jpeg, direct copy of compressed data
 #
-#	$NiH: xpm-rle.test,v 1.1 2002/09/12 12:31:10 dillo Exp $
+#	$NiH: jpg.test,v 1.1 2002/09/12 13:52:12 dillo Exp $
 #
+features JPEG
 return 0
 input col.jpg
 output jpg.eps col.eps

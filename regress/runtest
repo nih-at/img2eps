@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#  $NiH: runtest,v 1.1 2002/09/11 23:57:03 dillo Exp $
+#  $NiH: runtest,v 1.2 2002/09/14 02:27:35 dillo Exp $
 #
 #  runtest -- run regression tests
 #  Copyright (C) 2002 Dieter Baron and Thomas Klausner
@@ -51,6 +51,16 @@
 #	    multiple error commands are used, the messages are
 #	    expected in the order given. 
 #   
+#	features FEATURE ...
+#	    only run test if all FEATUREs are present, otherwise skip it.
+#
+# exit status
+#	runtest uses the following exit codes:
+#	    0: test passed
+#	    1: test failed
+#	    2: other error
+#	   77: test was skipped (missing feature)
+# 
 # environment variables:
 #   VERBOSE: if set, be more verbose (e. g., output diffs)
 #   NOCLEANUP: if set, don't delete directory test is run in
@@ -65,6 +75,15 @@ fail() {
 	echo "${TEST} -- FAILED: $*";
 	cleanup;
 	exit 1;
+}
+
+skip() {
+	if [ ! -z "${VERBOSE}" ]
+	then
+		echo "${TEST} -- skipped: $*";
+	fi;
+	cleanup;
+	exit 77;
 }
 
 succeed() {
@@ -144,6 +163,11 @@ then
     IMG2EPS=../../src/img2eps
 fi
 
+if [ -z "${CONFIG_H}" ]
+then
+    CONFIG_H=../../config.h
+fi
+
 # XXX: set up trap to cleanup
 
 mkdir ${DIR} || ( die "cannot create test directory ${DIR}" )
@@ -155,6 +179,7 @@ RET=''
 OPTIONS=''
 INPUT=''
 OUTPUT=''
+FEATURES=''
 
 while read cmd arg
 do
@@ -171,6 +196,8 @@ do
   output)
     test_empty "${OUTPUT}" output
     OUTPUT="$arg";;
+  features)
+    FEATURES="${FEATURES} $arg";;
   error)
     echo "${IMG2EPS}: $arg" >> errors
   esac
@@ -178,6 +205,19 @@ done
 
 test_set "${RET}" return
 test_set "${INPUT}" input
+
+if [ ! -z "${FEATURES}" ]
+then
+    for feat in ${FEATURES}
+    do
+        if grep "^#define [HU][AS][VE]E*_$feat " ${CONFIG_H} >/dev/null 2>&1
+        then
+	    :
+	else
+	    skip "missing feature $feat"
+	fi
+    done
+fi
 
 ARGS="${OPTIONS} ${srcdir}/${INPUT}"
 

@@ -1,7 +1,8 @@
 # grayscale PNG, language level 1
 #
-#    $NiH$
+#    $NiH: png-1.test,v 1.1 2002/09/11 23:57:03 dillo Exp $
 #
+features PNG
 return 0
 input nih.png
 options -1

@@ -1,7 +1,8 @@
 # tiff (bilevel), flate compression
 #
-#	$NiH$
+#	$NiH: tiff.test,v 1.1 2002/10/08 16:51:14 dillo Exp $
 #
+features TIFF LIBZ
 return 0
 options -Cflate
 input fax2d.tif
