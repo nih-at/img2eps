@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.6 2002/09/10 21:40:46 dillo Exp $
+  $NiH: epsf.c,v 1.7 2002/09/11 22:44:17 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -763,15 +763,22 @@ _write_l1_datasrc(epsf *ep)
 			  image_cspace_components(&ep->im->i.cspace, 0),
 			  ng, ng-1);
 	}
-	break;
-	
+	return;
+
+    case IMAGE_CS_GRAY:
+	stream_puts("{ currentfile picstr readhexstring pop } bind image\n",
+		    ep->st);
+	return;
+
     default:
-	stream_printf(ep->st, "\
-{ currentfile picstr readhexstring pop } bind\n\
-false %d colorimage\n",
-		      image_cspace_components(&ep->im->i.cspace, 0));
 	break;
     }
+
+    /* no emulation for this mode yet */
+    stream_printf(ep->st, "\
+{ currentfile picstr readhexstring pop } bind\n\
+false %d colorimage\n",
+		  image_cspace_components(&ep->im->i.cspace, 0));
 }
 
 
