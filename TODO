@@ -2,12 +2,12 @@
 - image_convert: depths 1, 2, 4
 - image_info: inverted grayscale
 - png: indexed to grayscale conversion segfaults in libpng
-- gif: data reading; compression, color space, and depth detection
 - tiff: jpeg, alpha, bit order
 + solaris: libpng needs -lm
 
 - verbose option (image info before & after, eps parameters)
 - png: raw read
+- gif: raw reading, depth always 8?
 - predictors
 - tiff: tiled, planar, raw jpeg/lzw/ccitt/flate
 - specify paper size as pair of dimens

@@ -1,0 +1,9 @@
+# gif, flate compression
+#
+#	$NiH$
+#
+features GIF LIBZ
+return 0
+options -Cflate
+input porsche.gif
+output gif.eps porsche.eps
