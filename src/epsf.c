@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.21 2002/10/16 11:09:12 dillo Exp $
+  $NiH: epsf.c,v 1.22 2005/01/04 19:19:56 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002, 2005 Dieter Baron
@@ -572,11 +572,11 @@ epsf_set_margins(epsf *ep, int l, int r, int t, int b)
     if (l >= 0)
 	ep->placement.left_margin = l;
     if (r >= 0)
-	ep->placement.right_margin = l;
+	ep->placement.right_margin = r;
     if (b >= 0)
-	ep->placement.bottom_margin = l;
+	ep->placement.bottom_margin = b;
     if (t >= 0)
-	ep->placement.top_margin = l;
+	ep->placement.top_margin = t;
 }
 
 
