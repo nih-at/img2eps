@@ -25,12 +25,12 @@ and some format independent functions
 Unless otherwise noted, an exception is thrown when an error occurs.
 .Pp
 Methods are supposed to be implemented by each back end, called
-.Fa FORMAT_NAME . 
+.Fa FORMAT_NAME .
 .Pp
 [XXX: Return values differ for some functions; this will be fixed.]
 .Sh FUNCTIONS AND METHODS
 .Pp
-FUNCTION 
+FUNCTION
 .Ft image *
 .Fn image_convert "image *im" "const image_info *i"
 .BF
@@ -58,7 +58,7 @@ as string.
 .EF
 FUNCTION
 .Ft image_compression
-.Fn iamge_compression_num "const char *cmpn"
+.Fn image_compression_num "const char *cmpn"
 .BF
 Return compression method named
 .Fa cmpn .
@@ -123,7 +123,7 @@ as string.
 .EF
 FUNCTION
 .Ft image_cs_type
-.Fn iamge_cspace_num "const char *csn"
+.Fn image_cspace_num "const char *csn"
 .BF
 Return colour space type named
 .Fa csn .
@@ -212,7 +212,7 @@ METHOD
 .Fn image_raw_read_finish "image *im" "int abortp"
 .BF
 Finish reading raw image data.  If
-.Fa abortp 
+.Fa abortp
 is non-zero, image might not have been read compiletely.  This method
 must not be called when raw reading is not in progress.
 .Pp
