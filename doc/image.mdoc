@@ -12,7 +12,7 @@
 .Sh INTROUCTION
 .Pp
 This module provides a common interface to all supported image
-formats.  Support for image transformations (color space, depth, size)
+formats.  Support for image transformations (colour space, depth, size)
 is also provided (although not all of it is implemented yet).
 .Pp
 It is composed of one back end for each supported image format
@@ -161,7 +161,7 @@ type
 .Fa im_convert ,
 an exception is thrown if not all specified parameters are supported.
 .Pp
-If no conversion is supported by a back end, it should define
+If no colour space conversion is supported by a back end, it should define
 .Dv NOSUPP_CSPACE
 and omit this method.
 .EF
@@ -180,6 +180,6 @@ type
 .Fa im_convert ,
 an exception is thrown if the transformation is not supported.
 .Pp
-If no conversion is supported by a back end, it should define
+If scaling is not supported by a back end, it should define
 .Dv NOSUPP_SCALE
 and omit this method.
