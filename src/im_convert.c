@@ -1,5 +1,5 @@
 /*
-  $NiH: im_convert.c,v 1.10 2002/10/10 08:39:04 dillo Exp $
+  $NiH: im_convert.c,v 1.11 2002/10/10 11:01:46 dillo Exp $
 
   im_convert.c -- image conversion handling
   Copyright (C) 2002 Dieter Baron
@@ -176,7 +176,8 @@ image_convert(image *oim, int mask, const image_info *i)
     if ((mask & IMAGE_INF_ORDER) && i->order != im->im.i.order)
 	throwf(EOPNOTSUPP, "reordering of samples not supported");
 
-    if (mask & IMAGE_INF_SIZE) {
+    if ((mask & IMAGE_INF_SIZE)
+	&& ((oim->i.width != i->width) || (oim->i.height != i->height))) {
 	if (image_set_size(oim, i->width, i->height) == 0)
 	    mask &= ~IMAGE_INF_SIZE;
 	else {
@@ -184,6 +185,9 @@ image_convert(image *oim, int mask, const image_info *i)
 	    throwf(EOPNOTSUPP, "scaling not supported");
 	}
     }
+    else
+	mask &= ~IMAGE_INF_SIZE;
+
     if (mask & IMAGE_INF_CSPACE) {
 	m2 = image_set_cspace(oim, mask&IMAGE_INF_CSPACE, &i->cspace);
 
