@@ -1,0 +1,11 @@
+# tiff, flate direct copy
+#   image: 64x64 indexed 8bps (rgb 16bps), flate compressed
+#    EPSF: 64x64 indexed 8bps (rgb 8bps), flate compressed, ASCII85, level 3,
+#	direct copy
+#
+#	$NiH$
+#
+features TIFF
+return 0
+input flate.tif
+output tiff-flate.eps flate.eps

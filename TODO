@@ -1,7 +1,6 @@
 - man page
 - image_info: inverted grayscale, bit order
 - tiff: alpha, bit order
-- tiff: flate: test if direct copy works
 + solaris: libpng needs -lm
 
 - dry-run option (don't process, only print info)
