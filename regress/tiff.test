@@ -1,0 +1,8 @@
+# tiff (bilevel), flate compression
+#
+#	$NiH$
+#
+return 0
+options -Cflate
+input fax2d.tif
+output tiff.eps fax2d.eps

@@ -1,10 +1,10 @@
 EXTRA_DIST=runtest ${TESTCASES} ${INPUTS} ${OUTPUTS}
 
 TESTCASES=jpg.test jpg-gray.test jpg-lzw.test png-1.test png-2.test \
-	xpm-flate.test xpm-rle.test
-INPUTS=col.jpg nih.png links.xpm
+	tiff.test xpm-flate.test xpm-rle.test
+INPUTS=col.jpg fax2d.tif nih.png links.xpm
 OUTPUTS=jpg.eps jpg-gray.eps jpg-lzw.eps png-1.eps png-2.eps \
-	xpm-flate.eps xpm-rle.eps
+	tiff.eps xpm-flate.eps xpm-rle.eps
 
 check:
 	@failed=0; all=0; \
