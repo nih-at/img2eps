@@ -17,3 +17,7 @@ noinst_HEADERS=	epsf.h \
 		image.h \
 		stream.h \
 		stream_types.h
+
+EXTRA_DIST=	getopt.c \
+		getopt.h \
+		getopt1.c
