@@ -1,1 +1,1 @@
-SUBDIRS=src regress
+SUBDIRS=doc src regress

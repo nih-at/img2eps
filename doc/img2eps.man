@@ -1,0 +1,170 @@
+.\" This man page written by Thomas Klausner <tk@giga.or.at> and
+.\" Dieter Baron <dillo@giga.or.at>.
+.TH IMG2EPS 1 "October 10, 2002" NiH
+.SH "NAME"
+img2eps \- package raster images into EPS file
+.SH "SYNOPSIS"
+.B img2eps
+[\fB\-123cghV\fR]
+[\fB\-a\fR | \fB\-\-ascii\fR \fBENC\fR]
+[\fB\-C\fR | \fB\-\-compress\fR \fBC\fR]
+[\fB\-\-help\fR]
+[\fB\-\-level\fR]
+[\fB\-m\fR | \fB\-\-margin\fR \fBM\fR]
+[\fB\-o\fR | \fB\-\-output\fR \fBFILE\fR]
+[\fB\-P\fR | \fB\-\-paper\fR \fBP\fR]
+[\fB\-v\fR | \fB\-\-verbose\fR]
+[\fB\-\-version\fR]
+\fBfile ...\fR
+.SH "DESCRIPTION"
+.B img2eps
+packages each 
+\fBfile\fR
+into an EPS (Embedded PostScript) file, using whatever PostScript
+features are advantageous.
+Supported image file formats are:
+
+.TP 
+GIF
+.TP 
+JPEG
+.TP 
+PNG
+.TP 
+TIFF
+
+.PP
+The options are:
+
+.TP 15
+\fB\-1\fR
+Use only features present in PostScript language level 1.
+.TP 15
+\fB\-2\fR
+Use only features present in PostScript language level 2.
+.TP 15
+\fB\-3\fR
+Explicitly allow the use of PostScript language level 3 features.
+.TP 15
+\fB\-a\fR \fBENC\fR
+.TP 15
+\fB\-\-ascii\fR \fBENC\fR
+Use
+\fBENC\fR
+ASCII encoding for binary data.
+Supported encodings are ASCIIHEX and ASCII85.
+.TP 15
+\fB\-C\fR \fBC\fR
+.TP 15
+\fB\-\-compress\fR \fBC\fR
+Use compression method
+\fBC\fR
+for image data.
+Supported compression methods are
+DCT (jpeg), RunLength (PackBits), LZW, and Flate (zlib).
+.TP 15
+\fB\-c\fR
+.TP 15
+\fB\-\-stdout\fR
+Write EPSF to standard output.
+.TP 15
+\fB\-g\fR
+.TP 15
+\fB\-\-gray\fR
+Convert image to grayscale.
+.TP 15
+\fB\-h\fR
+.TP 15
+\fB\-\-help\fR
+Display a short help message.
+.TP 15
+\fB\-\-level\fR \fBL\fR
+Use only features present in PostScript language level
+\fBL.\fR
+Alternatively, you can also use the
+\fB\-1\fR,
+\fB\-2\fR,
+and
+\fB\-3\fR
+options.
+.TP 15
+\fB\-m\fR \fBM\fR
+.TP 15
+\fB\-\-margin\fR \fBM \fR
+Set all margins to
+\fBM.\fR
+.TP 15
+\fB\-o\fR \fBFILE\fR
+.TP 15
+\fB\-\-output\fR \fBFILE\fR
+Write EPSF to output file
+\fBFILE.\fR
+The default is the name of the input file with it's extension changed
+to
+.Em.eps.
+.TP 15
+\fB\-P\fR \fBP\fR
+.TP 15
+\fB\-\-paper\fR \fBP\fR
+Set paper size to
+\fBP.\fR
+Supported sizes are
+.Em XXX unknown.
+.TP 15
+\fB\-V\fR
+.TP 15
+\fB\-\-version\fR
+Display version number.
+
+.PP
+If possible, the compressed image data is copied directly to the EPS file.
+.SS "Default Parameters"
+The default value for any parameter not specified via command line
+options is derived from the image:
+.PP
+The color space type is taken from the image.
+However, for language level 1, indexed images are converted to their
+base color space.
+.PP
+An unsupported depth is converted to the next higher supported depth,
+if it exists, or the highest supported depth (8 for language level 1,
+12 for language level 2 or 3).
+.PP
+If direct copy of the compressed image data is supported, the
+compression method of the image is used.
+If the image is compressed with DCT (jpeg), DCT compression is used
+even if recompression is neccessary.
+Otherwise, the best lossless compression method available is used,
+which is Flate for language level 3, LZW (or RunLength if LZW encoding
+is disabled) for language level 2.
+Language level 1 disallows compression altogether.
+.PP
+ASCII85 encoding is used for language level 2 or 3, ASCIIHEX for
+language level 1.
+.PP
+If no language level is specified, the lowest level that supports the
+color space type, depth, and, for direct copy or DCT encoding, the
+compression method is used.
+.SH "EXIT STATUS"
+The
+.B img2eps
+utility exits 0 on success, and \*[Gt]0 if an error occurs.
+.SH "BUGS"
+Emulation of the colorimage operator is provided only for 8bit RGB
+images.
+(The presence of the operator is assumed for other color formats.)
+.PP
+Predictor functions (for LZW or Flate compression) are not supported.
+.PP
+TIFF images that include transparency information (extra samples), or use
+separated planar or tiled layout, are not supported.
+Multi\-page GIF images are not supported.
+.SH "SEE ALSO"
+gs(1)
+.SH "AUTHORS"
+.B img2eps
+was written by
+Dieter Baron <dillo@giga.or.at.>
+.PP
+The LZW compression routines and various library function replacements
+(for portability) were taken from the NetBSD Project.

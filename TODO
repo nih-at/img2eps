@@ -1,6 +1,5 @@
 - man page
-- image_convert: depths 1, 2, 4
-- image_info: inverted grayscale
+- image_info: inverted grayscale, bit order
 - png: indexed to grayscale conversion segfaults in libpng
 - tiff: jpeg, alpha, bit order
 + solaris: libpng needs -lm
