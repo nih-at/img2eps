@@ -1,5 +1,5 @@
 /*
-  $NiH: im_convert.c,v 1.9 2002/10/10 00:37:00 dillo Exp $
+  $NiH: im_convert.c,v 1.10 2002/10/10 08:39:04 dillo Exp $
 
   im_convert.c -- image conversion handling
   Copyright (C) 2002 Dieter Baron
@@ -33,6 +33,7 @@ struct image_conv {
     char *pal;		/* palette */
     char *buf;		/* scanline buffer */
 
+    image_cspace palcs;		/* cspace for palette */
     struct conv_info ci[2];	/* conversion info (image, palette) */
     unsigned short *conv_pal;	/* palette used in conversion */
 };
@@ -189,7 +190,12 @@ image_convert(image *oim, int mask, const image_info *i)
 	mask = (mask&~IMAGE_INF_CSPACE) | m2;
 
 	if (mask & IMAGE_INF_CSPACE) {
-	    if (i->cspace.type == IMAGE_CS_INDEXED) {
+	    if (((mask & IMAGE_INF_TYPE) ? i->cspace.type : oim->i.cspace.type)
+		== IMAGE_CS_INDEXED) {
+		/* conversion to indexed */
+		if (oim->i.cspace.type != IMAGE_CS_INDEXED)
+		    throws(EOPNOTSUPP,
+			   "colour space conversion not supported");
 		if (((mask & (IMAGE_INF_BASE_TYPE|IMAGE_INF_BASE_DEPTH))
 		     && (!_convertable_cstype(
 			     oim->i.cspace.base_type,
@@ -203,20 +209,32 @@ image_convert(image *oim, int mask, const image_info *i)
 				  : oim->i.cspace.base_depth))))))
 		    throws(EOPNOTSUPP, "palette conversion not supported");
 	    }
-	    if ((mask & (IMAGE_INF_TYPE|IMAGE_INF_DEPTH))
-		&& (!_convertable_cstype(
-			(oim->i.cspace.type == IMAGE_CS_INDEXED
-			 ? oim->i.cspace.base_type : oim->i.cspace.type),
-			(mask & IMAGE_INF_TYPE
-			 ? i->cspace.type : oim->i.cspace.type))
-		    || (!_convertable_depth(
-			    (oim->i.cspace.type == IMAGE_CS_INDEXED
-			     ? oim->i.cspace.base_depth : oim->i.cspace.depth),
-			    (oim->i.cspace.type == IMAGE_CS_INDEXED
-			     ? 16 : (mask & IMAGE_INF_DEPTH
-				     ? i->cspace.depth
-				     : oim->i.cspace.depth))))))
-		throws(EOPNOTSUPP, "colour space conversion not supported");
+	    else if (oim->i.cspace.type == IMAGE_CS_INDEXED) {
+		/* conversion from indexed to other */
+		if (!_convertable_cstype(oim->i.cspace.base_type,
+					 i->cspace.type)
+		    || !_convertable_depth(oim->i.cspace.base_depth, 16)
+		    || !_convertable_depth(16,
+					   (mask&IMAGE_INF_DEPTH
+					    ? i->cspace.depth
+					    : oim->i.cspace.depth)))
+		    throws(EOPNOTSUPP,
+			   "colour space conversion not supported");
+	    }
+	    else {
+		/* other to other */
+		if ((mask & (IMAGE_INF_TYPE|IMAGE_INF_DEPTH))
+		    && (!_convertable_cstype(oim->i.cspace.type,
+					     (mask & IMAGE_INF_TYPE
+					      ? i->cspace.type
+					      : oim->i.cspace.type))
+			|| !_convertable_depth(oim->i.cspace.depth,
+						(mask & IMAGE_INF_DEPTH
+						 ? i->cspace.depth
+						 : oim->i.cspace.depth))))
+		    throws(EOPNOTSUPP,
+			   "colour space conversion not supported");
+	    }
 	}
     }
 
@@ -268,8 +286,8 @@ _convertable_cstype(image_cs_type stype, image_cs_type dtype)
 static int
 _convertable_depth(int sdepth, int ddepth)
 {
-    if ((sdepth == 8 || sdepth == 16)
-	&& (ddepth == 8 || ddepth == 16))
+    if ((sdepth == 8 || sdepth == 12 || sdepth == 16)
+	&& (ddepth == 8 || ddepth == 12 || ddepth == 16))
 	return 1;
     return 0;
 }
@@ -295,6 +313,17 @@ _convert(image_conv *im, char *pdc, char *psc, int n, int basep)
 	    case 8:
 		c[j] = (*ps<<8)+*ps;
 		ps++;
+		break;
+	    case 12:
+		if ((i*ci->sncomp+j)%2 == 0) {
+		    c[j] = (*ps<<4) | (ps[1]>>4);
+		    ps++;
+		}
+		else {
+		    c[j] = ((*ps&0x0f)<<8) | ps[1];
+		    ps += 2;
+		}
+		c[j] = (c[j]<<4) | c[j]>>8;
 		break;
 	    case 16:
 		c[j] = *(unsigned short *)ps;
@@ -340,6 +369,18 @@ _convert(image_conv *im, char *pdc, char *psc, int n, int basep)
 		*pd = c[j]>>8;
 		pd++;
 		break;
+	    case 12:
+		if ((i*ci->dncomp+j)%2 == 0) {
+		    pd[0] = c[j]>>8;
+		    pd[1] = c[j] & 0xf0;
+		    pd++;
+		}
+		else {
+		    pd[0] |= c[j]>>12;
+		    pd[1] = (c[j]>>4) & 0xff;
+		    pd += 2;
+		}
+		break;
 	    case 16:
 		*(unsigned short *)pd = c[j];
 		pd += 2;
@@ -364,8 +405,8 @@ _get_palette(image_conv *im, int intern)
     if (im->oim->i.cspace.base_type != im->ci[1].dtype
 	|| im->oim->i.cspace.base_depth != im->ci[1].dnbits) {
 	free(im->pal);
-	im->pal = xmalloc(image_cspace_palette_size(&im->im.i.cspace));
-	_convert(im, im->pal, pal, 1<<im->im.i.cspace.depth, 1);
+	im->pal = xmalloc(image_cspace_palette_size(&im->palcs));
+	_convert(im, im->pal, pal, 1<<im->palcs.depth, 1);
 	pal = im->pal;
     }
     
@@ -379,7 +420,11 @@ _update_ci(image_conv *im)
 {
     if (im->oim->i.cspace.type == IMAGE_CS_INDEXED
 	&& im->im.i.cspace.type != IMAGE_CS_INDEXED) {
-	im->ci[0].palncomp = image_cspace_components(&im->oim->i.cspace, 1);
+	im->palcs = im->oim->i.cspace;
+	im->palcs.base_depth = 16;
+	im->palcs.base_type = im->im.i.cspace.type;
+
+	im->ci[0].palncomp = image_cspace_components(&im->palcs, 1);
 	im->ci[0].sncomp = 1;
 	im->ci[1].stype = im->im.i.cspace.type;
     }
@@ -394,20 +439,16 @@ _update_ci(image_conv *im)
     im->ci[0].dtype = im->im.i.cspace.type;
 
     im->ci[1].palncomp = -1;
-    if (im->im.i.cspace.type == IMAGE_CS_INDEXED) {
+    if (im->im.i.cspace.type == IMAGE_CS_INDEXED)
+	im->palcs = im->im.i.cspace;
+
+    if (im->im.i.cspace.type == IMAGE_CS_INDEXED
+	|| im->oim->i.cspace.type == IMAGE_CS_INDEXED) {
 	im->ci[1].sncomp = image_cspace_components(&im->oim->i.cspace, 1);
-	im->ci[1].dncomp = image_cspace_components(&im->im.i.cspace, 1);
+	im->ci[1].dncomp = image_cspace_components(&im->palcs, 1);
 	im->ci[1].snbits = im->oim->i.cspace.base_depth;
-	im->ci[1].dnbits = im->im.i.cspace.base_depth;
+	im->ci[1].dnbits = im->palcs.base_depth;
 	im->ci[1].stype = im->oim->i.cspace.base_type;
-	im->ci[1].dtype = im->im.i.cspace.base_type;
-    }
-    else if (im->oim->i.cspace.type == IMAGE_CS_INDEXED) {
-	im->ci[1].sncomp = image_cspace_components(&im->oim->i.cspace, 1);
-	im->ci[1].dncomp = image_cspace_components(&im->im.i.cspace, 0);
-	im->ci[1].snbits = im->oim->i.cspace.base_depth;
-	im->ci[1].dnbits = 16;
-	im->ci[1].stype = im->oim->i.cspace.base_type;
-	im->ci[1].dtype = im->im.i.cspace.type;
+	im->ci[1].dtype = im->palcs.base_type;
     }
 }
