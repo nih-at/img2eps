@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.13 2002/10/08 16:43:16 dillo Exp $
+  $NiH: epsf.c,v 1.14 2002/10/10 00:16:18 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -125,6 +125,7 @@ const struct _epsf_nn _epsf_nn_compression[] = {
 };
 
 static void _calculate_bbox(epsf *ep);
+static int _fit_depth(int depth);
 static int _write_image_dict(epsf *ep);
 static int _write_image_l1(epsf *ep);
 static int _write_image_matrix(epsf *ep);
@@ -158,9 +159,12 @@ epsf_calculate_parameters(epsf *ep)
     /* determine color space */
 
     if (ep->i.cspace.type == IMAGE_CS_UNKNOWN) {
-	/* no /Indexed in LanguageLevel 1 */
-	if (ep->level == 1 && ep->im->i.cspace.type == IMAGE_CS_INDEXED)
+	if (ep->level == 1 && ep->im->i.cspace.type == IMAGE_CS_INDEXED) {
+	    /* no /Indexed in LanguageLevel 1 */
 	    ep->i.cspace.type = ep->im->i.cspace.base_type;
+	    if (ep->i.cspace.depth == 0)
+		ep->i.cspace.depth = ep->im->i.cspace.base_depth;
+	}
 	else
 	    ep->i.cspace.type = ep->im->i.cspace.type;
     }
@@ -176,12 +180,25 @@ epsf_calculate_parameters(epsf *ep)
 	}
     }
 
-    /* XXX: depth, unsupported color space types */
+    /* check depth */
+
+    if (ep->i.cspace.depth == 0) {
+	if (ep->im->i.cspace.type == IMAGE_CS_INDEXED
+	    && ep->i.cspace.type != IMAGE_CS_INDEXED)
+	    ep->i.cspace.depth = _fit_depth(ep->im->i.cspace.base_depth);
+	else
+	    ep->i.cspace.depth = _fit_depth(ep->im->i.cspace.depth);
+
+	if (ep->level == 1 && ep->i.cspace.depth == 12)
+	    ep->i.cspace.depth = 8;
+    }
 
     level = epsf_cspace_langlevel(&ep->i.cspace);
     if (ep->level && ep->level < level)
-	throwf(1, "color space %s not supported in LanguageLevel %d",
-	       epsf_cspace_name(ep->i.cspace.type), ep->level);
+	throwf(EOPNOTSUPP,
+	       "color space %s at depth %d not supported in LanguageLevel %d",
+	       epsf_cspace_name(ep->i.cspace.type), ep->i.cspace.depth,
+	       ep->level);
 
 
     /* determine level needed by ascii encoding */
@@ -197,8 +214,11 @@ epsf_calculate_parameters(epsf *ep)
     /* determine compression method */
 
     if (ep->i.compression == IMAGE_CMP_UNKNOWN) {
-	/* default to method of image */
-	ep->i.compression = ep->im->i.compression;
+	/* if we can do raw copy, do so; if original was DCT, use that */
+	if (ep->im->i.compression != IMAGE_CMP_NONE)
+	    ep->i.compression = ep->im->i.compression;
+	else if (ep->im->oi.compression == IMAGE_CMP_DCT)
+	    ep->i.compression = ep->im->oi.compression;
 
 	/* don't use methods unavailable at forced LanguageLevel */
 	switch (ep->level) {
@@ -214,7 +234,7 @@ epsf_calculate_parameters(epsf *ep)
 	}
 
 	/* use best compression available */
-	if (ep->i.compression == IMAGE_CMP_NONE)
+	if (ep->i.compression == IMAGE_CMP_UNKNOWN)
 	    switch (ep->level ? ep->level : level) {
 	    case 2:
 		ep->i.compression = DEFAULT_L2_CMP;
@@ -227,7 +247,8 @@ epsf_calculate_parameters(epsf *ep)
 
     level2 = epsf_compression_langlevel(ep->i.compression);
     if (ep->level && ep->level < level2)
-	throwf(1, "compression method %s not supported in LanguageLevel %d",
+	throwf(EOPNOTSUPP,
+	       "compression method %s not supported in LanguageLevel %d",
 	       epsf_compression_name(ep->i.compression), ep->level);
 
     level = level2 > level ? level2 : level;
@@ -329,21 +350,41 @@ epsf_create_defaults(void)
 int
 epsf_cspace_langlevel(const image_cspace *cs)
 {
+    int lcs, ld;
+    
     switch (cs->type) {
     case IMAGE_CS_UNKNOWN:
     case IMAGE_CS_GRAY:
     case IMAGE_CS_RGB:
     case IMAGE_CS_CMYK:
-	return 1;
+	lcs = 1;
+	break;
 	
     case IMAGE_CS_INDEXED:
-	return 2;
+	lcs = 2;
+	break;
 
     default:
 	return 0;
     }
 
-    /* XXX depth */
+    switch (cs->depth) {
+    case 1:
+    case 2:
+    case 4:
+    case 8:
+	ld = 1;
+	break;
+
+    case 12:
+	ld = 2;
+	break;
+
+    default:
+	return 0;
+    }
+
+    return (lcs>ld ? lcs : ld);
 }
 
 
@@ -623,8 +664,8 @@ _calculate_bbox(epsf *ep)
     imw = ep->im->i.width;
     imh = ep->im->i.height;
 
-    scale = pw/(double)imw;
-    sh = ph/(double)imh;
+    scale = pw*1.0/(double)imw;
+    sh = ph*1.0/(double)imh;
     if (sh < scale)
 	scale = sh;
 
@@ -635,6 +676,29 @@ _calculate_bbox(epsf *ep)
     ep->bbox.lly = (ph-imh)/2 + ep->paper_bbox.lly;
     ep->bbox.urx = ep->bbox.llx + imw;
     ep->bbox.ury = ep->bbox.lly + imh;
+}
+
+
+
+static int
+_fit_depth(int depth)
+{
+    switch (depth) {
+    case 1:
+	return 1;
+    case 2:
+	return 2;
+    case 3:
+    case 4:
+	return 4;
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+	return 8;
+    default:
+	return 12;
+    }
 }
 
 
