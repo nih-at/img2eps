@@ -1,7 +1,7 @@
 .\"	-*- nroff -*-
 .\" This man page written by Thomas Klausner <tk@giga.or.at> and
 .\" Dieter Baron <dillo@giga.or.at>.
-.\" $NiH: img2eps.mdoc,v 1.4 2002/10/12 02:43:48 dillo Exp $
+.\" $NiH: img2eps.mdoc,v 1.5 2002/10/13 01:24:48 dillo Exp $
 .Dd October 10, 2002
 .Dt IMG2EPS 1
 .Os
@@ -27,6 +27,9 @@ packages each
 .Ar file
 into an EPS (Embedded PostScript) file, using whatever PostScript
 features are advantageous.
+The default name for each output file is the name of the input file
+with its extension changed to
+.Em .eps .
 Supported image file formats are:
 .Bl -bullet -offset indent -compact
 .It
@@ -37,9 +40,12 @@ JPEG
 PNG
 .It
 TIFF
+.It
+XPM
 .El
 .Pp
-The options are:
+If possible, the compressed image data is copied directly to the EPS file.
+.Sh The Options
 .Bl -tag -width XXXXXXXXXXXXX -offset indent -compact
 .It Fl 1
 Use only features present in PostScript language level 1.
@@ -52,17 +58,33 @@ Explicitly allow the use of PostScript language level 3 features.
 Use
 .Ar ENC
 ASCII encoding for binary data.
-Supported encodings are ASCIIHEX and ASCII85.
+Supported encodings are:
+.Bl -bullet -offset indent -compact
+.It
+ASCII85
+.It
+ASCIIHEX
+.El
 .It Fl C Ar C
 .It Fl -compress Ar C
 Use compression method
 .Ar C
 for image data.
-Supported compression methods are
-DCT (jpeg), RunLength (PackBits), LZW, and Flate (zlib).
+Supported compression methods are:
+.Bl -bullet -offset indent -compact
+.It
+DCT (jpeg)
+.It
+Flate (zlib)
+.It
+LZW
+.It
+RunLength (PackBits)
+.El
 .It Fl c
 .It Fl -stdout
 Write EPSF to standard output.
+If this option is used, only one input file may be specified.
 .It Fl g
 .It Fl -gray
 Convert image to grayscale.
@@ -81,26 +103,58 @@ options.
 .It Fl m Ar M
 .It Fl -margin Ar M
 Set all margins to
-.Ar M .
+.Ar M ,
+which should be a number optionally followed by a unit.
+Supported units are:
+.Bl -bullet -offset indent -compact
+.It
+cm
+.It
+in
+.It
+mm
+.It
+pt (PostScript point, 1/72in)
+.El
+If no unit is specified, pt is assumed.
 .It Fl o Ar FILE
 .It Fl -output Ar FILE
 Write EPSF to output file
 .Ar FILE .
-The default is the name of the input file with its extension changed
-to
-.Em .eps .
+If this option is used, only one input file may be specified.
 .It Fl P Ar P
 .It Fl -paper Ar P
 Set paper size to
 .Ar P .
-Supported sizes are
-.Em XXX unknown .
+Supported sizes are:
+.Bl -bullet -offset indent -compact
+.It
+10x14
+.It
+A3, A4, A5
+.It
+B4, B5
+.It
+executive
+.It
+folio
+.It
+ledger
+.It
+legal
+.It
+letter
+.It
+quarto
+.It
+statement
+.It
+tabloid
+.El
 .It Fl V
 .It Fl -version
 Display version number.
 .El
-.Pp
-If possible, the compressed image data is copied directly to the EPS file.
 .Ss Language Levels
 There are three major versions of PostScript, called Language Levels:
 .Pp
@@ -147,10 +201,18 @@ The
 utility exits 0 on success, and \*[Gt]0 if an error occurs.
 .Sh SEE ALSO
 .Xr gs 1
+.Rs
+.%A Adobe Systems Incorporated
+.%B PostScript Language Reference, 3rd edition
+.%D 1999
+.Re
 .Sh AUTHORS
 .Nm
 was written by
 .An Dieter Baron Aq dillo@giga.or.at .
+.Pp
+The manual page was written with the help of
+.An Thomas Klausner Aq tk@giga.or.at .
 .Pp
 The LZW compression routines and various library function replacements
 (for portability) were taken from the NetBSD Project.

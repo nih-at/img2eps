@@ -1,7 +1,30 @@
+  This is img2eps, a raster image to EPSF converter.
+
+  img2eps packages raster images into EPS (Embedded PostScript) files,
+using whatever PostScript features are advantageous.  If possible, the
+compressed image data is copied directly to the EPS file.
+
+  Supported image file formats are GIF, JPEG, PNG, TIFF, and XPM.
+
+  For generic installation instructions, see file `INSTALL'; for
+documentation read the man page; for internal documentation see the
+documents in the doc subdirectory.
+
+  If you make a binary distribution, please include a pointer to the
+distribution site:
+	ftp.giga.or.at /pub/nih/cftp
+	http://ftp.giga.or.at/pub/nih/cftp
+The latest version can always be found there and on the backup site:
+	sunsite.univie.ac.at /pub/nih/cftp
+	http://sunsite.univie.ac.at/pub/nih/cftp
+
+  Mail suggestions and bug reports to <dillo@giga.or.at>.
+
+
 REQUIREMENTS:
 
-img2eps does not require the following packages, but certain features
-will be omitted if they are missing:
+  img2eps does not require the following packages, but certain
+features will be omitted if they are missing:
 
   For image format support: libpng, jpeg, tiff, and either giflib or
 libungif.
