@@ -26,13 +26,13 @@ into an EPS (Embedded PostScript) file, using whatever PostScript
 features are advantageous.
 Supported image file formats are:
 
-.TP 
+.IP \(bu 
 GIF
-.TP 
+.IP \(bu 
 JPEG
-.TP 
+.IP \(bu 
 PNG
-.TP 
+.IP \(bu 
 TIFF
 
 .PP
