@@ -1,5 +1,5 @@
 /*
-  $NiH: im_convert.c,v 1.8 2002/10/10 00:15:20 dillo Exp $
+  $NiH: im_convert.c,v 1.9 2002/10/10 00:37:00 dillo Exp $
 
   im_convert.c -- image conversion handling
   Copyright (C) 2002 Dieter Baron
@@ -18,6 +18,7 @@
 
 
 struct conv_info {
+    int palncomp;		/* number of components in palette */
     int sncomp, dncomp;		/* number of components */
     int snbits, dnbits;		/* number of bits per component */
     image_cs_type stype, dtype;	/* cspace type */
@@ -30,15 +31,20 @@ struct image_conv {
     int mask;		/* which conversions are needed */
 
     char *pal;		/* palette */
+    char *buf;		/* scanline buffer */
 
     struct conv_info ci[2];	/* conversion info (image, palette) */
+    unsigned short *conv_pal;	/* palette used in conversion */
 };
 
 IMAGE_DECLARE(conv);
 
 #define MAKE2(i, j)	((i)<<16 | (j))
 
+static int _convertable_cstype(image_cs_type stype, image_cs_type dtype);
+static int _convertable_depth(int sdepth, int ddepth);
 static void _convert(image_conv *im, char *pdc, char *psc, int n, int basep);
+static char *_get_palette(image_conv *im, int intern);
 static void _update_ci(image_conv *im);
 
 
@@ -46,6 +52,7 @@ static void _update_ci(image_conv *im);
 void
 conv_close(image_conv *im)
 {
+    free (im->buf);
     free (im->pal);
     image_close(im->oim);
     image_free((image *)im);
@@ -56,21 +63,7 @@ conv_close(image_conv *im)
 char *
 conv_get_palette(image_conv *im)
 {
-    char *pal;
-
-    if (im->im.i.cspace.type != IMAGE_CS_INDEXED)
-	return NULL;
-
-    pal = image_get_palette(im->oim);
-
-    if (im->mask & (IMAGE_INF_BASE_TYPE|IMAGE_INF_BASE_DEPTH)) {
-	free(im->pal);
-	im->pal = xmalloc(image_cspace_palette_size(&im->im.i.cspace));
-	_convert(im, im->pal, pal, 1<<im->im.i.cspace.depth, 1);
-	pal = im->pal;
-    }
-    
-    return pal;
+    return _get_palette(im, 0);
 }
 
 
@@ -112,7 +105,17 @@ conv_raw_read_finish(image_conv *im, int abortp)
 int
 conv_read(image_conv *im, char **bp)
 {
-    return image_read(im->oim, bp);
+    char *b;
+    
+    image_read(im->oim, &b);
+
+    if (im->mask & (IMAGE_INF_TYPE|IMAGE_INF_DEPTH)) {
+	_convert(im, im->buf, b, im->im.i.width, 0);
+	b = im->buf;
+    }
+
+    *bp = b;
+    return 0;
 }
 
 
@@ -121,6 +124,13 @@ void
 conv_read_start(image_conv *im)
 {
     image_read_start(im->oim);
+
+    if (im->mask & (IMAGE_INF_TYPE|IMAGE_INF_DEPTH)) {
+	im->buf = xmalloc(image_get_row_size((image *)im));
+	if (im->mask & IMAGE_INF_TYPE
+	    && im->oim->i.cspace.type == IMAGE_CS_INDEXED)
+	    im->conv_pal = (unsigned short *)_get_palette(im, 1);
+    }
 }
 
 
@@ -128,6 +138,11 @@ conv_read_start(image_conv *im)
 void
 conv_read_finish(image_conv *im, int abortp)
 {
+    free(im->pal);
+    free(im->buf);
+    im->buf = im->pal = NULL;
+    im->conv_pal = NULL;
+    
     image_read_finish(im->oim, abortp);
 }
 
@@ -174,24 +189,34 @@ image_convert(image *oim, int mask, const image_info *i)
 	mask = (mask&~IMAGE_INF_CSPACE) | m2;
 
 	if (mask & IMAGE_INF_CSPACE) {
-	    if ((mask & IMAGE_INF_BASE_TYPE)
-		&& ((oim->i.cspace.base_type != IMAGE_CS_GRAY
-		     && oim->i.cspace.base_type != IMAGE_CS_RGB
-		     && oim->i.cspace.base_type != IMAGE_CS_CMYK)
-		    || (i->cspace.base_type != IMAGE_CS_GRAY
-			&& i->cspace.base_type != IMAGE_CS_RGB)))
-		throws(EOPNOTSUPP, "palette type conversion not supported");
-	    if ((mask & IMAGE_INF_BASE_DEPTH)
-		&& ((oim->i.cspace.base_depth != 16
-		     && oim->i.cspace.base_depth != 8)
-		    || (i->cspace.base_depth != 16
-			&& i->cspace.base_depth != 8)))
-		throws(EOPNOTSUPP, "palette depth conversion not supported");
-
-	    if ((mask & IMAGE_INF_CSPACE) & ~(IMAGE_INF_BASE_TYPE
-					      |IMAGE_INF_BASE_DEPTH))
-		throws(EOPNOTSUPP,
-		       "color space / depth conversion not supported");
+	    if (i->cspace.type == IMAGE_CS_INDEXED) {
+		if (((mask & (IMAGE_INF_BASE_TYPE|IMAGE_INF_BASE_DEPTH))
+		     && (!_convertable_cstype(
+			     oim->i.cspace.base_type,
+			     (mask & IMAGE_INF_BASE_TYPE
+			      ? i->cspace.base_type
+			      : oim->i.cspace.base_type))
+			 || (!_convertable_depth(
+				 oim->i.cspace.base_depth,
+				 (mask & IMAGE_INF_BASE_DEPTH
+				  ? i->cspace.base_depth
+				  : oim->i.cspace.base_depth))))))
+		    throws(EOPNOTSUPP, "palette conversion not supported");
+	    }
+	    if ((mask & (IMAGE_INF_TYPE|IMAGE_INF_DEPTH))
+		&& (!_convertable_cstype(
+			(oim->i.cspace.type == IMAGE_CS_INDEXED
+			 ? oim->i.cspace.base_type : oim->i.cspace.type),
+			(mask & IMAGE_INF_TYPE
+			 ? i->cspace.type : oim->i.cspace.type))
+		    || (!_convertable_depth(
+			    (oim->i.cspace.type == IMAGE_CS_INDEXED
+			     ? oim->i.cspace.base_depth : oim->i.cspace.depth),
+			    (oim->i.cspace.type == IMAGE_CS_INDEXED
+			     ? 16 : (mask & IMAGE_INF_DEPTH
+				     ? i->cspace.depth
+				     : oim->i.cspace.depth))))))
+		throws(EOPNOTSUPP, "colour space conversion not supported");
 	}
     }
 
@@ -208,6 +233,7 @@ image_convert(image *oim, int mask, const image_info *i)
 	    im->im.i.compression = IMAGE_CMP_NONE;
 
 	im->pal = NULL;
+	im->buf = NULL;
 
 	_update_ci(im);
 
@@ -219,20 +245,53 @@ image_convert(image *oim, int mask, const image_info *i)
 
 
 
+static int
+_convertable_cstype(image_cs_type stype, image_cs_type dtype)
+{
+    if (stype == dtype)
+	return 1;
+    
+    switch (MAKE2(stype, dtype)) {
+    case MAKE2(IMAGE_CS_RGB, IMAGE_CS_GRAY):
+    case MAKE2(IMAGE_CS_GRAY, IMAGE_CS_RGB):
+    case MAKE2(IMAGE_CS_GRAY, IMAGE_CS_CMYK):
+    case MAKE2(IMAGE_CS_CMYK, IMAGE_CS_GRAY):
+    case MAKE2(IMAGE_CS_CMYK, IMAGE_CS_RGB):
+	return 1;
+    default:
+	return 0;
+    }
+}
+
+
+
+static int
+_convertable_depth(int sdepth, int ddepth)
+{
+    if ((sdepth == 8 || sdepth == 16)
+	&& (ddepth == 8 || ddepth == 16))
+	return 1;
+    return 0;
+}
+
+
+
 static void
 _convert(image_conv *im, char *pdc, char *psc, int n, int basep)
 {
     int c[4];
-    int i, j;
+    int i, j, idx;
     unsigned char *ps, *pd;
+    struct conv_info *ci;
 
+    ci = &im->ci[basep];
     ps = (unsigned char *)psc;
     pd = (unsigned char *)pdc;
 
     for (i=0; i<n; i++) {
 	/* extract source colour */
-	for (j=0; j<im->ci[basep].sncomp; j++) {
-	    switch(im->ci[basep].snbits) {
+	for (j=0; j<ci->sncomp; j++) {
+	    switch(ci->snbits) {
 	    case 8:
 		c[j] = (*ps<<8)+*ps;
 		ps++;
@@ -242,6 +301,13 @@ _convert(image_conv *im, char *pdc, char *psc, int n, int basep)
 		ps += 2;
 		break;
 	    }
+	}
+
+	/* lookup index */
+	if (ci->palncomp != -1) {
+	    idx = c[0]>>(16-ci->snbits);
+	    for (j=0; j<ci->palncomp; j++)
+		c[j] = im->conv_pal[ci->dncomp*idx+j];
 	}
 
 	/* convert */
@@ -285,21 +351,63 @@ _convert(image_conv *im, char *pdc, char *psc, int n, int basep)
 
 
 
+static char *
+_get_palette(image_conv *im, int intern)
+{
+    char *pal;
+
+    if (!intern && im->im.i.cspace.type != IMAGE_CS_INDEXED)
+	return NULL;
+
+    pal = image_get_palette(im->oim);
+
+    if (im->oim->i.cspace.base_type != im->ci[1].dtype
+	|| im->oim->i.cspace.base_depth != im->ci[1].dnbits) {
+	free(im->pal);
+	im->pal = xmalloc(image_cspace_palette_size(&im->im.i.cspace));
+	_convert(im, im->pal, pal, 1<<im->im.i.cspace.depth, 1);
+	pal = im->pal;
+    }
+    
+    return pal;
+}
+
+
+
 static void
 _update_ci(image_conv *im)
 {
-    int i;
-
-    for (i=0; i<2; i++) {
-	im->ci[i].sncomp = image_cspace_components(&im->oim->i.cspace, i);
-	im->ci[i].dncomp = image_cspace_components(&im->im.i.cspace, i);
+    if (im->oim->i.cspace.type == IMAGE_CS_INDEXED
+	&& im->im.i.cspace.type != IMAGE_CS_INDEXED) {
+	im->ci[0].palncomp = image_cspace_components(&im->oim->i.cspace, 1);
+	im->ci[0].sncomp = 1;
+	im->ci[1].stype = im->im.i.cspace.type;
+    }
+    else {
+	im->ci[0].palncomp = -1;
+	im->ci[0].sncomp = image_cspace_components(&im->oim->i.cspace, 0);
+	im->ci[0].stype = im->oim->i.cspace.type;
     }
     im->ci[0].snbits = im->oim->i.cspace.depth;
+    im->ci[0].dncomp = image_cspace_components(&im->im.i.cspace, 0);
     im->ci[0].dnbits = im->im.i.cspace.depth;
-    im->ci[1].snbits = im->oim->i.cspace.base_depth;
-    im->ci[1].dnbits = im->im.i.cspace.base_depth;
-    im->ci[0].stype = im->oim->i.cspace.type;
     im->ci[0].dtype = im->im.i.cspace.type;
-    im->ci[1].stype = im->oim->i.cspace.base_type;
-    im->ci[1].dtype = im->im.i.cspace.base_type;
+
+    im->ci[1].palncomp = -1;
+    if (im->im.i.cspace.type == IMAGE_CS_INDEXED) {
+	im->ci[1].sncomp = image_cspace_components(&im->oim->i.cspace, 1);
+	im->ci[1].dncomp = image_cspace_components(&im->im.i.cspace, 1);
+	im->ci[1].snbits = im->oim->i.cspace.base_depth;
+	im->ci[1].dnbits = im->im.i.cspace.base_depth;
+	im->ci[1].stype = im->oim->i.cspace.base_type;
+	im->ci[1].dtype = im->im.i.cspace.base_type;
+    }
+    else if (im->oim->i.cspace.type == IMAGE_CS_INDEXED) {
+	im->ci[1].sncomp = image_cspace_components(&im->oim->i.cspace, 1);
+	im->ci[1].dncomp = image_cspace_components(&im->im.i.cspace, 0);
+	im->ci[1].snbits = im->oim->i.cspace.base_depth;
+	im->ci[1].dnbits = 16;
+	im->ci[1].stype = im->oim->i.cspace.base_type;
+	im->ci[1].dtype = im->im.i.cspace.type;
+    }
 }

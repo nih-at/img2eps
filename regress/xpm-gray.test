@@ -1,0 +1,8 @@
+# xpm, converted to grayscale (via palette expansion), flate compression
+#
+#	$NiH$
+#
+return 0
+options -g -Cflate
+input links.xpm
+output xpm-gray.eps links.eps
