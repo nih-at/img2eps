@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.11 2002/10/12 00:02:10 dillo Exp $
+  $NiH: img2eps.c,v 1.12 2002/10/15 03:17:26 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002 Dieter Baron
@@ -233,7 +233,8 @@ main(int argc, char *argv[])
 		remove(outfile);
 	    fprintf(stderr, "%s: %s: %s\n",
 		    prg, argv[optind], (char *)ex.data);
-	    free(ex.data);
+	    /* XXX: not all strings are allocated */
+	    /* free(ex.data); */
 	    ret = 1;
 	}
     }
