@@ -3,7 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl init
 
 AC_PREREQ(2.50)
-AC_REVISION([$NiH: configure.in,v 1.16 2002/11/13 01:41:37 dillo Exp $])
+AC_REVISION([$NiH: configure.in,v 1.17 2005/01/06 13:32:30 dillo Exp $])
 AC_INIT([img2eps], [0.1])
 AC_CONFIG_SRCDIR([src/im_gif.c])
 AC_CONFIG_HEADERS([config.h])
@@ -11,6 +11,9 @@ AM_INIT_AUTOMAKE(foreign)
 
 AC_CANONICAL_HOST
 
+AC_ARG_WITH(exif,
+    [  --without-exif          don't include EXIF support],,
+    with_exif=yes)
 AC_ARG_WITH(gif,
     [  --without-gif           don't include GIF support],,
     with_gif=yes)
@@ -38,28 +41,45 @@ dnl libraries
 
 AC_CHECK_LIB(z, deflate)
 
-if test "$with_gif" = "yes"
+if test "$with_exif" = "yes"
 then
-  AC_CHECK_LIB(gif, DGifOpenFileName)
-fi
-if test "$with_jpeg" = "yes"
-then
-  AC_CHECK_LIB(jpeg, jpeg_read_header)
+  have_exif=no
+  PKG_CHECK_MODULES(EXIF, libexif,
+		    [CFLAGS="$EXIF_CFLAGS $CFLAGS"
+		     LIBS="$EXIF_LIBS $LIBS"
+		     have_exif=yes])
 fi
 if test "$with_png" = "yes"
 then
-  AC_CHECK_LIB(png, png_create_read_struct, ,
-	       [AC_CHECK_LIB(png, png_destroy_read_struct,
-	                     [AC_DEFINE(HAVE_LIBPNG)
-			      LIBS="-lpng -lm $LIBS"], , -lm)])
+  have_png=yes
+  PKG_CHECK_MODULES(PNG, libpng12,
+		    [CFLAGS="$PNG_CFLAGS $CFLAGS"
+		     LIBS="$PNG_LIBS $LIBS"],
+		    [AC_CHECK_LIB(png, png_create_read_struct, ,
+		    [AC_CHECK_LIB(png, png_destroy_read_struct,
+	                          [AC_DEFINE(HAVE_LIBPNG)
+			           LIBS="-lpng -lm $LIBS"],
+				  [have_png=no], -lm)])])
+fi
+if test "$with_gif" = "yes"
+then
+  have_gif=yes
+  AC_CHECK_LIB(gif, DGifOpenFileName, , [have_gif=no])
+fi
+if test "$with_jpeg" = "yes"
+then
+  have_jpeg=yes
+  AC_CHECK_LIB(jpeg, jpeg_read_header, , [have_jpeg=no])
 fi
 if test "$with_tiff" = "yes"
 then
-  AC_CHECK_LIB(tiff, TIFFOpen)
+  have_tiff=yes
+  AC_CHECK_LIB(tiff, TIFFOpen, , [have_tiff=no])
 fi
 if test "$with_jpeg2000" = "yes"
 then
-  AC_CHECK_LIB(jasper, jas_init)
+  have_jpeg2000=yes
+  AC_CHECK_LIB(jasper, jas_init, , [have_jpeg2000=no])
 fi
 
 dnl header files
@@ -78,77 +98,31 @@ dnl system services
 
 dnl output
 
-AC_MSG_CHECKING([for GIF support])
-if test "$with_gif" = "yes"
-then
-    if test "$ac_cv_lib_gif_DGifOpenFileName" = "yes"
+dnl NIH_CHECK_SUPPORT(WHAT)
+dnl check whether support for WHAT can and should be compiled in
+AC_DEFUN([NIH_CHECK_SUPPORT], [
+  AC_MSG_CHECKING([for $1 support])
+  eval "support=\$have_`echo -n $1 | tr A-Z a-z`"
+  eval "enabled=\$with_`echo -n $1 | tr A-Z a-z`"
+  if test "$enabled" = "yes"
+  then
+    if test "$support" = "yes"
     then
-	AC_DEFINE(USE_GIF, , [define if GIF support should be compiled])
+	AC_DEFINE(USE_$1, , [define if $1 support should be compiled])
 	AC_MSG_RESULT([yes])
     else
 	AC_MSG_RESULT([no])
     fi
-else
+  else
     AC_MSG_RESULT([disabled])
-fi
+  fi])
 
-AC_MSG_CHECKING([for JPEG support])
-if test "$with_jpeg" = "yes"
-then
-    if test "$ac_cv_lib_jpeg_jpeg_read_header" = "yes"
-    then
-	AC_DEFINE(USE_JPEG, , [define if JPEG support should be compiled])
-	AC_MSG_RESULT([yes])
-    else
-	AC_MSG_RESULT([no])
-    fi
-else
-    AC_MSG_RESULT([disabled])
-fi
-
-AC_MSG_CHECKING([for JPEG 2000 support])
-if test "$with_jpeg2000" = "yes"
-then
-    if test "$ac_cv_lib_jasper_jas_init" = "yes"
-    then
-	AC_DEFINE(USE_JPEG2000, ,
-                  [define if JPEG 2000 support should be compiled])
-	AC_MSG_RESULT([yes])
-    else
-	AC_MSG_RESULT([no])
-    fi
-else
-    AC_MSG_RESULT([disabled])
-fi
-
-AC_MSG_CHECKING([for PNG support])
-if test "$with_png" = "yes"
-then
-    if test "$ac_cv_lib_png_png_create_read_struct" = "yes" -o \
-	    "$ac_cv_lib_png_png_destroy_read_struct" = "yes"
-    then
-	AC_DEFINE(USE_PNG, , [define if PNG support should be compiled])
-	AC_MSG_RESULT([yes])
-    else
-	AC_MSG_RESULT([no])
-    fi
-else
-    AC_MSG_RESULT([disabled])
-fi
-
-AC_MSG_CHECKING([for TIFF support])
-if test "$with_tiff" = "yes"
-then
-    if test "$ac_cv_lib_tiff_TIFFOpen" = "yes"
-    then
-	AC_DEFINE(USE_TIFF, , [define if TIFF support should be compiled])
-	AC_MSG_RESULT([yes])
-    else
-	AC_MSG_RESULT([no])
-    fi
-else
-    AC_MSG_RESULT([disabled])
-fi
+NIH_CHECK_SUPPORT(EXIF)
+NIH_CHECK_SUPPORT(GIF)
+NIH_CHECK_SUPPORT(JPEG)
+NIH_CHECK_SUPPORT(JPEG2000)
+NIH_CHECK_SUPPORT(PNG)
+NIH_CHECK_SUPPORT(TIFF)
 
 AC_MSG_CHECKING([for LZW compression support])
 if test "$enable_lzw" = "yes"
