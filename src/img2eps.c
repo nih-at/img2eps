@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.8 2002/09/11 22:44:20 dillo Exp $
+  $NiH: img2eps.c,v 1.9 2002/10/08 16:45:02 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002 Dieter Baron
@@ -45,18 +45,19 @@ static const char help_tail[] = "\
   -m, --margin M    set all margins to M\n\
   -o, --output FILE write EPSF to FILE\n\
   -P, --paper P     set paper size to P\n\
+  -v, --verbose     be verbose\n\
 \n\
 Report bugs to <dillo@giga.or.at>.\n";
 
 static const char usage[] =
-"usage: %s [-hV] [-123c] [-a asc] [-C comp] [-m marg] [-o file] [-p paper] file [...]\n";
+"usage: %s [-hV] [-123cv] [-a asc] [-C comp] [-m marg] [-o file] [-p paper] file [...]\n";
 
 
 enum {
     OPT_LEVEL = 256
 };
 
-#define OPTIONS "hV123a:cC:gm:o:p:"
+#define OPTIONS "hV123a:cC:gm:o:p:v"
 
 static const struct option options[] = {
     { "help",         0, 0, 'h' },
@@ -71,6 +72,7 @@ static const struct option options[] = {
     { "output",       1, 0, 'o' },
     { "paper",        1, 0, 'P' },
     { "stdout",       0, 0, 'c' },
+    { "verbose",      0, 0, 'v' },
     { NULL, 0, 0, 0 }
 };
 
@@ -114,7 +116,7 @@ main(int argc, char *argv[])
 	    cat = 1;
 	    break;
 	case 'C':
-	    par->i.compression = epsf_compression_num(optarg);
+	    par->i.compression = image_compression_num(optarg);
 	    if (par->i.compression == IMAGE_CMP_UNKNOWN) {
 		fprintf(stderr, "%s: unknown compression method `%s'\n",
 			prg, optarg);
@@ -133,6 +135,9 @@ main(int argc, char *argv[])
 	    break;
 	case 'P':
 	    epsf_set_paper(par, optarg);
+	    break;
+	case 'v':
+	    par->flags |= EPSF_FLAG_VERBOSE;
 	    break;
 	case OPT_LEVEL:
 	    i = atoi(optarg);

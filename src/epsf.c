@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.14 2002/10/10 00:16:18 dillo Exp $
+  $NiH: epsf.c,v 1.15 2002/10/10 11:05:16 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -80,7 +80,7 @@ struct dimen dimen[] = {
   name of the corresponding PostScript filters.
 */
 
-const struct _epsf_nn _epsf_nn_asc[] = {
+const struct _num_name _epsf_nn_asc[] = {
     { EPSF_ASC_HEX, "ASCIIHex" },
     { EPSF_ASC_85,  "ASCII85" },
 
@@ -88,40 +88,6 @@ const struct _epsf_nn _epsf_nn_asc[] = {
     { EPSF_ASC_85,  "85" },
 
     { EPSF_ASC_UNKNOWN, NULL }
-};
-
-const struct _epsf_nn _epsf_nn_cspace[] = {
-    { IMAGE_CS_GRAY,         "DeviceGray" },
-    { IMAGE_CS_RGB,          "DeviceRGB" },
-    { IMAGE_CS_CMYK,         "DeviceCMYK" },
-    { IMAGE_CS_INDEXED,      "Indexed" },
-
-    { IMAGE_CS_GRAY,         "gray" },
-    { IMAGE_CS_GRAY,         "grey" },
-    { IMAGE_CS_RGB,          "rgb" },
-    { IMAGE_CS_CMYK,         "cmyk" },
-    { IMAGE_CS_HSV,          "hsv" },
-
-    { IMAGE_CS_UNKNOWN, NULL }
-};
-
-const struct _epsf_nn _epsf_nn_compression[] = {
-    { IMAGE_CMP_NONE,        "none" },
-    { IMAGE_CMP_RLE,         "RunLength" },
-    { IMAGE_CMP_LZW,         "LZW" },
-    { IMAGE_CMP_FLATE,       "Flate" },
-    { IMAGE_CMP_CCITT,       "CCITTFax" },
-    { IMAGE_CMP_DCT,         "DCT" },
-
-    { IMAGE_CMP_RLE,         "rle" },
-    { IMAGE_CMP_LZW,         "gif" },
-    { IMAGE_CMP_FLATE,       "zlib" },
-    { IMAGE_CMP_FLATE,       "png" },
-    { IMAGE_CMP_CCITT,       "ccitt" },
-    { IMAGE_CMP_CCITT,       "fax" },
-    { IMAGE_CMP_DCT,         "jpeg" },
-
-    { IMAGE_CMP_UNKNOWN, NULL }
 };
 
 static void _calculate_bbox(epsf *ep);
@@ -155,6 +121,14 @@ int
 epsf_calculate_parameters(epsf *ep)
 {
     int level, level2;
+
+    /* size */
+
+    if (ep->i.width == 0)
+	ep->i.width = ep->im->i.width;
+    if (ep->i.height == 0)
+	ep->i.height = ep->im->i.height;
+
 
     /* determine color space */
 
@@ -199,6 +173,16 @@ epsf_calculate_parameters(epsf *ep)
 	       "color space %s at depth %d not supported in LanguageLevel %d",
 	       epsf_cspace_name(ep->i.cspace.type), ep->i.cspace.depth,
 	       ep->level);
+
+
+    /* transparency */
+
+    ep->i.cspace.transparency = IMAGE_TR_NONE;
+
+
+    /* set up image conversion */
+
+    ep->im = image_convert(ep->im, image_info_mask(&ep->i), &ep->i);
 
 
     /* determine level needed by ascii encoding */
@@ -268,10 +252,6 @@ epsf_calculate_parameters(epsf *ep)
     ep->level = level;
     
     
-    /* set up image conversion */
-
-    ep->im = image_convert(ep->im, image_info_mask(&ep->i), &ep->i);
-
     /* calculate image placement and bounding box */
 
     _calculate_bbox(ep);
@@ -418,6 +398,22 @@ epsf_parse_dimen(const char *d)
 
 
 
+void
+epsf_print_parameters(const epsf *ep)
+{
+    printf("%s:\n", ep->im->fname);
+    printf("   image: %s\n",
+	   image_info_print(&ep->im->oi));
+    printf("    EPSF: %s, %s, level %d\n",
+	   image_info_print(&ep->i),
+	   epsf_asc_name(ep->ascii),
+	   ep->level);
+    
+    /* XXX: bbox */
+}
+
+
+
 int
 epsf_process(stream *st, const char *fname, const epsf *par)
 {
@@ -433,6 +429,8 @@ epsf_process(stream *st, const char *fname, const epsf *par)
 	ep = epsf_create(par, st, im);
 
 	epsf_calculate_parameters(ep);
+	if (par->flags & EPSF_FLAG_VERBOSE)
+	    epsf_print_parameters(ep);
 	epsf_write_header(ep);
 	epsf_write_setup(ep);
 	epsf_write_data(ep);
@@ -620,34 +618,6 @@ epsf_write_trailer(epsf *ep)
 {
     stream_puts("showpage end restore\n", ep->st);
     return stream_puts("%%EOF\n", ep->st);
-}
-
-
-
-int
-_epsf_name_num(const struct _epsf_nn *t, const char *n)
-{
-    int i;
-
-    for (i=0; t[i].name; i++)
-	if (strcasecmp(t[i].name, n) == 0)
-	    break;
-
-    return t[i].num;
-}
-
-
-
-char *
-_epsf_num_name(const struct _epsf_nn *t, int n)
-{
-    int i;
-
-    for (i=0; t[i].name; i++)
-	if (t[i].num == n)
-	    break;
-
-    return t[i].name;
 }
 
 

@@ -21,6 +21,7 @@ img2eps_SOURCES=epsf.c \
 		st_line.c \
 		st_lzw.c \
 		st_runlength.c \
+		util.c \
 		xmalloc.c
 
 noinst_HEADERS=	epsf.h \
@@ -28,6 +29,7 @@ noinst_HEADERS=	epsf.h \
 		image.h \
 		stream.h \
 		stream_types.h \
+		util.h \
 		xmalloc.h
 
 EXTRA_DIST=	getopt_long.c \

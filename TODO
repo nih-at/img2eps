@@ -5,7 +5,7 @@
 - tiff: jpeg, alpha, bit order
 + solaris: libpng needs -lm
 
-- verbose option (image info before & after, eps parameters)
+- dry-run option (don't process, only print info)
 - png: raw read
 - gif: raw reading, depth always 8?
 - predictors

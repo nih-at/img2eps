@@ -2,7 +2,7 @@
 #define HAD_EPSF_H
 
 /*
-  $NiH: epsf.h,v 1.5 2002/09/11 22:44:18 dillo Exp $
+  $NiH: epsf.h,v 1.6 2002/09/14 02:27:38 dillo Exp $
 
   epsf.h -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -11,8 +11,9 @@
   The author can be contacted at <dillo@giga.or.at>
 */
 
-#include "stream.h"
 #include "image.h"
+#include "stream.h"
+#include "util.h"
 
 /* keep in sync with _asc_tab[] in stream.c */
 enum epsf_ascii {
@@ -39,31 +40,22 @@ struct epsf {
     epsf_ascii ascii;			/* desired ascii encoding */
     int level;				/* minimum LanguageLevel to support */
     image_info i;			/* desired image properties */
+    int flags;				/* prossing flags */
 };
 
 typedef struct epsf epsf;
 
-struct _epsf_nn {
-    int num;
-    char *name;
-};
-
-extern const struct _epsf_nn _epsf_nn_asc[];
-extern const struct _epsf_nn _epsf_nn_cspace[];
-extern const struct _epsf_nn _epsf_nn_compression[];
+#define EPSF_FLAG_VERBOSE	1
 
 
 
-int _epsf_name_num(const struct _epsf_nn *t, const char *n);
-char *_epsf_num_name(const struct _epsf_nn *t, int n);
+extern const struct _num_name _epsf_nn_asc[];
 
-#define epsf_asc_name(a)	(_epsf_num_name(_epsf_nn_asc, (a)))
-#define epsf_cspace_name(a)	(_epsf_num_name(_epsf_nn_cspace, (a)))
-#define epsf_compression_name(a)	\
-				(_epsf_num_name(_epsf_nn_compression, (a)))
-#define epsf_asc_num(a)		(_epsf_name_num(_epsf_nn_asc, (a)))
-#define epsf_cspace_num(a)	(_epsf_name_num(_epsf_nn_cspace, (a)))
-#define epsf_compression_num(a)	(_epsf_name_num(_epsf_nn_compression, (a)))
+#define epsf_asc_name(a)	(num2name(_epsf_nn_asc, (a), 1))
+#define epsf_asc_num(a)		(name2num(_epsf_nn_asc, (a)))
+
+#define epsf_cspace_name(a)	(num2name(_image_nn_cspace, (a), 1))
+#define epsf_compression_name(a) (num2name(_image_nn_compression, (a), 1))
 
 int epsf_asc_langlevel(epsf_ascii asc);
 int epsf_calculate_parameters(epsf *ep);
@@ -73,6 +65,7 @@ epsf *epsf_create_defaults(void);
 int epsf_cspace_langlevel(const image_cspace *cs);
 void epsf_free(epsf *ep);
 int epsf_parse_dimen(const char *d);
+void epsf_print_parameters(const epsf *ep);
 int epsf_process(stream *st, const char *fname, const epsf *par);
 void epsf_set_margins(epsf *ep, int l, int r, int t, int b);
 int epsf_set_paper(epsf *ep, const char *paper);

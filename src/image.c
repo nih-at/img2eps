@@ -1,5 +1,5 @@
 /*
-  $NiH: image.c,v 1.10 2002/10/10 00:12:48 dillo Exp $
+  $NiH: image.c,v 1.11 2002/10/10 12:38:42 dillo Exp $
 
   image.c -- general image functions
   Copyright (C) 2002 Dieter Baron
@@ -9,6 +9,7 @@
 */
 
 #include <errno.h>
+#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -47,6 +48,51 @@ image *(*open_tab[])(const char *) = {
     gif_open,
 #endif
     NULL
+};
+
+
+
+const struct _num_name _image_nn_cspace[] = {
+    { IMAGE_CS_GRAY,         "DeviceGray" },
+    { IMAGE_CS_GRAY,         "gray" },
+    { IMAGE_CS_GRAY,         "grey" },
+
+    { IMAGE_CS_RGB,          "DeviceRGB" },
+    { IMAGE_CS_RGB,          "rgb" },
+
+    { IMAGE_CS_CMYK,         "DeviceCMYK" },
+    { IMAGE_CS_CMYK,         "cmyk" },
+
+    { IMAGE_CS_INDEXED,      "Indexed" },
+    { IMAGE_CS_INDEXED,      "indexed" },
+
+    { IMAGE_CS_HSV,          "hsv" },
+
+    { IMAGE_CS_UNKNOWN, NULL }
+};
+
+const struct _num_name _image_nn_compression[] = {
+    { IMAGE_CMP_NONE,        "none" },
+    { IMAGE_CMP_RLE,         "RunLength" },
+    { IMAGE_CMP_RLE,         "rle" },
+
+    { IMAGE_CMP_LZW,         "LZW" },
+    { IMAGE_CMP_LZW,         "lzw" },
+    { IMAGE_CMP_LZW,         "gif" },
+    
+    { IMAGE_CMP_FLATE,       "Flate" },
+    { IMAGE_CMP_FLATE,       "flate" },
+    { IMAGE_CMP_FLATE,       "zlib" },
+    { IMAGE_CMP_FLATE,       "png" },
+
+    { IMAGE_CMP_CCITT,       "CCITTFax" },
+    { IMAGE_CMP_CCITT,       "ccitt" },
+    { IMAGE_CMP_CCITT,       "fax" },
+
+    { IMAGE_CMP_DCT,         "DCT" },
+    { IMAGE_CMP_DCT,         "jpeg" },
+
+    { IMAGE_CMP_UNKNOWN, NULL }
 };
 
 
@@ -231,6 +277,38 @@ image_info_mask(const image_info *i)
 	m |= IMAGE_INF_ORDER;
 
     return m;
+}
+
+
+
+char *
+image_info_print(const image_info *i)
+{
+    static char b[8192];
+
+    char *p;
+
+    p = b;
+    sprintf(p, "%dx%d %s %dbps",
+	    i->width, i->height,
+	    image_cspace_name(i->cspace.type),
+	    i->cspace.depth);
+    p += strlen(p);
+    if (i->cspace.type == IMAGE_CS_INDEXED) {
+	sprintf(p, " (%s %dbps)",
+		image_cspace_name(i->cspace.base_type),
+		i->cspace.base_depth);
+	p += strlen(p);
+    }
+    if (i->compression != IMAGE_CMP_NONE) {
+	sprintf(p, ", %s compressed",
+		image_compression_name(i->compression));
+	p += strlen(p);
+    }
+
+    /* XXX: transparency */
+
+    return b;
 }
 
 

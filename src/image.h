@@ -2,7 +2,7 @@
 #define _HAD_IMAGE_H
 
 /*
-  $NiH: image.h,v 1.7 2002/09/14 02:27:40 dillo Exp $
+  $NiH: image.h,v 1.8 2002/10/08 16:46:59 dillo Exp $
 
   image.h -- image header
   Copyright (C) 2002 Dieter Baron
@@ -12,6 +12,8 @@
 */
 
 #include <stdlib.h>
+
+#include "util.h"
 
 enum image_cs_type {		/* type of color space */
     IMAGE_CS_UNKNOWN,
@@ -189,6 +191,14 @@ struct image_functions name##_functions  = {	\
 						fname))
 
 
+extern const struct _num_name _image_nn_cspace[];
+extern const struct _num_name _image_nn_compression[];
+
+#define image_cspace_name(a)	(num2name(_image_nn_cspace, (a), 2))
+#define image_compression_name(a) (num2name(_image_nn_compression, (a), 2))
+#define image_cspace_num(a)	(name2num(_image_nn_cspace, (a)))
+#define image_compression_num(a) (name2num(_image_nn_compression, (a)))
+
 /* create and initialize image structure */
 image *_image_create(struct image_functions *f, size_t size,
 		     const char *fname);
@@ -201,6 +211,7 @@ int image_cspace_palette_size(const image_cspace *cspace);
 void image_free(image *im);
 int image_get_row_size(const image *im);
 int image_info_mask(const image_info *cs);
+char *image_info_print(const image_info *i);
 
 /* external interface */
 
