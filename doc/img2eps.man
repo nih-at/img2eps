@@ -1,5 +1,7 @@
+.\"	\-*\- nroff \-*\-
 .\" This man page written by Thomas Klausner <tk@giga.or.at> and
 .\" Dieter Baron <dillo@giga.or.at>.
+.\" $NiH: img2eps.mdoc,v 1.3 2002/10/11 23:48:14 dillo Exp $
 .TH IMG2EPS 1 "October 10, 2002" NiH
 .SH "NAME"
 img2eps \- package raster images into EPS file
@@ -18,7 +20,7 @@ img2eps \- package raster images into EPS file
 \fBfile ...\fR
 .SH "DESCRIPTION"
 .B img2eps
-packages each 
+packages each
 \fBfile\fR
 into an EPS (Embedded PostScript) file, using whatever PostScript
 features are advantageous.
@@ -90,7 +92,7 @@ options.
 .TP 15
 \fB\-m\fR \fBM\fR
 .TP 15
-\fB\-\-margin\fR \fBM \fR
+\fB\-\-margin\fR \fBM\fR
 Set all margins to
 \fBM.\fR
 .TP 15
@@ -99,7 +101,7 @@ Set all margins to
 \fB\-\-output\fR \fBFILE\fR
 Write EPSF to output file
 \fBFILE.\fR
-The default is the name of the input file with it's extension changed
+The default is the name of the input file with its extension changed
 to
 .Em.eps.
 .TP 15
@@ -118,6 +120,19 @@ Display version number.
 
 .PP
 If possible, the compressed image data is copied directly to the EPS file.
+.SS "Language Levels"
+There are three major versions of PostScript, called Language Levels:
+.PP
+Language Level 1 only supports ASCIIHEX encoded, uncompressed images
+and does not support indexed (paletted) images.
+.PP
+Language Level 2 adds support for ASCII85 encoding and various
+compression schemes, 12 bit samples, and indexed images.
+Most PostScript printers support Language Level 2.
+.PP
+Language Level 3 adds support for Flate (zlib) compression, a
+patent\-free lossless compression scheme.
+Ghostscript supports Language Level 3.
 .SS "Default Parameters"
 The default value for any parameter not specified via command line
 options is derived from the image:
@@ -133,7 +148,7 @@ if it exists, or the highest supported depth (8 for language level 1,
 If direct copy of the compressed image data is supported, the
 compression method of the image is used.
 If the image is compressed with DCT (jpeg), DCT compression is used
-even if recompression is neccessary.
+even if recompression is necessary.
 Otherwise, the best lossless compression method available is used,
 which is Flate for language level 3, LZW (or RunLength if LZW encoding
 is disabled) for language level 2.
@@ -149,16 +164,6 @@ compression method is used.
 The
 .B img2eps
 utility exits 0 on success, and \*[Gt]0 if an error occurs.
-.SH "BUGS"
-Emulation of the colorimage operator is provided only for 8bit RGB
-images.
-(The presence of the operator is assumed for other color formats.)
-.PP
-Predictor functions (for LZW or Flate compression) are not supported.
-.PP
-TIFF images that include transparency information (extra samples), or use
-separated planar or tiled layout, are not supported.
-Multi\-page GIF images are not supported.
 .SH "SEE ALSO"
 gs(1)
 .SH "AUTHORS"
@@ -168,3 +173,16 @@ Dieter Baron <dillo@giga.or.at.>
 .PP
 The LZW compression routines and various library function replacements
 (for portability) were taken from the NetBSD Project.
+.SH "BUGS"
+Emulation of the colorimage operator is provided only for 8bit RGB
+images.
+(The presence of the operator is assumed for other color formats.)
+.PP
+Predictor functions (for LZW or Flate compression) are not supported.
+.PP
+TIFF images that include transparency information (extra samples), or use
+separated planar or tiled layout, are not supported.
+Direct copy of LZW compressed TIFF images using the old (bit\-swapped)
+format is not supported and may result in broken EPS files.
+.PP
+Multi\-page GIF images are not supported.
