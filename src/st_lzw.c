@@ -1,5 +1,5 @@
 /*
-  $NiH: st_lzw.c,v 1.1 2002/10/06 16:11:55 dillo Exp $
+  $NiH: st_lzw.c,v 1.2 2002/10/08 00:17:32 dillo Exp $
 
   st_lzw.c -- LZWEncode filter
 
@@ -411,7 +411,7 @@ output(stream_lzw *zs, code_int ocode)
 			bp = buf;
 			bits = offset/8;
 			bytes_out += bits;
-			stream_write(zs->st.st, bp, bits);
+			stream_write(zs->st.st, (char *)bp, bits);
 			/* move partial byte to beginning of buffer */
 			bp[0] = bp[bits];
 			bits = offset % 8;
@@ -448,7 +448,7 @@ output(stream_lzw *zs, code_int ocode)
 		/* At EOF, write the rest of the buffer. */
 		if (offset > 0) {
 			offset = (offset + 7) / 8;
-			stream_write(zs->st.st, buf, offset);
+			stream_write(zs->st.st, (char *)buf, offset);
 			bytes_out += offset;
 		}
 		offset = 0;

@@ -1,5 +1,5 @@
 /*
-  $NiH: im_png.c,v 1.11 2002/10/12 00:02:08 dillo Exp $
+  $NiH: im_png.c,v 1.12 2002/10/12 18:18:23 dillo Exp $
 
   im_png.c -- PNG image handling
   Copyright (C) 2002 Dieter Baron
@@ -120,7 +120,7 @@ image *
 png_open(char *fname)
 {
     image_png *im;
-    char sig[8];
+    unsigned char sig[8];
     FILE *f;
     exception ex;
     png_colorp plte;
@@ -239,7 +239,7 @@ png_read(image_png *im, char **bp)
     if (im->rows)
 	*bp = im->rows[im->currow++];
     else {
-	png_read_row(im->png, im->buf, NULL);
+	png_read_row(im->png, (unsigned char *)im->buf, NULL);
 	*bp = im->buf;
     }
 
@@ -370,6 +370,7 @@ png_set_cspace(image_png *im, int mask, const image_cspace *cspace)
 	    break;
 
 	default:
+	    ;
 	}
     }
 

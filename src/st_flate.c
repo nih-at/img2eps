@@ -1,5 +1,5 @@
 /*
-  $NiH: st_flate.c,v 1.4 2002/10/08 00:16:26 dillo Exp $
+  $NiH: st_flate.c,v 1.5 2002/10/12 00:02:12 dillo Exp $
 
   st_flate.c -- FlateEncode stream
   Copyright (C) 2002 Dieter Baron
@@ -72,7 +72,7 @@ flate_close(stream_flate *st)
 
     end = 0;
     while (!end) {
-	st->z.next_out = st->b;
+	st->z.next_out = (unsigned char *)st->b;
 	st->z.avail_out = BLKSIZE;
 	switch (deflate(&st->z, Z_FINISH)) {
 	case Z_OK:
@@ -125,11 +125,11 @@ stream_flate_open(stream *ost, void *params)
 int
 flate_write(stream_flate *st, const char *b, int n)
 {
-    st->z.next_in = (char *)b;
+    st->z.next_in = (unsigned char *)b;
     st->z.avail_in = n;
 
     while (st->z.avail_in) {
-	st->z.next_out = st->b;
+	st->z.next_out = (unsigned char *)st->b;
 	st->z.avail_out = BLKSIZE;
 	if (deflate(&st->z, Z_NO_FLUSH) != Z_OK)
 	    throwf(EINVAL, "deflate error: %s", st->z.msg);

@@ -1,5 +1,5 @@
 /*
-  $NiH: im_convert.c,v 1.14 2002/10/12 00:02:07 dillo Exp $
+  $NiH: im_convert.c,v 1.15 2002/10/13 01:25:03 dillo Exp $
 
   im_convert.c -- image conversion handling
   Copyright (C) 2002 Dieter Baron
@@ -276,7 +276,7 @@ image_convert(image *oim, int mask, const image_info *i)
 
     mask &= ~IMAGE_INF_COMPRESSION;
 
-    if ((mask & IMAGE_INF_ORDER) && i->order != im->im.i.order)
+    if ((mask & IMAGE_INF_ORDER) && i->order != im->oim.i.order)
 	throwf(EOPNOTSUPP, "reordering of samples not supported");
 
     im = image_create(conv, oim->fname);
