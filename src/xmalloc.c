@@ -1,5 +1,5 @@
 /*
-  $NiH: xmalloc.c,v 1.1 2002/09/10 14:05:54 dillo Exp $
+  $NiH: xmalloc.c,v 1.2 2002/09/22 13:01:09 dillo Exp $
 
   xmalloc.c -- allocation functions with exceptions
   Copyright (C) 2002 Dieter Baron
@@ -9,6 +9,7 @@
 */
 
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -20,7 +21,7 @@
 void *
 xmalloc(size_t size)
 {
-    static errstr[128];
+    static char errstr[128];
     void *p;
 
     if ((p=malloc(size)) == NULL) {
