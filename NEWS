@@ -1,7 +1,8 @@
 New in 0.2:
 
-* support for specifying resolution, orientation, and placement of image
+* support for specifying resolution, size, orientation, and placement of image
 * support for JPEG 2000 image format
+* support for EXIF Orientation tag (auto-rotate images)
 * fix handling of interlaced GIF images
 
 New in 0.1 (2002/10/16):

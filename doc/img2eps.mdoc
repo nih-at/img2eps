@@ -1,4 +1,4 @@
-.\"  $NiH: img2eps.mdoc,v 1.10 2005/01/04 19:36:33 dillo Exp $
+.\"  $NiH: img2eps.mdoc,v 1.11 2005/01/06 17:02:05 dillo Exp $
 .\"
 .\"  img2eps.mdoc -- man page for img2eps(1)
 .\"  Copyright (C) 2002, 2005 Dieter Baron and Thomas Klausner
@@ -32,7 +32,7 @@
 .\"  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 .\"  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd January 4, 2005
+.Dd January 7, 2005
 .Dt IMG2EPS 1
 .Os
 .Sh NAME
@@ -48,17 +48,20 @@
 .Op Fl G | Fl -gravity Ar G
 .Op Fl g | -gray | -grey
 .Op Fl h | Fl -help
+.Op Fl -height Ar H
 .Op Fl -left-margin Ar M
 .Op Fl -level
 .Op Fl m | Fl -margin Ar M
 .Op Fl O | Fl -orientation Ar O
 .Op Fl o | Fl -output Ar FILE
 .Op Fl P | Fl -paper Ar P
-.Op Fl r | Fl -resolution Ar r
+.Op Fl r | Fl -resolution Ar R
 .Op Fl -right-margin Ar M
+.Op Fl s | Fl -size Ar S
 .Op Fl -top-margin Ar M
 .Op Fl v | Fl -verbose
-.Op Fl -version
+.Op Fl V | Fl -version
+.Op Fl -width Ar W
 .Ar file ...
 .Sh DESCRIPTION
 .Nm
@@ -129,7 +132,11 @@ Write EPSF to standard output.
 If this option is used, only one input file may be specified.
 .It Fl G Ar G
 .It Fl -gravity Ar G
-Specify the placement of image within the printable area of the page:
+Specify the placement of image within the printable area of the page.
+The gravity can be either a pair of numbers (see below) in the range
+of 0 to 1 inclusive, which specify how much of the free space is
+placed to the left / above the image, or one of the following
+pre-defined settings:
 .Bl -bullet -offset indent -compact
 .It
 top-left
@@ -153,12 +160,18 @@ bottom-right
 .It Fl g
 .It Fl -gray
 Convert image to grayscale.
+.It Fl height Ar H
+Specfify the height of the image to be
+.Ar H ,
+which should be a dimen (see below).
+The width will be computed to keep the aspect ratio of the original image.
 .It Fl h
 .It Fl -help
 Display a short help message.
 .It Fl -left-margin Ar M
 Set left margin to
-.Ar M .
+.Ar M ,
+which should be a dimen (see below).
 .It Fl -level Ar L
 Use only features present in PostScript language level
 .Ar L .
@@ -172,19 +185,7 @@ options.
 .It Fl -margin Ar M
 Set all margins to
 .Ar M ,
-which should be a number optionally followed by a unit.
-Supported units are:
-.Bl -bullet -offset indent -compact
-.It
-cm
-.It
-in
-.It
-mm
-.It
-pt (PostScript point, 1/72in)
-.El
-If no unit is specified, pt is assumed.
+which should be a dimen (see below).
 .It Fl O Ar O
 .It Fl -orientation Ar O
 Set orientation (rotation) of image:
@@ -198,7 +199,7 @@ Rotate image 180 degrees.
 .It seascape
 Rotate image 90 degrees clockwise.
 .It auto
-Use portrait or landscape, whichever results in a larger image.
+Use portrait or landscape, whichever fits the image better.
 .El
 .It Fl o Ar FILE
 .It Fl -output Ar FILE
@@ -209,7 +210,8 @@ If this option is used, only one input file may be specified.
 .It Fl -paper Ar P
 Set paper size to
 .Ar P .
-Supported sizes are:
+The paper size can be specified either as a pair of dimens (see
+below), or by using one of the following pre-defined sizes:
 .Bl -bullet -offset indent -compact
 .It
 10x14
@@ -237,16 +239,51 @@ tabloid
 .It Fl r Ar R
 .It Fl -resolution Ar R
 Specify the resolution to print the image at, in dpi (dots per inch).
+.Ar R
+can be a number to specify equal horizontal and vertical resolution
+ or a pair of numbers (see below) to specify horzontal and vertical
+resolutions separately.
 .It Fl -right-margin Ar M
 Set right margin to
-.Ar M .
+.Ar M ,
+which should be a dimen (see below).
+.It Fl S Ar S
+.It Fl -size Ar S
+Specify the size of the printed image.
+.Ar S
+should be a pair of dimens (see below).
 .It Fl -top-margin Ar M
 Set top margin to
-.Ar M .
+.Ar M ,
+which should be a dimen (see below).
 .It Fl V
 .It Fl -version
 Display version number.
+.It Fl width Ar W
+Specfify the width of the image to be
+.Ar W ,
+which should be a dimen (see below).
+The height will be computed to keep the aspect ratio of the original image.
 .El
+.Ss Dimens and Pairs
+A dimen is a number optionally followed by a unit.
+Supported units are:
+.Bl -bullet -offset indent -compact
+.It
+cm
+.It
+in
+.It
+mm
+.It
+pt (PostScript point, 1/72in)
+.El
+If no unit is specified, pt is assumed.
+.Pp
+A pair of numbers should be separated by any one of `x', `*', `,'.
+.Pp
+A pair of dimens is a pair of numbers optionally followed by a unit,
+which applies to both numbers of the pair.
 .Ss Language Levels
 There are three major versions of PostScript, called Language Levels:
 .Pp

@@ -1,3 +1,23 @@
+2005-01-07  Dieter Baron  <dillo@danbala.tuwien.ac.at>
+
+	* src/epsf.h (epsf_placement): represent gravity as pair of
+	floats, add image size, separate resolution for x and y.
+	* src/epsf.c (epsf_set_gravity): allow gravity to be specified as
+	pair of floats.
+	* src/epsf.c (epsf_set_paper): allow paper size to be specified as
+	dimen pair.
+	* src/epsf.c (epsf_set_resolution): allow separate resolution for
+	x and y.
+	* src/epsf.c (epsf_set_image_size): new function.
+	* src/epsf.c (epsf_set_margin): pass in dimen as string, add flags
+	argument to specify which margins to set; adapt callers.
+	* src/epsf.c (_dimen_get, _dimen_parse_pair, _dimen_scale): new
+	functions.
+	* src/epsf.c (_dimen_parse): rename from epsf_parse_dimen, adapt
+	to new dimen infrastructure.
+	* src/epsf.c (_calculate_bbox): adapt.
+	* src/img2eps.c: add option to specify image size.
+
 2005-01-06  Dieter Baron  <dillo@danbala.tuwien.ac.at>
 
 	* configure.in (NIH_CHECK_SUPPORT): new macro.

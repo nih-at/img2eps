@@ -1,4 +1,5 @@
 bugs:
++ [ui] error out on illegal arguments to options
 + [jpeg] fix PostScript error with pictures from Canon EOS 300D (direct copy)
 + [epsf] fix order transformation matrices
 - [jpeg] fix direct-copy broken on level2 printers
@@ -6,13 +7,10 @@ bugs:
 . [jpeg2000] testfiles_jp2/file3.jp2: error reading component 1 of row 0
 
 enhancements:
++ [ui] option to disable direct-copy
 + [ui] dry-run option (don't process, only print info)
 + [ui] more information in verbose mode
-+ [ui] specify image size
-- [ui] specify paper size as pair of dimens
-- [ui] specify gravity as pair of floats
 - [image] allow cropping of image
-- [epsf] support different scaling in x and y
 - [ui] force specific color space / depth
 . [image] allow bitmap-scaling of image
 . [image] multi-page images (TIFF, MNG, animated GIF)
@@ -29,6 +27,7 @@ enhancements:
 . [epsf] pdf output
 
 other:
++ [doc] regen .man
 + [config] remove --disable-lzw (patent expired)
 + [regress] fix tiff.test (image format not recognized on danbala)
 - [???] image_info: bit order
