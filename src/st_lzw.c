@@ -1,5 +1,5 @@
 /*
-  $NiH$
+  $NiH: st_lzw.c,v 1.1 2002/10/06 16:11:55 dillo Exp $
 
   st_lzw.c -- LZWEncode filter
 
@@ -350,7 +350,7 @@ nomatch:	output(zs, (code_int) ent);
 		}
 #endif
 	}
-	return (num);
+	return 0;
 }
 
 
