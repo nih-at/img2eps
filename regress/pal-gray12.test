@@ -2,9 +2,9 @@
 #   image: 64x64 indexed 8bps (rgb 16bps), flate compressed
 #    EPSF: 64x64 gray 12bps, lzw compressed, ASCII85, level 2
 #
-#	$NiH: pal-gray12.test,v 1.3 2002/10/11 23:30:22 dillo Exp $
+#	$NiH: pal-gray12.test,v 1.4 2002/10/16 13:50:20 dillo Exp $
 #
-features TIFF LZW_COMPRESSION
+features TIFF LZW_COMPRESS
 return 0
 options -g
 input pal4.tif
