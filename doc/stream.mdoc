@@ -1,0 +1,183 @@
+.de BF
+. Bd -filled -offset indent
+..
+.de EF
+. Ed
+. Pp
+..
+.Dd October 16, 2002
+.Dt "LAYERED OUTPUT STREAMS" 3 
+.ds vT img2eps Internal Documentation
+.Sh NAME
+.Nm "LAYERED OUTPUT STREAMS"
+.Sh INTROUCTION
+.Pp
+This module provides layered encoding of data via streams.
+.Pp
+It is composed of one stream for each encoding or data target (file)
+.Fa ( st_TYPE.c )
+and some common functions
+.Fa ( stream.c ) .
+.Pp
+Unless otherwise noted, an exception is thrown when an error occurs.
+.Pp
+Methods are supposed to be implemented by each stream type, called
+.Fa TYPE_NAME . 
+.Pp
+.Sh FUNCTIONS AND METHODS
+.Pp
+FUNCTION
+.Ft stream *
+.Fn stream_ascii_open "stream *ost" "int type" "int eodmarker"
+.BF
+Open an ASCII encoding stream (which encodes binary data to printable
+ASCII characters), delivering its output to
+.Fa ost .
+.Pp
+.Fa type
+specifies the encoding method; suppored are
+.Bl -bullet -offset indent -compact
+.It
+ASCII85
+.Dv ( EPSF_ASC_85 )
+.It
+ASCIIHEX
+.Dv ( EPSF_ASC_HEX )
+.El
+If
+.Fa type
+is
+.Dv EPSC_ASC_NONE ,
+.Fa ost
+is returned.
+The constants are defined in
+.Fa epsf.h .
+.Pp
+If
+.Fa eodmarker
+is non-zero, an end of data marker is written to
+.Fa ost
+when this stream is closed.
+.Pp
+Returns the newly created stream or
+.Fa ost
+if no data processing is required.
+.EF
+METHOD
+.Ft int
+stream_close "stream *st"
+.BF
+Close and free stream
+.Fa st .
+.EF
+FUNCTION
+.Ft stream *
+.Fn stream_compression_open "stream *ost" "int type" "void *params"
+.BF
+Open a compression stream, delivering its output to
+.Fa ost .
+.Pp
+.Fa type
+specifies the compression method; suppored are
+.Bl -bullet -offset indent -compact
+.It
+DCT
+.Dv ( IMAGE_CMP_DCT )
+.It
+Flate
+.Dv ( IMAGE_CMP_FLATE )
+.It
+LZW
+.Dv ( IMAGE_CMP_LZW )
+.It
+RunLength
+.Dv ( IMAGE_CMP_RLE )
+.El
+If
+.Fa type
+is
+.Dv IMAGE_CMP_NONE ,
+.Fa ost
+is returned.
+The constants are defined in
+.Fa image.h .
+.Pp
+.Fa params
+specify parameters for the compression.  Currently, only the DCT
+compressor uses parameters, and expects the image to be compressed.
+[XXX: this will change when support for predictors and other
+compression parameters is added.]
+.Pp
+Returns the newly created stream or
+.Fa ost
+if no data processing is required.
+.EF
+FUNCTION
+.Ft stream *
+.Fn stream_file_fopen "FILE *f" "int closep"
+.BF
+Open a stream delivering data written to it to
+.Fa f ,
+which must be open for writing or updating.
+.Pp
+If
+.Fa closep
+is non-zero,
+.Fa f
+will be closed when the stream is closed.
+.Pp
+Returns the newly created stream.
+.EF
+FUNCTION
+.Ft stream *
+.Fn stream_file_open "const char *fname"
+.BF
+Open a stream writing data written to it to the file
+.Fa fname ,
+which will be created or overwritten.
+.Pp
+Returns the newly created stream.
+.EF
+FUNCTION
+.Ft int
+.Fn stream_printf "stream *st" "const char *fmt" ...
+.BF
+The arguments following
+.Fa fmt ,
+if any, are formatted according to
+.Fa fmt
+and the result is written to
+.Fa st .
+See
+.Xr printf 3
+for a description of the formatting directives suppored.
+.EF
+FUNCTION
+.Ft int
+.Fn stream_putc "int c" "stream *st"
+.BF
+Write the character
+.Fa c
+to
+.Fa st .
+.EF
+FUNCTION
+.Ft int
+.Fn stream_puts "const char *s" "stream *st"
+.BF
+Write the NUL-terminated string
+.Fa s
+to
+.Fa st .
+.EF
+METHOD
+.Ft int
+.Fn stream_write "stream *st" "const char *b", "int n"
+.BF
+Write 
+.Fa n
+bytes from the buffer
+.Fa b
+to
+Fa st .
+.EF
