@@ -31,7 +31,7 @@ libungif.
 
   For compression support: zlib (FlateEncode), jpeg (DCTEncode).
 
-  img2eps's configure script only searches these libraries in the
+  img2eps's configure script only searches for these libraries in the
 directories the compiler searches.  If you have them installed
 elsewhere, pass CFLAGS and LDFLAGS to configure to make the compiler
 find them.  For example, if you have the libraries installed in
