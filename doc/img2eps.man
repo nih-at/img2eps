@@ -1,9 +1,7 @@
 .\"	\-*\- nroff \-*\-
 .\" This man page written by Thomas Klausner <tk@giga.or.at> and
 .\" Dieter Baron <dillo@giga.or.at>.
-.\" Converted with mdoc2man 0.2
-.\" from NiH: img2eps.mdoc,v 1.5 2002/10/13 01:24:48 dillo Exp 
-.\" $NiH: img2eps.mdoc,v 1.5 2002/10/13 01:24:48 dillo Exp $
+.\" $NiH: img2eps.mdoc,v 1.6 2002/10/16 11:10:12 dillo Exp $
 .TH IMG2EPS 1 "October 10, 2002" NiH
 .SH "NAME"
 img2eps \- package raster images into EPS file
@@ -26,6 +24,9 @@ packages each
 \fBfile\fR
 into an EPS (Embedded PostScript) file, using whatever PostScript
 features are advantageous.
+The default name for each output file is the name of the input file
+with its extension changed to
+.Em.eps.
 Supported image file formats are:
 
 .IP \(bu 
@@ -36,9 +37,12 @@ JPEG
 PNG
 .IP \(bu 
 TIFF
+.IP \(bu 
+XPM
 
 .PP
-The options are:
+If possible, the compressed image data is copied directly to the EPS file.
+.SH "The Options"
 
 .TP 15
 \fB\-1\fR
@@ -56,32 +60,48 @@ Explicitly allow the use of PostScript language level 3 features.
 Use
 \fBENC\fR
 ASCII encoding for binary data.
-Supported encodings are ASCIIHEX and ASCII85.
-.TP 15
+Supported encodings are:
+
+.IP \(bu 15
+ASCII85
+.IP \(bu 15
+ASCIIHEX
+
+.IP \(bu 15
 \fB\-C\fR \fBC\fR
-.TP 15
+.IP \(bu 15
 \fB\-\-compress\fR \fBC\fR
 Use compression method
 \fBC\fR
 for image data.
-Supported compression methods are
-DCT (jpeg), RunLength (PackBits), LZW, and Flate (zlib).
-.TP 15
+Supported compression methods are:
+
+.IP \(bu 15
+DCT (jpeg)
+.IP \(bu 15
+Flate (zlib)
+.IP \(bu 15
+LZW
+.IP \(bu 15
+RunLength (PackBits)
+
+.IP \(bu 15
 \fB\-c\fR
-.TP 15
+.IP \(bu 15
 \fB\-\-stdout\fR
 Write EPSF to standard output.
-.TP 15
+If this option is used, only one input file may be specified.
+.IP \(bu 15
 \fB\-g\fR
-.TP 15
+.IP \(bu 15
 \fB\-\-gray\fR
 Convert image to grayscale.
-.TP 15
+.IP \(bu 15
 \fB\-h\fR
-.TP 15
+.IP \(bu 15
 \fB\-\-help\fR
 Display a short help message.
-.TP 15
+.IP \(bu 15
 \fB\-\-level\fR \fBL\fR
 Use only features present in PostScript language level
 \fBL.\fR
@@ -91,37 +111,69 @@ Alternatively, you can also use the
 and
 \fB\-3\fR
 options.
-.TP 15
+.IP \(bu 15
 \fB\-m\fR \fBM\fR
-.TP 15
+.IP \(bu 15
 \fB\-\-margin\fR \fBM\fR
 Set all margins to
-\fBM.\fR
-.TP 15
+\fBM,\fR
+which should be a number optionally followed by a unit.
+Supported units are:
+
+.IP \(bu 15
+cm
+.IP \(bu 15
+in
+.IP \(bu 15
+mm
+.IP \(bu 15
+pt (PostScript point, 1/72in)
+
+If no unit is specified, pt is assumed.
+.IP \(bu 15
 \fB\-o\fR \fBFILE\fR
-.TP 15
+.IP \(bu 15
 \fB\-\-output\fR \fBFILE\fR
 Write EPSF to output file
 \fBFILE.\fR
-The default is the name of the input file with its extension changed
-to
-.Em.eps.
-.TP 15
+If this option is used, only one input file may be specified.
+.IP \(bu 15
 \fB\-P\fR \fBP\fR
-.TP 15
+.IP \(bu 15
 \fB\-\-paper\fR \fBP\fR
 Set paper size to
 \fBP.\fR
-Supported sizes are
-.Em XXX unknown.
-.TP 15
+Supported sizes are:
+
+.IP \(bu 15
+10x14
+.IP \(bu 15
+A3, A4, A5
+.IP \(bu 15
+B4, B5
+.IP \(bu 15
+executive
+.IP \(bu 15
+folio
+.IP \(bu 15
+ledger
+.IP \(bu 15
+legal
+.IP \(bu 15
+letter
+.IP \(bu 15
+quarto
+.IP \(bu 15
+statement
+.IP \(bu 15
+tabloid
+
+.IP \(bu 15
 \fB\-V\fR
-.TP 15
+.IP \(bu 15
 \fB\-\-version\fR
 Display version number.
 
-.PP
-If possible, the compressed image data is copied directly to the EPS file.
 .SS "Language Levels"
 There are three major versions of PostScript, called Language Levels:
 .PP
@@ -168,10 +220,18 @@ The
 utility exits 0 on success, and \*[Gt]0 if an error occurs.
 .SH "SEE ALSO"
 gs(1)
+.Rs
+.%A Adobe Systems Incorporated
+.%B PostScript Language Reference, 3rd edition
+.%D 1999
+.Re
 .SH "AUTHORS"
 .B img2eps
 was written by
 Dieter Baron <dillo@giga.or.at.>
+.PP
+The manual page was written with the help of
+Thomas Klausner <tk@giga.or.at.>
 .PP
 The LZW compression routines and various library function replacements
 (for portability) were taken from the NetBSD Project.
