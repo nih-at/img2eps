@@ -1,5 +1,5 @@
 /*
-  $NiH: im_tiff.c,v 1.12 2002/10/12 00:02:08 dillo Exp $
+  $NiH: im_tiff.c,v 1.13 2002/10/12 02:23:54 dillo Exp $
 
   im_tiff.c -- TIFF image handling
   Copyright (C) 2002 Dieter Baron
@@ -360,6 +360,10 @@ _get_cspace(image_tiff *im)
 	/* XXX: CCITT? */
     case COMPRESSION_LZW:
 	ocmp = cmp = IMAGE_CMP_LZW;
+	if (TIFFGetField(im->tif, TIFFTAG_PREDICTOR, &u16) == 1 && u16 != 1) {
+	    /* predictors not yet supported */
+	    cmp = IMAGE_CMP_NONE;
+	}
 	break;
     case COMPRESSION_JPEG:
     case COMPRESSION_OJPEG:
