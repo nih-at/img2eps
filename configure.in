@@ -1,0 +1,73 @@
+dnl Process this file with autoconf to produce a configure script.
+
+dnl init
+
+AC_INIT(src/im_gif.c)
+AM_INIT_AUTOMAKE(img2eps, 0.0)
+AM_CONFIG_HEADER(config.h)
+
+AC_ARG_WITH(gif,
+    [  --without-gif           don't include GIF support],,
+    with_gif=yes)
+AC_ARG_WITH(jpeg,
+    [  --without-jpeg          don't include JPEG support],,
+    with_jpeg=yes)
+
+AC_PROG_CC
+
+dnl programs
+
+dnl libraries
+
+if test "$with_gif" = "yes"
+then
+  AC_CHECK_LIB(gif, DGifOpenFileName)
+fi
+if test "$with_jpeg" = "yes"
+then
+  AC_CHECK_LIB(jpeg, jpeg_read_header)
+fi
+
+dnl header files
+
+dnl typedefs
+dnl structures
+
+dnl compiler characteristics
+
+dnl library functions
+
+dnl system services
+
+dnl output
+
+AC_MSG_CHECKING([for GIF support])
+if test "$with_gif" = "yes"
+then
+    if test "$ac_cv_lib_gif_DGifOpenFileName" = "yes"
+    then
+	AC_DEFINE(USE_GIF, , [define if GIF support should be compiled])
+	AC_MSG_RESULT([yes])
+    else
+	AC_MSG_RESULT([no])
+    fi
+else
+    AC_MSG_RESULT([disabled])
+fi
+
+AC_MSG_CHECKING([for JPEG support])
+if test "$with_jpeg" = "yes"
+then
+    if test "$ac_cv_lib_jpeg_jpeg_read_header" = "yes"
+    then
+	AC_DEFINE(USE_JPEG, , [define if JPEG support should be compiled])
+	AC_MSG_RESULT([yes])
+    else
+	AC_MSG_RESULT([no])
+    fi
+else
+    AC_MSG_RESULT([disabled])
+fi
+
+
+AC_OUTPUT(Makefile src/Makefile)
