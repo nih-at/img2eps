@@ -1,5 +1,5 @@
 /*
-  $NiH: image.c,v 1.9 2002/10/09 14:46:44 dillo Exp $
+  $NiH: image.c,v 1.10 2002/10/10 00:12:48 dillo Exp $
 
   image.c -- general image functions
   Copyright (C) 2002 Dieter Baron
@@ -58,7 +58,7 @@ _image_create(struct image_functions *f, size_t size, const char *fname)
 
     im = xmalloc(size);
     im->f = f;
-    im->fname = strdup(fname);
+    im->fname = xstrdup(fname);
     image_init_info(&im->i);
 
     im->i.cspace.transparency = IMAGE_TR_NONE;
