@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#  $NiH: runtest,v 1.4 2002/10/11 23:24:11 dillo Exp $
+#  $NiH: runtest,v 1.5 2002/10/13 00:19:47 dillo Exp $
 #
 #  runtest -- run regression tests
 #  Copyright (C) 2002 Dieter Baron and Thomas Klausner
@@ -112,7 +112,7 @@ cleanup() {
 }
 
 checkfile() {
-    WEED='sed -e /^%%CreationDate/d -e /^%%Title/d'
+    WEED='sed -e /^%%CreationDate/d -e /^%%Title/d -e /^%%Creator/d'
     if [ ! -f "$2" ]
     then
 	fail "missing output file: '$2'"
