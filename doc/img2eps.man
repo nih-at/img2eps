@@ -1,9 +1,9 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: img2eps.mdoc,v 1.9 2002/10/16 12:51:38 dillo Exp 
-.\"  $NiH: img2eps.mdoc,v 1.9 2002/10/16 12:51:38 dillo Exp $
+.\" from NiH: img2eps.mdoc,v 1.10 2005/01/04 19:36:33 dillo Exp 
+.\"  $NiH: img2eps.mdoc,v 1.10 2005/01/04 19:36:33 dillo Exp $
 .\"
-.\"  img2eps.mdoc \-\- man page for img2eps(1)
-.\"  Copyright (C) 2002 Dieter Baron and Thomas Klausner
+.\"  img2eps.mdoc \-- man page for img2eps(1)
+.\"  Copyright (C) 2002, 2005 Dieter Baron and Thomas Klausner
 .\"
 .\"  This file is part of img2eps, an image to EPS file converter.
 .\"  The authors can be contacted at <dillo@giga.or.at> and
@@ -34,21 +34,26 @@
 .\"  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 .\"  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.TH IMG2EPS 1 "October 10, 2002" NiH
+.TH IMG2EPS 1 "January 4, 2005" NiH
 .SH "NAME"
 img2eps \- package raster images into EPS file
 .SH "SYNOPSIS"
 .B img2eps
-[\fB\-123cghV\fR]
-[\fB\-a\fR | \fB\-\-ascii\fR \fBENC\fR]
-[\fB\-C\fR | \fB\-\-compress\fR \fBC\fR]
-[\fB\-\-help\fR]
-[\fB\-\-level\fR]
-[\fB\-m\fR | \fB\-\-margin\fR \fBM\fR]
-[\fB\-o\fR | \fB\-\-output\fR \fBFILE\fR]
-[\fB\-P\fR | \fB\-\-paper\fR \fBP\fR]
-[\fB\-v\fR | \fB\-\-verbose\fR]
-[\fB\-\-version\fR]
+[\fB-123\fR]
+[\fB-a\fR | \fB--ascii\fR \fBENC\fR]
+[\fB-C\fR | \fB--compress\fR \fBC\fR]
+[\fB-c\fR | \fB--stdout\fR]
+[\fB-G\fR | \fB--gravity\fR \fBG\fR]
+[\fB-g\fR | \-gray | \-grey]
+[\fB-h\fR | \fB--help\fR]
+[\fB--level\fR]
+[\fB-m\fR | \fB--margin\fR \fBM\fR]
+[\fB-O\fR | \fB--orientation\fR \fBO\fR]
+[\fB-o\fR | \fB--output\fR \fBFILE\fR]
+[\fB-P\fR | \fB--paper\fR \fBP\fR]
+[\fB-r\fR | \fB--resolution\fR \fBr\fR]
+[\fB-v\fR | \fB--verbose\fR]
+[\fB--version\fR]
 \fBfile ...\fR
 .SH "DESCRIPTION"
 .B img2eps
@@ -58,7 +63,7 @@ into an EPS (Embedded PostScript) file, using whatever PostScript
 features are advantageous.
 The default name for each output file is the name of the input file
 with its extension changed to
-.I \&.eps.
+.I .eps.
 Supported image file formats are:
 .RS
 .IP \(bu 
@@ -77,18 +82,18 @@ If possible, the compressed image data is copied directly to the EPS file.
 .SH "The Options"
 .RS
 .TP 15
-\fB\-1\fR
+\fB-1\fR
 Use only features present in PostScript language level 1.
 .TP 15
-\fB\-2\fR
+\fB-2\fR
 Use only features present in PostScript language level 2.
 .TP 15
-\fB\-3\fR
+\fB-3\fR
 Explicitly allow the use of PostScript language level 3 features.
 .TP 15
-\fB\-a\fR \fBENC\fR
+\fB-a\fR \fBENC\fR
 .TP 15
-\fB\-\-ascii\fR \fBENC\fR
+\fB--ascii\fR \fBENC\fR
 Use
 \fBENC\fR
 ASCII encoding for binary data.
@@ -100,9 +105,9 @@ ASCII85
 ASCIIHEX
 .RE
 .TP 15
-\fB\-C\fR \fBC\fR
+\fB-C\fR \fBC\fR
 .TP 15
-\fB\-\-compress\fR \fBC\fR
+\fB--compress\fR \fBC\fR
 Use compression method
 \fBC\fR
 for image data.
@@ -118,35 +123,60 @@ LZW
 RunLength (PackBits)
 .RE
 .TP 15
-\fB\-c\fR
+\fB-c\fR
 .TP 15
-\fB\-\-stdout\fR
+\fB--stdout\fR
 Write EPSF to standard output.
 If this option is used, only one input file may be specified.
 .TP 15
-\fB\-g\fR
+\fB-G\fR \fBG\fR
 .TP 15
-\fB\-\-gray\fR
+\fB--gravity\fR \fBG\fR
+Specify the placement of image within the printable area of the page:
+.RS
+.IP \(bu 15
+top-left
+.IP \(bu 15
+top
+.IP \(bu 15
+top-right
+.IP \(bu 15
+left
+.IP \(bu 15
+center
+.IP \(bu 15
+right
+.IP \(bu 15
+bottom-left
+.IP \(bu 15
+bottom
+.IP \(bu 15
+bottom-right
+.RE
+.TP 15
+\fB-g\fR
+.TP 15
+\fB--gray\fR
 Convert image to grayscale.
 .TP 15
-\fB\-h\fR
+\fB-h\fR
 .TP 15
-\fB\-\-help\fR
+\fB--help\fR
 Display a short help message.
 .TP 15
-\fB\-\-level\fR \fBL\fR
+\fB--level\fR \fBL\fR
 Use only features present in PostScript language level
 \fBL.\fR
 Alternatively, you can also use the
-\fB\-1\fR,
-\fB\-2\fR,
+\fB-1\fR,
+\fB-2\fR,
 and
-\fB\-3\fR
+\fB-3\fR
 options.
 .TP 15
-\fB\-m\fR \fBM\fR
+\fB-m\fR \fBM\fR
 .TP 15
-\fB\-\-margin\fR \fBM\fR
+\fB--margin\fR \fBM\fR
 Set all margins to
 \fBM,\fR
 which should be a number optionally followed by a unit.
@@ -163,16 +193,38 @@ pt (PostScript point, 1/72in)
 .RE
 If no unit is specified, pt is assumed.
 .TP 15
-\fB\-o\fR \fBFILE\fR
+\fB-O\fR \fBO\fR
 .TP 15
-\fB\-\-output\fR \fBFILE\fR
+\fB--orientation\fR \fBO\fR
+Set orientation (rotation) of image:
+.RS
+.TP 15
+portrait
+Don't rotate image.
+.TP 15
+landscape
+Rotate image 90 degrees counter-clockwise.
+.TP 15
+upside-down
+Rotate image 180 degrees.
+.TP 15
+seascape
+Rotate image 90 degrees clockwise.
+.TP 15
+auto
+Use portrait or landscape, whichever results in a larger image.
+.RE
+.TP 15
+\fB-o\fR \fBFILE\fR
+.TP 15
+\fB--output\fR \fBFILE\fR
 Write EPSF to output file
 \fBFILE.\fR
 If this option is used, only one input file may be specified.
 .TP 15
-\fB\-P\fR \fBP\fR
+\fB-P\fR \fBP\fR
 .TP 15
-\fB\-\-paper\fR \fBP\fR
+\fB--paper\fR \fBP\fR
 Set paper size to
 \fBP.\fR
 Supported sizes are:
@@ -201,9 +253,14 @@ statement
 tabloid
 .RE
 .TP 15
-\fB\-V\fR
+\fB-r\fR \fBR\fR
 .TP 15
-\fB\-\-version\fR
+\fB--resolution\fR \fBR\fR
+Specify the resolution to print the image at, in dpi (dots per inch).
+.TP 15
+\fB-V\fR
+.TP 15
+\fB--version\fR
 Display version number.
 .RE
 .SS "Language Levels"
@@ -217,8 +274,9 @@ compression schemes, 12 bit samples, and indexed images.
 Most PostScript printers support Language Level 2.
 .PP
 Language Level 3 adds support for Flate (zlib) compression, a
-patent\-free lossless compression scheme.
-Ghostscript supports Language Level 3.
+patent-free lossless compression scheme.
+Ghostscript supports Language Level 3, as do most PostScript colour
+printers.
 .SS "Default Parameters"
 The default value for any parameter not specified via command line
 options is derived from the image:
@@ -276,7 +334,7 @@ Predictor functions (for LZW or Flate compression) are not supported.
 .PP
 TIFF images that include more than one extra sample per pixel, or use
 separated planar or tiled layout, are not supported.
-Direct copy of LZW compressed TIFF images using the old (bit\-swapped)
+Direct copy of LZW compressed TIFF images using the old (bit-swapped)
 format is not supported and may result in broken EPS files.
 .PP
-Multi\-page GIF images are not supported.
+Multi-page GIF images are not supported.
