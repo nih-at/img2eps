@@ -1,4 +1,4 @@
-/*	$NiH: getopt.h,v 1.3 2002/10/10 15:21:44 dillo Exp $	*/
+/*	$NiH: getopt_long.h,v 1.1 2002/10/15 03:17:26 dillo Exp $	*/
 /*	$NetBSD: getopt.h,v 1.4 2000/07/07 10:43:54 ad Exp $	*/
 
 /*-
@@ -37,15 +37,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _GETOPT_H_
-#define _GETOPT_H_
+#ifndef _GETOPT_LONG_H_
+#define _GETOPT_LONG_H_
 
 #include <unistd.h>
 
 /*
  * Gnu like getopt_long() and BSD4.4 getsubopt()/optreset extensions
  */
-#if !defined(_POSIX_SOURCE) && !defined(_XOPEN_SOURCE)
 #define no_argument        0
 #define required_argument  1
 #define optional_argument  2
@@ -66,6 +65,5 @@ struct option {
 
 int getopt_long (int, char * const *, const char *,
 		 const struct option *, int *);
-#endif
  
-#endif /* !_GETOPT_H_ */
+#endif /* !_GETOPT_LONG_H_ */
