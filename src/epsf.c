@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.10 2002/09/14 02:27:37 dillo Exp $
+  $NiH: epsf.c,v 1.11 2002/10/05 01:54:14 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -471,7 +471,7 @@ epsf_write_data(epsf *ep)
 	    image_raw_read_finish(ep->im, 0);
 	}
 	else {
-	    st = stream_compression_open(st2, ep->i.compression, NULL);
+	    st = stream_compression_open(st2, ep->i.compression, &ep->im->i);
 
 	    image_read_start(ep->im);
 	    imread_open = 1;

@@ -15,6 +15,7 @@ img2eps_SOURCES=epsf.c \
 		stream.c \
 		st_ascii85.c \
 		st_asciihex.c \
+		st_dct.c \
 		st_file.c \
 		st_flate.c \
 		st_line.c \

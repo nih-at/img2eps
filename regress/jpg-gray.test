@@ -1,0 +1,8 @@
+# jpeg, grayscale, recompress with DCT
+#
+#	$NiH$
+#
+return 0
+options -g
+input col.jpg
+output jpg-gray.eps col.eps
