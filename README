@@ -33,11 +33,14 @@ giflib or libungif.
 
   For compression support: zlib (FlateEncode), jpeg (DCTEncode).
 
-  img2eps's configure script only searches for these libraries in the
-directories the compiler searches.  If you have them installed
-elsewhere, pass CPPFLAGS and LDFLAGS to configure to make the compiler
-find them.  For example, if you have the libraries installed in
-/usr/local, the following should work:
+  For EXIF support (to auto-rotate jpeg images): libexif.
+
+  img2eps's configure script searches for these libraries with
+pkg-config (if the library supports it) and in the directories the
+compiler searches.  If you have them installed elsewhere, pass
+CPPFLAGS and LDFLAGS to configure to make the compiler find them.  For
+example, if you have the libraries installed in /usr/local, the
+following should work:
 	CPPFLAGS=-I/usr/local/include LDFLAGS=-L/usr/local/lib ./configure
 If your runtime linker needs to be told to search extra directories
 too (img2eps will link in that case, but complain about missing
