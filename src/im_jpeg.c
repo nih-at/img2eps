@@ -1,5 +1,5 @@
 /*
-  $NiH: im_jpeg.c,v 1.8 2002/09/12 13:52:14 dillo Exp $
+  $NiH: im_jpeg.c,v 1.9 2002/09/12 15:14:50 dillo Exp $
 
   im_jpeg.c -- JPEG image handling
   Copyright (C) 2002 Dieter Baron
@@ -119,6 +119,8 @@ jpeg_open(char *fname)
     im->im.i.cspace.depth = 8; /* XXX: correct for compressed? */
     /* XXX: alpha */
 
+    im->im.oi = im->im.i;
+
     return (image *)im;
 }
 
@@ -203,6 +205,10 @@ jpeg_read_finish(image_jpeg *im, int abortp)
 void
 jpeg_read_start(image_jpeg *im)
 {
+    if (im->im.i.cspace.type == IMAGE_CS_GRAY)
+	im->cinfo->out_color_space = JCS_GRAYSCALE;
+    /* XXX: set rgb */
+
     jpeg_start_decompress(im->cinfo);
 
     im->buflen = image_get_row_size((image *)im);
@@ -212,33 +218,30 @@ jpeg_read_start(image_jpeg *im)
 
 
 int
-jpeg_set_cspace(image_jpeg *im, const image_cspace *cspace)
+jpeg_set_cspace(image_jpeg *im, int mask, const image_cspace *cspace)
 {
     /* support for RGB->grayscale */
     /* XXX: more may be supported, need to check */
 
-    if (cspace->depth && cspace->depth != im->im.i.cspace.depth)
-	return -1;
-    if (cspace->transparency != IMAGE_TR_UNKNOWN
-	&& cspace->transparency != im->im.i.cspace.transparency)
-	return -1;
+    mask = image_cspace_diffs(&im->im.i.cspace, mask, cspace);
 
-    if (cspace->type == IMAGE_CS_UNKNOWN
-	|| cspace->type == im->im.i.cspace.type)
-	return 0;
-    
-    switch (cspace->type) {
-    case IMAGE_CS_GRAY:
-	im->cinfo->out_color_space = JCS_GRAYSCALE;
-	im->im.i.compression = IMAGE_CMP_NONE;
-	break;
-
-    default:
-	return -1;
+    if (mask & IMAGE_INF_TYPE) {
+	if (cspace->type == im->im.oi.cspace.type) {
+	    if (im->cinfo->scale_denom == 1)
+		im->im.i.compression = IMAGE_CMP_DCT;
+	}
+	else if (cspace->type == IMAGE_CS_GRAY)
+	    im->im.i.compression = IMAGE_CMP_NONE;
+	else
+	    return mask;
     }
 
+    mask &= ~IMAGE_INF_TYPE;
+    im->cinfo->out_color_space = (cspace->type == IMAGE_CS_GRAY
+				  ? JCS_GRAYSCALE : JCS_RGB);
     im->im.i.cspace.type = cspace->type;
-    return 0;
+    
+    return mask;
 }
 
 
@@ -255,6 +258,8 @@ jpeg_set_size(image_jpeg *im, int w, int h)
 	    im->im.i.height = h;
 	    if (i != 1)
 		im->im.i.compression = IMAGE_CMP_NONE;
+	    else if (im->im.i.cspace.type == im->im.oi.cspace.type)
+		im->im.i.compression = IMAGE_CMP_DCT;
 	    return 0;
 	}
     }

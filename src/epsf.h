@@ -2,7 +2,7 @@
 #define HAD_EPSF_H
 
 /*
-  $NiH: epsf.h,v 1.4 2002/09/09 12:42:32 dillo Exp $
+  $NiH: epsf.h,v 1.5 2002/09/11 22:44:18 dillo Exp $
 
   epsf.h -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -14,8 +14,10 @@
 #include "stream.h"
 #include "image.h"
 
+/* keep in sync with _asc_tab[] in stream.c */
 enum epsf_ascii {
     EPSF_ASC_UNKNOWN,
+    EPSF_ASC_NONE,
     EPSF_ASC_HEX,
     EPSF_ASC_85
 };

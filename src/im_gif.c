@@ -1,5 +1,5 @@
 /*
-  $NiH: im_gif.c,v 1.4 2002/09/10 21:40:47 dillo Exp $
+  $NiH: im_gif.c,v 1.5 2002/09/12 12:31:13 dillo Exp $
 
   im_gif.c -- GIF image handling
   Copyright (C) 2002 Dieter Baron
@@ -76,6 +76,8 @@ gif_open(char *fname)
     im->im.i.width = gif->SWidth;
     im->im.i.height = gif->SHeight;
     im->gif = gif;
+
+    im->im.oi = im->im.i;
 
     return (image *)im;
 }

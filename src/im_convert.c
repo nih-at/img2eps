@@ -1,5 +1,5 @@
 /*
-  $NiH: im_convert.c,v 1.4 2002/09/11 22:44:18 dillo Exp $
+  $NiH: im_convert.c,v 1.5 2002/09/12 12:31:13 dillo Exp $
 
   im_convert.c -- image conversion handling
   Copyright (C) 2002 Dieter Baron
@@ -22,7 +22,7 @@ struct image_conv {
     image im;
 
     image *oim;
-    image_info i;
+    int mask;		/* which conversions are needed */
 };
 
 IMAGE_DECLARE(conv);
@@ -84,9 +84,9 @@ conv_read_finish(image_conv *im, int abortp)
 
 
 int
-conv_set_cspace(image_conv *im, const image_cspace *cspace)
+conv_set_cspace(image_conv *im, int mask, const image_cspace *cspace)
 {
-    return -1;
+    return mask;
 }
 
 
@@ -100,36 +100,36 @@ conv_set_size(image_conv *im, int w, int h)
 
 
 image *
-image_convert(image *oim, const image_info *i)
+image_convert(image *oim, int mask, const image_info *i)
 {
     image_conv *im;
-    int need_conv;
+    int m2;
 
-    need_conv = 0;
+    mask &= ~IMAGE_INF_COMPRESSION;
 
-    if (i->order != IMAGE_ORD_UNKNOWN && i->order != im->i.order)
+    if ((mask & IMAGE_INF_ORDER) && i->order != im->im.i.order)
 	throwf(EOPNOTSUPP, "reordering of samples not supported");
 
-    if ((i->width && i->width != oim->i.width)
-	|| (i->height && i->height != oim->i.height)) {
-	if (image_set_size(oim, i->width, i->height) < 0) {
-	    need_conv = 1;
+    if (mask & IMAGE_INF_SIZE) {
+	if (image_set_size(oim, i->width, i->height) == 0)
+	    mask &= ~IMAGE_INF_SIZE;
+	else {
 	    /* XXX: not yet */
 	    throwf(EOPNOTSUPP, "scaling not supported");
 	}
     }
-    if ((i->cspace.type != IMAGE_CS_UNKNOWN
-	 && i->cspace.type != im->i.cspace.type)
-	|| (i->cspace.depth && i->cspace.depth != im->i.cspace.depth)) {
-	/* XXX: base type & depth */
-	if (image_set_cspace(oim, &i->cspace)) {
-	    need_conv = 1;
+    if (mask & IMAGE_INF_CSPACE) {
+	m2 = image_set_cspace(oim, mask&IMAGE_INF_CSPACE, &i->cspace);
+
+	mask = (mask&~IMAGE_INF_CSPACE) | m2;
+
+	if (m2 & IMAGE_INF_CSPACE) {
 	    /* XXX: not yet */
 	    throwf(EOPNOTSUPP, "color space / depth conversion not supported");
 	}
     }
 
-    if (need_conv) {
+    if (mask) {
 	im = image_create(conv, oim->fname);
 
 	/* XXX */

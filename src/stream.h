@@ -2,7 +2,7 @@
 #define _HAD_STREAM_H
 
 /*
-  $NiH: stream.h,v 1.2 2002/09/08 21:31:47 dillo Exp $
+  $NiH: stream.h,v 1.3 2002/09/09 12:42:35 dillo Exp $
 
   stream.h -- stream header
   Copyright (C) 2002 Dieter Baron
@@ -45,6 +45,8 @@ void stream_free(stream *st);
 
 /* external interface */
 
+stream *stream_ascii_open(stream *ost, int type, int eodmarker);
+stream *stream_compression_open(stream *ost, int type, void *params);
 int stream_printf(stream *st, const char *fmt, ...);
 int stream_putc(int c, stream *st);
 int stream_puts(const char *s, stream *st);

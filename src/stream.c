@@ -1,5 +1,5 @@
 /*
-  $NiH: stream.c,v 1.4 2002/09/10 15:28:59 dillo Exp $
+  $NiH: stream.c,v 1.5 2002/09/10 21:40:50 dillo Exp $
 
   stream.c -- general stream functions
   Copyright (C) 2002 Dieter Baron
@@ -16,7 +16,29 @@
 
 #include "exceptions.h"
 #include "stream.h"
+#include "stream_types.h"
 #include "xmalloc.h"
+
+/* keep in sync with enum epsf_ascii in epsf.h */
+stream *(*_asc_tab[])(stream *, int) = {
+    NULL,
+    NULL,
+    stream_asciihex_open,
+    stream_ascii85_open
+};
+
+static stream *_cmp_unsupp(stream *, void *);
+
+/* keep in sync with enum image_compression in image.h */
+stream *(*_cmp_tab[])(stream *, void *) = {
+    NULL,
+    NULL,
+    stream_runlength_open,
+    _cmp_unsupp, /* lzw */
+    _cmp_unsupp, /* flate */
+    _cmp_unsupp, /* ccitt */
+    _cmp_unsupp, /* dct */
+};
 
 
 
@@ -31,6 +53,34 @@ _stream_create(struct stream_functions *f, size_t size, stream *ost)
     st->st = ost;
 
     return st;
+}
+
+
+
+stream *
+stream_ascii_open(stream *st, int type, int eodmarker)
+{
+    if (type < 0 || type > sizeof(_asc_tab)/sizeof(_asc_tab[0]))
+	throwf(EINVAL, "unknown ASCII encoding %d", type);
+
+    if (_asc_tab[type] == NULL)
+	return st;
+
+    return _asc_tab[type](st, eodmarker);
+}
+
+
+
+stream *
+stream_compression_open(stream *st, int type, void *params)
+{
+    if (type < 0 || type > sizeof(_cmp_tab)/sizeof(_cmp_tab[0]))
+	throwf(EINVAL, "unknown compression type %d", type);
+
+    if (_cmp_tab[type] == NULL)
+	return st;
+
+    return _cmp_tab[type](st, params);
 }
 
 
@@ -82,4 +132,13 @@ int
 stream_puts(const char *s, stream *st)
 {
     return stream_write(st, s, strlen(s));
+}
+
+
+
+static stream *
+_cmp_unsupp(stream *st, void *params)
+{
+    throws(EOPNOTSUPP, "compression method not supported");
+    return NULL;
 }

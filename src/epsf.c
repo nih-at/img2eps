@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.8 2002/09/11 23:56:26 dillo Exp $
+  $NiH: epsf.c,v 1.9 2002/09/12 13:52:14 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -232,7 +232,7 @@ epsf_calculate_parameters(epsf *ep)
     
     /* set up image conversion */
 
-    ep->im = image_convert(ep->im, &ep->i);
+    ep->im = image_convert(ep->im, image_info_mask(&ep->i), &ep->i);
 
     /* calculate image placement and bounding box */
 
@@ -452,10 +452,7 @@ epsf_write_data(epsf *ep)
     st = st2 = NULL;
     imread_open = 0;
     if (catch(&ex) == 0) {
-	if (ep->ascii == EPSF_ASC_HEX)
-	    st2 = stream_asciihex_open(ep->st, ep->level > 1);
-	else
-	    st2 = stream_ascii85_open(ep->st, 1);
+	st2 = stream_ascii_open(ep->st, ep->ascii, ep->level > 1);
 
 	if (raw) {
 	    image_raw_read_start(ep->im);
@@ -468,15 +465,7 @@ epsf_write_data(epsf *ep)
 	    image_raw_read_finish(ep->im, 0);
 	}
 	else {
-	    switch (ep->i.compression) {
-	    case IMAGE_CMP_RLE:
-		st = stream_runlength_open(st2);
-		break;
-		
-	    default:
-		st = st2;
-		st2 = NULL;
-	    }
+	    st = stream_compression_open(st2, ep->i.compression, NULL);
 
 	    image_read_start(ep->im);
 	    imread_open = 1;
@@ -502,9 +491,9 @@ epsf_write_data(epsf *ep)
 	    else
 		image_read_finish(ep->im, 1);
 	}
-	if (st)
+	if (st && st != st2)
 	    stream_close(st);
-	if (st2)
+	if (st2 && st2 != ep->st)
 	    stream_close(st2);
 	drop();
     }
@@ -792,7 +781,7 @@ _write_l1_datasrc(epsf *ep)
     default:
 	break;
     }
-
+    
     /* no emulation for this mode yet */
     stream_printf(ep->st, "\
 { currentfile picstr readhexstring pop } bind\n\
@@ -806,20 +795,18 @@ static int
 _write_palette_array(epsf *ep)
 {
     stream *st;
-    int ret;
     char *pal;
+    int ret;
 
     if ((pal=image_get_palette(ep->im)) == NULL)
 	return -1;
 
-    if (ep->ascii == EPSF_ASC_HEX) {
+    if (ep->ascii == EPSF_ASC_HEX)
 	stream_puts("<\n", ep->st);
-	st = stream_asciihex_open(ep->st, 1);
-    }
-    else {
+    else
 	stream_puts("<~\n", ep->st);
-	st = stream_ascii85_open(ep->st, 1);
-    }
+
+    st = stream_ascii_open(ep->st, ep->ascii, 1);
     
     ret = stream_write(st, pal, image_cspace_palette_size(&ep->im->i.cspace));
 

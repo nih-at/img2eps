@@ -1,5 +1,5 @@
 /*
-  $NiH: image.c,v 1.5 2002/09/11 22:44:19 dillo Exp $
+  $NiH: image.c,v 1.6 2002/09/12 12:31:15 dillo Exp $
 
   image.c -- general image functions
   Copyright (C) 2002 Dieter Baron
@@ -64,7 +64,7 @@ _image_create(struct image_functions *f, size_t size, const char *fname)
     im->i.cspace.transparency = IMAGE_TR_NONE;
     im->i.compression = IMAGE_CMP_NONE;
     im->i.order = IMAGE_ORD_ROW_LT;
-
+    im->oi = im->i;
 
     return im;
 }
@@ -117,19 +117,45 @@ image_cspace_components(const image_cspace *cspace, int base)
 
 
 
-void
-image_cspace_merge(image_cspace *cst, const image_cspace *css)
+int
+image_cspace_diffs(const image_cspace *cst, int mask, const image_cspace *css)
 {
-    if (css->type != IMAGE_CS_UNKNOWN)
+    int m2;
+
+    m2 = 0;
+    if ((mask & IMAGE_INF_TYPE) && cst->type != css->type)
+	m2 |= IMAGE_INF_TYPE;
+    if ((mask & IMAGE_INF_DEPTH) && cst->depth != css->depth)
+	m2 |= IMAGE_INF_DEPTH;
+    if ((mask & IMAGE_INF_TRANSPARENCY)
+	&& cst->transparency != css->transparency)
+	m2 |= IMAGE_INF_TRANSPARENCY;
+    if ((mask & IMAGE_INF_TYPE) && css->type == IMAGE_CS_INDEXED) {
+	if ((mask & IMAGE_INF_BASE_TYPE) && cst->base_type != css->base_type)
+	    m2 |= IMAGE_INF_BASE_TYPE;
+	if ((mask & IMAGE_INF_BASE_DEPTH)
+	    && cst->base_depth != css->base_depth)
+	    m2 |= IMAGE_INF_BASE_DEPTH;
+    }
+
+    return m2;
+}
+
+
+
+void
+image_cspace_merge(image_cspace *cst, int mask, const image_cspace *css)
+{
+    if (mask & IMAGE_INF_TYPE)
 	cst->type = css->type;
-    if (css->transparency != IMAGE_TR_UNKNOWN)
+    if (mask & IMAGE_INF_TRANSPARENCY)
 	cst->transparency = css->transparency;
-    if (css->depth != 0)
+    if (mask & IMAGE_INF_DEPTH)
 	cst->depth = css->depth;
-    if (css->type == IMAGE_CS_INDEXED) {
-	if (css->base_type != IMAGE_CS_UNKNOWN)
+    if ((mask&IMAGE_INF_TYPE) && css->type == IMAGE_CS_INDEXED) {
+	if (mask & IMAGE_INF_BASE_TYPE)
 	    cst->base_type = css->base_type;
-	if (css->base_depth != 0)
+	if (mask & IMAGE_INF_BASE_DEPTH)
 	    cst->base_depth = css->base_depth;
     }
 }
@@ -168,6 +194,34 @@ image_get_row_size(const image *im)
     n = (n*im->i.cspace.depth+7) / 8;
 
     return n;
+}
+
+
+int
+image_info_mask(const image_info *i)
+{
+    int m;
+
+    m = 0;
+    
+    if (i->width || i->height)
+	m |= IMAGE_INF_SIZE;
+    if (i->cspace.type != IMAGE_CS_UNKNOWN)
+	m |= IMAGE_INF_TYPE;
+    if (i->cspace.depth)
+	m |= IMAGE_INF_DEPTH;
+    if (i->cspace.transparency != IMAGE_TR_UNKNOWN)
+	m |= IMAGE_INF_TRANSPARENCY;
+    if (i->cspace.type == IMAGE_CS_INDEXED) {
+	if (i->cspace.base_type != IMAGE_CS_UNKNOWN)
+	m |= IMAGE_INF_BASE_TYPE;
+	if (i->cspace.base_depth)
+	    m |= IMAGE_INF_BASE_DEPTH;
+    }
+    if (i->order != IMAGE_ORD_UNKNOWN)
+	m |= IMAGE_INF_ORDER;
+
+    return m;
 }
 
 

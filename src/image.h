@@ -2,7 +2,7 @@
 #define _HAD_IMAGE_H
 
 /*
-  $NiH: image.h,v 1.5 2002/09/12 12:31:15 dillo Exp $
+  $NiH: image.h,v 1.6 2002/09/12 13:52:14 dillo Exp $
 
   image.h -- image header
   Copyright (C) 2002 Dieter Baron
@@ -30,6 +30,7 @@ enum image_tr_type {		/* type of transparency */
     IMAGE_TR_ALPHA		/* full alpha channel */
 };
 
+/* keep in sync with _cmp_tab[] in stream.c */
 enum image_compression {
     IMAGE_CMP_UNKNOWN,
     IMAGE_CMP_NONE,
@@ -40,7 +41,7 @@ enum image_compression {
     IMAGE_CMP_DCT
 };
 
-/* keep in sync with enum epsf_write_image_matrix() in epsf.c */
+/* keep in sync with epsf_write_image_matrix() in epsf.c */
 enum image_order {
     IMAGE_ORD_UNKNOWN,
     IMAGE_ORD_ROW_LT,	/* row major, left to right, top to bottom */
@@ -70,6 +71,17 @@ struct image_cspace {
 
 typedef struct image_cspace image_cspace;
 
+#define IMAGE_INF_TYPE		0x001
+#define IMAGE_INF_DEPTH		0x002
+#define IMAGE_INF_TRANSPARENCY	0x004
+#define IMAGE_INF_BASE_TYPE	0x008
+#define IMAGE_INF_BASE_DEPTH	0x010
+#define IMAGE_INF_CSPACE	0x01f	/* any member of cspace */
+#define IMAGE_INF_SIZE		0x020
+#define IMAGE_INF_ORDER		0x040
+#define IMAGE_INF_COMPRESSION	0x080
+#define IMAGE_INF_ALL		0x0ff	/* all of the above */
+
 struct image_info {
     int width, height;			/* dimensions */
     image_cspace cspace;		/* used color space */
@@ -83,6 +95,7 @@ struct image {
     struct image_functions *f;	/* method function pointer */
     char *fname;		/* file name */
     image_info i;		/* info about image */
+    image_info oi;		/* info about original image (unconverted) */
 };
 
 typedef struct image image;
@@ -97,7 +110,7 @@ struct image_functions {
     int (*read)(image *, char **);
     void (*read_finish)(image *, int);
     void (*read_start)(image *);
-    int (*set_cspace)(image *, const image_cspace *);
+    int (*set_cspace)(image *, int, const image_cspace *);
     int (*set_size)(image *, int, int);
 };
 
@@ -112,7 +125,7 @@ int _image_notsup_raw(image *, int, int);
 #define IMAGE_METH_CSPACE(name)	(int (*)())_image_notsup
 #else
 #define IMAGE_DECL_CSPACE(name)			\
-int name##_set_cspace(image_##name *, const image_cspace *);
+int name##_set_cspace(image_##name *, int, const image_cspace *);
 #define IMAGE_METH_CSPACE(name)	(int (*)())name##_set_cspace
 #endif
 #ifdef NOSUPP_SCALE
@@ -180,14 +193,17 @@ image *_image_create(struct image_functions *f, size_t size,
 		     const char *fname);
 
 int image_cspace_components(const image_cspace *cspace, int base);
-void image_cspace_merge(image_cspace *cst, const image_cspace *css);
+int image_cspace_diffs(const image_cspace *cst,
+		       int mask, const image_cspace *css);
+void image_cspace_merge(image_cspace *cst, int mask, const image_cspace *css);
 int image_cspace_palette_size(const image_cspace *cspace);
 void image_free(image *im);
 int image_get_row_size(const image *im);
+int image_info_mask(const image_info *cs);
 
 /* external interface */
 
-image *image_convert(image *oim, const image_info *i);
+image *image_convert(image *oim, int mask, const image_info *i);
 void image_init_info(image_info *i);
 image *image_open(const char *fname);
 
@@ -206,7 +222,7 @@ image *image_open(const char *fname);
 #define image_read(im, bp)	      IMAGE_METH1(read, (im), (bp))
 #define image_read_finish(im, ab)     IMAGE_METH1(read_finish, (im), (ab))
 #define image_read_start(im)	      IMAGE_METH0(read_start, (im))
-#define image_set_cspace(im, cs)      IMAGE_METH1(set_cspace, (im), (cs))
+#define image_set_cspace(im, m, cs)   IMAGE_METH2(set_cspace, (im), (m), (cs))
 #define image_set_size(im, w, h)      IMAGE_METH2(set_size, (im), (w), (h))
 
 #endif /* image.h */

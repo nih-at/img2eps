@@ -1,5 +1,5 @@
 /*
-  $NiH: im_tiff.c,v 1.4 2002/09/11 22:44:19 dillo Exp $
+  $NiH: im_tiff.c,v 1.5 2002/09/12 12:31:14 dillo Exp $
 
   im_tiff.c -- TIFF image handling
   Copyright (C) 2002 Dieter Baron
@@ -79,6 +79,8 @@ tiff_open(char *fname)
     im->im.i.height = u32;
     TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &u16);
     im->im.i.cspace.depth = u16;
+
+    im->im.oi = im->im.i;
 
     return (image *)im;
 }

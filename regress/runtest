@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#  $NiH$
+#  $NiH: runtest,v 1.1 2002/09/11 23:57:03 dillo Exp $
 #
 #  runtest -- run regression tests
 #  Copyright (C) 2002 Dieter Baron and Thomas Klausner
@@ -190,7 +190,11 @@ ret=$?
 
 if [ $ret -ne ${RET} ]
 then
-	fail "unexpected exit status: got $ret, expected ${RET}"
+    if [ ! -z "${VERBOSE}" ]
+    then
+	cat img2eps.out
+    fi
+    fail "unexpected exit status: got $ret, expected ${RET}"
 fi
 
 if [ -f errors ]

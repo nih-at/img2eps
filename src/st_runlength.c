@@ -1,5 +1,5 @@
 /*
-  $NiH: st_runlength.c,v 1.1 2002/09/09 12:42:34 dillo Exp $
+  $NiH: st_runlength.c,v 1.2 2002/09/10 14:05:53 dillo Exp $
 
   st_runlength.c -- RunLengthEncode stream
   Copyright (C) 2002 Dieter Baron
@@ -49,7 +49,7 @@ runlength_close(stream_runlength *st)
 
 
 stream *
-stream_runlength_open(stream *ost)
+stream_runlength_open(stream *ost, void *params)
 {
     stream_runlength *st;
 
