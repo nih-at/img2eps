@@ -9,9 +9,15 @@ AM_CONFIG_HEADER(config.h)
 AC_ARG_WITH(gif,
     [  --without-gif           don't include GIF support],,
     with_gif=yes)
+AC_ARG_WITH(png,
+    [  --without-png           don't include PNG support],,
+    with_png=yes)
 AC_ARG_WITH(jpeg,
     [  --without-jpeg          don't include JPEG support],,
     with_jpeg=yes)
+AC_ARG_WITH(tiff,
+    [  --without-tiff          don't include TIFF support],,
+    with_tiff=yes)
 
 AC_PROG_CC
 
@@ -26,6 +32,14 @@ fi
 if test "$with_jpeg" = "yes"
 then
   AC_CHECK_LIB(jpeg, jpeg_read_header)
+fi
+if test "$with_png" = "yes"
+then
+  AC_CHECK_LIB(png, png_create_read_struct)
+fi
+if test "$with_tiff" = "yes"
+then
+  AC_CHECK_LIB(tiff, TIFFOpen)
 fi
 
 dnl header files
@@ -64,6 +78,34 @@ then
     if test "$ac_cv_lib_jpeg_jpeg_read_header" = "yes"
     then
 	AC_DEFINE(USE_JPEG, , [define if JPEG support should be compiled])
+	AC_MSG_RESULT([yes])
+    else
+	AC_MSG_RESULT([no])
+    fi
+else
+    AC_MSG_RESULT([disabled])
+fi
+
+AC_MSG_CHECKING([for PNG support])
+if test "$with_png" = "yes"
+then
+    if test "$ac_cv_lib_png_png_create_read_struct" = "yes"
+    then
+	AC_DEFINE(USE_PNG, , [define if PNG support should be compiled])
+	AC_MSG_RESULT([yes])
+    else
+	AC_MSG_RESULT([no])
+    fi
+else
+    AC_MSG_RESULT([disabled])
+fi
+
+AC_MSG_CHECKING([for TIFF support])
+if test "$with_tiff" = "yes"
+then
+    if test "$ac_cv_lib_tiff_TIFFOpen" = "yes"
+    then
+	AC_DEFINE(USE_TIFF, , [define if TIFF support should be compiled])
 	AC_MSG_RESULT([yes])
     else
 	AC_MSG_RESULT([no])

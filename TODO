@@ -1,13 +1,15 @@
 - error handling and reporting
 - compression support
-- proper color space support
-- png, tiff, xpm, ... support
-- gif: data reading, compression, color space, and depth detection
+- rotation support
+- xpm, ... support
+- image_convert: cspace, depth, scale
+- tiff, gif: data reading, compression, color space, and depth detection
 - force specific compression / color space
 - force portrait/landscape/bbox
 - specify dimen with unit (cm/pt/in/...)
 - specify paper size as pair of dimens
-- use image instead of colorimage for grayscale
 - supply colorimage emulation for level1
 - masking (1-bit alpha channel)
 - preview
+
++ indexed png to grayscale conversion segfaults in libpng

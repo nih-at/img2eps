@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.1 2002/09/07 20:58:00 dillo Exp $
+  $NiH: img2eps.c,v 1.2 2002/09/08 00:27:49 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002 Dieter Baron
@@ -37,8 +37,9 @@ static const char help_tail[] = "\
   -3                use language level 3\n\
       --level L     use language level L\n\
   -c, --stdout      write EPSF to stdout\n\
+  -g, --gray        force image to gray scale\n\
   -m, --margin M    set all margins to M\n\
-  -o, --output FILE write EPSF to FILE\n\n
+  -o, --output FILE write EPSF to FILE\n\
   -P, --paper P     set paper size to P\n\
 \n\
 Report bugs to <dillo@giga.or.at>.\n";
@@ -51,11 +52,13 @@ enum {
     OPT_LEVEL = 256
 };
 
-#define OPTIONS "hV123cm:o:p:"
+#define OPTIONS "hV123cgm:o:p:"
 
 static const struct option options[] = {
     { "help",      0, 0, 'h' },
     { "version",   0, 0, 'V' },
+    { "gray",      0, 0, 'g' },
+    { "grey",      0, 0, 'g' },
     { "level",     1, 0, OPT_LEVEL },
     { "margin",    1, 0, 'm' },
     { "output",    1, 0, 'o' },
@@ -93,6 +96,9 @@ main(int argc, char *argv[])
 	    break;
 	case 'c':
 	    cat = 1;
+	    break;
+	case 'g':
+	    par->i.cspace = IMAGE_CS_GRAY;
 	    break;
 	case 'm':
 	    i = atoi(optarg);

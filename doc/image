@@ -1,0 +1,65 @@
+* image *image_open(char *fname);
+
+  Open file FNAME.
+
+  Returns pointer to image on succes, NULL on error.
+
+
+
+METHODS:
+
+* int image_close(image *im);
+
+  Close and free image.
+
+  Returns 0 on success, -1 on error.
+
+
+* char *image_get_palette(image *im);
+
+  Get palette of image as a row of samples.
+
+  Returns pointer to palette on success, NULL on error.
+
+
+* int image_read(image *im, char **bp);
+
+  Read one row of image data and point BP at it.
+
+  Returns 0 on success, -1 on error.
+
+
+* int image_read_finish(image *im, int abortp);
+
+  Finish reading image data.  If ABORTP, image might not have been
+  read compiletely.
+
+  Returns 0 on success, -1 on error.
+
+
+* int image_read_start(image *im);
+
+  Start reading image data.  Must be called before calls to image_read().
+
+  Returns 0 on success, -1 on error.
+
+
+* int image_set_cspace(image *im, image_cspace cspace);
+
+  Request image data in color space CSPACE.
+
+  Returns 0 if transformation supported, -1 otherwise.
+
+
+* int image_set_depth(image *im, int depth);
+
+  Request image data with DEPTH bits per component.
+
+  Returns 0 if transformation supported, -1 otherwise.
+
+
+* int image_set_size(image *im, int width, int height);
+
+  Request that image be scaled to WIDTHxHEIGHT.
+
+  Returns 0 if transformation supported, -1 otherwise.

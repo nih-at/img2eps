@@ -2,7 +2,7 @@
 #define HAD_EPSF_H
 
 /*
-  $NiH: epsf.h,v 1.1 2002/09/07 20:57:59 dillo Exp $
+  $NiH: epsf.h,v 1.2 2002/09/08 00:27:48 dillo Exp $
 
   epsf.h -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -43,9 +43,10 @@ typedef struct epsf epsf;
 
 
 
-void epsf_calculate_parameters(epsf *ep);
+int epsf_calculate_parameters(epsf *ep);
 epsf *epsf_create(epsf *par, stream *st, image *im);
 epsf *epsf_create_defaults(void);
+int epsf_cspace_langlevel(image_cspace cs);
 void epsf_free(epsf *ep);
 int epsf_process(stream *st, char *fname, epsf *par);
 void epsf_set_margins(epsf *ep, int l, int r, int t, int b);

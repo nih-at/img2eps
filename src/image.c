@@ -1,5 +1,5 @@
 /*
-  $NiH$
+  $NiH: image.c,v 1.1 2002/09/07 20:58:00 dillo Exp $
 
   image.c -- general image functions
   Copyright (C) 2002 Dieter Baron
@@ -19,10 +19,22 @@ image *gif_open(char *);
 #ifdef USE_JPEG
 image *jpeg_open(char *);
 #endif
+#ifdef USE_PNG
+image *png_open(char *);
+#endif
+#ifdef USE_TIFF
+image *tiff_open(char *);
+#endif
 
 image *(*open_tab[])(char *) = {
+#ifdef USE_PNG
+    png_open,
+#endif
 #ifdef USE_JPEG
     jpeg_open,
+#endif
+#ifdef USE_TIFF
+    tiff_open,
 #endif
 #ifdef USE_GIF
     gif_open,
@@ -45,6 +57,14 @@ _image_create(struct image_functions *f, size_t size, char *fname)
     image_init_info(&im->i);
 
     return im;
+}
+
+
+
+int
+_image_notsup(image *im, int a0, int a1)
+{
+    return -1;
 }
 
 
@@ -82,6 +102,31 @@ image_free(image *im)
 
 
 
+int
+image_get_palette_size(image *im)
+{
+    if (!IMAGE_CS_IS_INDEXED(im->i.cspace))
+	return 0;
+
+    return image_cspace_components(IMAGE_CS_BASE(im->i.cspace))
+	* (1<<im->i.depth);
+}
+
+
+
+int
+image_get_row_size(image *im)
+{
+    int n;
+
+    n = im->i.width * image_cspace_components(im->i.cspace);
+    n = (n*8 + im->i.depth-1) / im->i.depth;
+
+    return n;
+}
+
+
+
 void
 image_init_info(image_info *i)
 {
@@ -89,7 +134,7 @@ image_init_info(image_info *i)
     i->cspace = IMAGE_CS_UNKNOWN;
     i->depth = 0;
     i->compression = IMAGE_CMP_UNKNOWN;
-    i->order = IMAGE_ORD_ROW_LT;
+    i->order = IMAGE_ORD_UNKNOWN;
 }
 
 

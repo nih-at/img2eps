@@ -2,7 +2,7 @@
 #define _HAD_IMAGE_H
 
 /*
-  $NiH$
+  $NiH: image.h,v 1.1 2002/09/07 20:58:00 dillo Exp $
 
   image.h -- image header
   Copyright (C) 2002 Dieter Baron
@@ -13,14 +13,23 @@
 
 #include <stdlib.h>
 
+#define IMAGE_CS_INDEX_OFFSET	256
+#define DEF_IMAGE_CS_INDEXED(c)	\
+	IMAGE_CS_INDEXED_##c = IMAGE_CS_##c+IMAGE_CS_INDEX_OFFSET
+
+#define IMAGE_CS_IS_INDEXED(cs)	((cs) > IMAGE_CS_INDEX_OFFSET)
+#define IMAGE_CS_BASE(cs)	(IMAGE_CS_IS_INDEXED(cs)	\
+				 ? (cs)-IMAGE_CS_INDEX_OFFSET	\
+				 : (cs))
+
 enum image_cspace {
     IMAGE_CS_UNKNOWN,
     IMAGE_CS_GRAY,
     IMAGE_CS_RGB,
     IMAGE_CS_CMYK,
-    IMAGE_CS_INDEXED_GRAY,
-    IMAGE_CS_INDEXED_RGB,
-    IMAGE_CS_INDEXED_CMYK
+    DEF_IMAGE_CS_INDEXED(GRAY),
+    DEF_IMAGE_CS_INDEXED(RGB),
+    DEF_IMAGE_CS_INDEXED(CMYK)
 };
 
 enum image_compression {
@@ -35,6 +44,7 @@ enum image_compression {
 
 /* keep in sync with enum epsf_write_image_matrix() in epsf.c */
 enum image_order {
+    IMAGE_ORD_UNKNOWN,
     IMAGE_ORD_ROW_LT,	/* row major, left to right, top to bottom */
     IMAGE_ORD_ROW_LB,	/* row major, left to right, bottom to top */
     IMAGE_ORD_ROW_RT,	/* row major, right to left, top to bottom */
@@ -68,26 +78,65 @@ struct image {
 typedef struct image image;
 
 struct image_functions {
-    int (*close)(void *);
+    int (*close)(image *);
+    char *(*get_palette)(image *);
     image *(*open)(char *);
-    int (*read)(void *, char **bp);
-    int (*read_finish)(void *, int);
-    int (*read_start)(void *);
+    int (*read)(image *, char **);
+    int (*read_finish)(image *, int);
+    int (*read_start)(image *);
+    int (*set_cspace)(image *, image_cspace);
+    int (*set_depth)(image *, int);
+    int (*set_size)(image *, int, int);
 };
+
+int _image_notsup(image *, int, int);
+
+#ifdef NOSUPP_CSPACE
+#define IMAGE_DECL_CSPACE(name)
+#define IMAGE_METH_CSPACE(name)	(int (*)())_image_notsup
+#else
+#define IMAGE_DECL_CSPACE(name)			\
+int name##_set_cspace(image_##name *, image_cspace);
+#define IMAGE_METH_CSPACE(name)	(int (*)())name##_set_cspace
+#endif
+#ifdef NOSUPP_DEPTH
+#define IMAGE_DECL_DEPTH(name)
+#define IMAGE_METH_DEPTH(name)	(int (*)())_image_notsup
+#else
+#define IMAGE_DECL_DEPTH(name)			\
+int name##_set_depth(image_##name *, int);
+#define IMAGE_METH_DEPTH(name)	(int (*)())name##_set_depth
+#endif
+#ifdef NOSUPP_SCALE
+#define IMAGE_DECL_SCALE(name)
+#define IMAGE_METH_SCALE(name)	_image_notsup
+#else
+#define IMAGE_DECL_SCALE(name)			\
+int name##_set_size(image_##name *, int, int);
+#define IMAGE_METH_SCALE(name)	(int (*)())name##_set_size
+#endif
 
 #define IMAGE_DECLARE(name)			\
 typedef struct image_##name image_##name;	\
 int name##_close(image_##name *);		\
+char *name##_get_palette(image_##name *);	\
 image *name##_open(char *);			\
 int name##_read(image_##name *, char **);	\
 int name##_read_finish(image_##name *, int);	\
 int name##_read_start(image_##name *);		\
+IMAGE_DECL_CSPACE(name)				\
+IMAGE_DECL_DEPTH(name)				\
+IMAGE_DECL_SCALE(name)				\
 struct image_functions name##_functions  = {	\
     (int (*)())name##_close,			\
+    (char *(*)())name##_get_palette,		\
     name##_open,				\
     (int (*)())name##_read,			\
     (int (*)())name##_read_finish,		\
-    (int (*)())name##_read_start		\
+    (int (*)())name##_read_start,		\
+    IMAGE_METH_CSPACE(name),			\
+    IMAGE_METH_DEPTH(name),			\
+    IMAGE_METH_SCALE(name)			\
 }
 
 #define image_create(name, fname)	((image_##name *)_image_create(	\
@@ -101,14 +150,29 @@ image *_image_create(struct image_functions *f, size_t size, char *fname);
 
 int image_cspace_components(image_cspace cspace);
 void image_free(image *im);
-#define image_read(im, bp)	((im)->f->read((im), (bp)))
+int image_get_palette_size(image *im);
+int image_get_row_size(image *im);
 
 /* external interface */
 
-#define image_close(im)		((im)->f->close(im))
+image *image_convert(image *oim, image_info *i);
 void image_init_info(image_info *i);
 image *image_open(char *fname);
-#define image_read(im, bp)		((im)->f->read((im), (bp)))
-#define image_read_finish(im, abortp)	((im)->f->read_finish((im), (abortp)))
-#define image_read_start(im)		((im)->f->read_start(im))
+
+#define IMAGE_METH0(name, im)		(((image *)(im))->f->name\
+						((image *)(im)))
+#define IMAGE_METH1(name, im, a0)	(((image *)(im))->f->name\
+						((image *)(im), (a0)))
+#define IMAGE_METH2(name, im, a0, a1)	(((image *)(im))->f->name\
+						((image *)(im), (a0), (a1)))
+
+#define image_close(im)		      IMAGE_METH0(close, (im))
+#define image_get_palette(im)	      IMAGE_METH0(get_palette, (im))
+#define image_read(im, bp)	      IMAGE_METH1(read, (im), (bp))
+#define image_read_finish(im, ab)     IMAGE_METH1(read_finish, (im), (ab))
+#define image_read_start(im)	      IMAGE_METH0(read_start, (im))
+#define image_set_cspace(im, cs)      IMAGE_METH1(set_cspace, (im), (cs))
+#define image_set_depth(im, d)        IMAGE_METH1(set_depth, (im), (d))
+#define image_set_size(im, w, h)      IMAGE_METH2(set_size, (im), (w), (h))
+
 #endif /* image.h */

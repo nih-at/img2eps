@@ -1,7 +1,7 @@
 /*
-  $NiH$
+  $NiH: im_jpeg.c,v 1.1 2002/09/07 20:58:00 dillo Exp $
 
-  im_jpeg.c -- JPEg image handling
+  im_jpeg.c -- JPEG image handling
   Copyright (C) 2002 Dieter Baron
 
   This file is part of img2eps, an image to EPS file converter.
@@ -17,6 +17,7 @@
 
 #include <jpeglib.h>
 
+#define NOSUPP_DEPTH
 #include "image.h"
 
 static image_cspace cspace_jpg2img(int cs);
@@ -53,6 +54,14 @@ jpeg_close(image_jpeg *im)
     image_free((image *)im);
 
     return ret;
+}
+
+
+
+char *
+jpeg_get_palette(image_jpeg *im)
+{
+    return NULL;
 }
 
 
@@ -170,13 +179,56 @@ jpeg_read_start(image_jpeg *im)
     else
 	return -1;
 
-    im->buflen = im->im.i.width*image_cspace_components(im->im.i.cspace);
+    im->buflen = image_get_row_size((image *)im);
     if ((im->buf=malloc(im->buflen))
 	== NULL)
 	return -1;
 
     return 0;
 }		
+
+
+
+int
+jpeg_set_cspace(image_jpeg *im, image_cspace cspace)
+{
+    /* support for RGB->grayscale */
+    /* XXX: more may be supported, need to check */
+    
+    if (cspace == im->im.i.cspace)
+	return 0;
+    
+    switch (cspace) {
+    case IMAGE_CS_GRAY:
+	im->cinfo->out_color_space = JCS_GRAYSCALE;
+	break;
+
+    default:
+	return -1;
+    }
+
+    im->im.i.cspace = cspace;
+    return 0;
+}
+
+
+
+int
+jpeg_set_size(image_jpeg *im, int w, int h)
+{
+    int i;
+    
+    for (i=1; i<16; i*=2) {
+	if (w*i == im->cinfo->image_width && h*i == im->cinfo->image_height) {
+	    im->cinfo->scale_denom = i;
+	    im->im.i.width = w;
+	    im->im.i.height = h;
+	    return 0;
+	}
+    }
+
+    return -1;
+}
 
 
 

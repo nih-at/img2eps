@@ -1,5 +1,5 @@
 /*
-  $NiH$
+  $NiH: im_gif.c,v 1.1 2002/09/07 20:57:59 dillo Exp $
 
   im_gif.c -- GIF image handling
   Copyright (C) 2002 Dieter Baron
@@ -14,6 +14,9 @@
 
 #include <gif_lib.h>
 
+#define NOSUPP_CSPACE
+#define NOSUPP_DEPTH
+#define NOSUPP_SCALE
 #include "image.h"
 
 
@@ -38,6 +41,14 @@ gif_close(image_gif *im)
     image_free((image *)im);
 
     return ret;
+}
+
+
+
+char *
+gif_get_palette(image_gif *im)
+{
+    return NULL;
 }
 
 

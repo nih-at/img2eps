@@ -2,7 +2,7 @@
 #define _HAD_STREAM_TYPES_H
 
 /*
-  $NiH: stream_types.h,v 1.1 2002/09/07 20:58:02 dillo Exp $
+  $NiH: stream_types.h,v 1.2 2002/09/08 00:27:50 dillo Exp $
 
   stream_types.h -- specific stream open functions
   Copyright (C) 2002 Dieter Baron
@@ -12,6 +12,8 @@
 */
 
 #include <stdio.h>
+
+#include "image.h"
 
 stream *stream_ascii85_open(stream *st, int eodmark);
 stream *stream_asciihex_open(stream *st, int eodmark);

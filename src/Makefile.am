@@ -5,8 +5,11 @@ LDADD=@LIBOBJS@
 img2eps_SOURCES=epsf.c \
 		img2eps.c \
 		image.c \
+		im_convert.c \
 		im_gif.c \
 		im_jpeg.c \
+		im_png.c \
+		im_tiff.c \
 		stream.c \
 		st_ascii85.c \
 		st_asciihex.c \
