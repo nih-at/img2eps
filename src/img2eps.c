@@ -1,8 +1,8 @@
 /*
-  $NiH: img2eps.c,v 1.12 2002/10/15 03:17:26 dillo Exp $
+  $NiH: img2eps.c,v 1.13 2003/12/14 09:17:38 dillo Exp $
 
   img2eps.c -- main function
-  Copyright (C) 2002 Dieter Baron
+  Copyright (C) 2002, 2005 Dieter Baron
 
   This file is part of img2eps, an image to EPS file converter.
   The author can be contacted at <dillo@giga.or.at>
@@ -63,32 +63,35 @@ static const char help_head[] =
 PACKAGE " " VERSION " by Dieter Baron <dillo@giga.or.at>\n\n";
 
 static const char help_tail[] = "\
-  -h, --help        display this help message\n\
-  -V, --version     display version number\n\
-  -1                use language level 1\n\
-  -2                use language level 2\n\
-  -3                use language level 3\n\
-  -a, --ascii ENC   use ENC ASCII encoding for binary data\n\
-      --level L     use language level L\n\
-  -c, --stdout      write EPSF to stdout\n\
-  -C, --compress C  use compression method C for image data\n\
-  -g, --gray        force image to gray scale\n\
-  -m, --margin M    set all margins to M\n\
-  -o, --output FILE write EPSF to FILE\n\
-  -P, --paper P     set paper size to P\n\
-  -v, --verbose     be verbose\n\
+  -h, --help           display this help message\n\
+  -V, --version        display version number\n\
+  -1                   use language level 1\n\
+  -2                   use language level 2\n\
+  -3                   use language level 3\n\
+  -a, --ascii ENC      use ENC ASCII encoding for binary data\n\
+      --level L        use language level L\n\
+  -c, --stdout         write EPSF to stdout\n\
+  -C, --compress C     use compression method C for image data\n\
+  -g, --gray           force image to gray scale\n\
+  -G, --gravity G      set gravity to G\n\
+  -m, --margin M       set all margins to M\n\
+  -o, --output FILE    write EPSF to FILE\n\
+  -O, --orientation O  set orientation to O\n\
+  -P, --paper P        set paper size to P\n\
+  -r, --resolution R   set resolution to R\n\
+  -v, --verbose        be verbose\n\
 \n\
 Report bugs to <dillo@giga.or.at>.\n";
 
 static const char usage[] =
-"usage: %s [-hV] [-123cv] [-a asc] [-C comp] [-m marg] [-o file] [-p paper] file [...]\n";
+"usage: %s [-hV] [-123cv] [-a asc] [-C comp] [-G grav] [-m marg] [-o file] [-O ori] [-P paper] file [...]\n";
 
 
 enum {
     OPT_LEVEL = 256
 };
 
-#define OPTIONS "hV123a:cC:gm:o:p:v"
+#define OPTIONS "hV123a:cC:gG:m:o:O:P:r:v"
 
 static const struct option options[] = {
     { "help",         0, 0, 'h' },
@@ -96,14 +99,18 @@ static const struct option options[] = {
     { "ascii",        1, 0, 'a' },
     { "compress",     1, 0, 'C' },
     { "compression",  1, 0, 'C' },
+    { "gravity",      1, 0, 'G' },
     { "gray",         0, 0, 'g' },
     { "grey",         0, 0, 'g' },
     { "level",        1, 0, OPT_LEVEL },
     { "margin",       1, 0, 'm' },
+    { "orientation",  1, 0, 'O' },
     { "output",       1, 0, 'o' },
     { "paper",        1, 0, 'P' },
+    { "resolution",   1, 0, 'r' },
     { "stdout",       0, 0, 'c' },
     { "verbose",      0, 0, 'v' },
+    
     { NULL, 0, 0, 0 }
 };
 
@@ -157,6 +164,10 @@ main(int argc, char *argv[])
 	case 'g':
 	    par->i.cspace.type = IMAGE_CS_GRAY;
 	    break;
+	case 'G':
+	    epsf_set_gravity(par, optarg);
+	    /* XXX: check for error */
+	    break;
 	case 'm':
 	    i = epsf_parse_dimen(optarg);
 	    epsf_set_margins(par, i, i, i, i);
@@ -164,8 +175,16 @@ main(int argc, char *argv[])
 	case 'o':
 	    outfile = optarg;
 	    break;
+	case 'O':
+	    epsf_set_orientation(par, optarg);
+	    /* XXX: check for error */
+	    break;
 	case 'P':
 	    epsf_set_paper(par, optarg);
+	    /* XXX: check for error */
+	    break;
+	case 'r':
+	    epsf_set_resolution(par, atoi(optarg));
 	    break;
 	case 'v':
 	    par->flags |= EPSF_FLAG_VERBOSE;

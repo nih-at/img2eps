@@ -10,12 +10,16 @@
 - gif: raw reading, depth always 8?
 - predictors
 - tiff: tiled, planar, raw jpeg/ccitt/flate, bit/byte order
-- specify paper size as pair of dimens
 - supply colorimage emulation for level1 (rgb-8 done)
 - internal documentation
 
-- pdf output
-- rotation support
+- use EXIF data to determine pixel order
+- allow cropping of image
+- allow bitmap-scaling of image
+- specify paper size as pair of dimens
+- specify margins separately
+- support different scaling in x and y
+
 - support for more graphics formats
 - compress palette
 - masking (1-bit alpha channel)
@@ -23,5 +27,4 @@
 - (optional) language level check in PostScript code
 - more regression tests
 - force specific color space / depth
-- force portrait/landscape/bbox
-- force resolution
+- pdf output

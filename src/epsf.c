@@ -1,8 +1,8 @@
 /*
-  $NiH: epsf.c,v 1.20 2002/10/13 01:25:01 dillo Exp $
+  $NiH: epsf.c,v 1.21 2002/10/16 11:09:12 dillo Exp $
 
   epsf.c -- EPS file fragments
-  Copyright (C) 2002 Dieter Baron
+  Copyright (C) 2002, 2005 Dieter Baron
 
   This file is part of img2eps, an image to EPS file converter.
   The author can be contacted at <dillo@giga.or.at>
@@ -47,8 +47,11 @@
 #include "stream_types.h"
 #include "xmalloc.h"
 
-#define DEFAULT_PAPER	"a4"
-#define DEFAULT_MARGIN	20
+#define DEFAULT_GRAVITY		"center"
+#define DEFAULT_MARGIN		20
+#define DEFAULT_ORIENTATION	"portrait"
+#define DEFAULT_PAPER		"a4"
+#define DEFAULT_RESOLUTION	-1
 
 #ifdef USE_LZW_COMPRESS
 #define DEFAULT_L2_CMP	IMAGE_CMP_LZW
@@ -81,6 +84,7 @@ struct papersize papersize[] = {
     { "ledger",    1224,  792 },
     { "legal",      612, 1008 },
     { "letter",     612,  792 },
+    { "none",        -1,   -1 },
     { "quarto",     610,  780 },
     { "statement",  396,  612 },
     { "tabloid",    792, 1224 },
@@ -102,6 +106,47 @@ struct dimen dimen[] = {
 
 
 
+const struct _num_name _epsf_nn_grav[] = {
+    { EPSF_GRAV_TOPLEFT,     "top-left" },
+    { EPSF_GRAV_TOP,         "top" },
+    { EPSF_GRAV_TOPRIGHT,    "top-right" },
+    { EPSF_GRAV_LEFT,        "left" },
+    { EPSF_GRAV_CENTER,      "center" },
+    { EPSF_GRAV_RIGHT,       "right" },
+    { EPSF_GRAV_BOTTOMLEFT,  "bottom-left" },
+    { EPSF_GRAV_BOTTOM,      "bottom" },
+    { EPSF_GRAV_BOTTOMRIGHT, "bottom-right" },
+
+    { EPSF_GRAV_TOPLEFT,     "tl" },
+    { EPSF_GRAV_TOP,         "tc" },
+    { EPSF_GRAV_TOPRIGHT,    "tr" },
+    { EPSF_GRAV_LEFT,        "cl" },
+    { EPSF_GRAV_CENTER,      "cc" },
+    { EPSF_GRAV_RIGHT,       "cr" },
+    { EPSF_GRAV_BOTTOMLEFT,  "bl" },
+    { EPSF_GRAV_BOTTOM,      "bc" },
+    { EPSF_GRAV_BOTTOMRIGHT, "br" },
+
+    { EPSF_GRAV_TOP,         "t" },
+    { EPSF_GRAV_LEFT,        "l" },
+    { EPSF_GRAV_CENTER,      "c" },
+    { EPSF_GRAV_RIGHT,       "r" },
+    { EPSF_GRAV_BOTTOM,      "b" },
+
+    { EPSF_GRAV_UNKNOWN,   NULL }
+};
+
+const struct _num_name _epsf_nn_ori[] = {
+    { EPSF_ORI_PORTRAIT,  "portrait" },
+    { EPSF_ORI_LANDSCAPE, "landscape" },
+    { EPSF_ORI_UPDOWN,    "upside-down" },
+    { EPSF_ORI_SEASCAPE,  "seascape" },
+
+    { EPSF_ORI_AUTO,      "auto" },
+
+    { EPSF_ORI_UNKNOWN,   NULL }
+};
+
 /*
   In the following arrays, the first entry of each num must be the
   name of the corresponding PostScript filters.
@@ -117,7 +162,10 @@ const struct _num_name _epsf_nn_asc[] = {
     { EPSF_ASC_UNKNOWN, NULL }
 };
 
+
+
 static void _calculate_bbox(epsf *ep);
+static double _calculate_scale(int, int, int, int);
 static int _fit_depth(int depth);
 static int _write_image_dict(epsf *ep);
 static int _write_image_l1(epsf *ep);
@@ -341,9 +389,7 @@ epsf_create(const epsf *par, stream *st, image *im)
     ep->bbox.llx = ep->bbox.lly = ep->bbox.urx = ep->bbox.ury = 0;
 
     ep->ascii = par->ascii;
-    ep->paper_width = par->paper_width;
-    ep->paper_height = par->paper_height;
-    ep->paper_bbox = par->paper_bbox;
+    ep->placement = par->placement;
     ep->level = par->level;
     ep->i = par->i;
 
@@ -364,6 +410,9 @@ epsf_create_defaults(void)
     epsf_set_margins(ep,
 		     DEFAULT_MARGIN, DEFAULT_MARGIN,
 		     DEFAULT_MARGIN, DEFAULT_MARGIN);
+    epsf_set_gravity(ep, DEFAULT_GRAVITY);
+    epsf_set_orientation(ep, DEFAULT_ORIENTATION);
+    epsf_set_resolution(ep, DEFAULT_RESOLUTION);
     ep->level = 0;
     image_init_info(&ep->i);
 
@@ -500,17 +549,51 @@ epsf_process(stream *st, const char *fname, const epsf *par)
 
 
 
+int
+epsf_set_gravity(epsf *ep, const char *gravity)
+{
+    int i;
+    
+    i = epsf_grav_num(gravity);
+
+    if (i >= 0) {
+	ep->placement.gravity = i;
+	return 0;
+    }
+
+    return -1;
+}
+
+
+
 void
 epsf_set_margins(epsf *ep, int l, int r, int t, int b)
 {
     if (l >= 0)
-	ep->paper_bbox.llx = l;
+	ep->placement.left_margin = l;
     if (r >= 0)
-	ep->paper_bbox.urx = ep->paper_width-r;
+	ep->placement.right_margin = l;
     if (b >= 0)
-	ep->paper_bbox.lly = b;
+	ep->placement.bottom_margin = l;
     if (t >= 0)
-	ep->paper_bbox.ury = ep->paper_height-t;
+	ep->placement.top_margin = l;
+}
+
+
+
+int
+epsf_set_orientation(epsf *ep, const char *orientation)
+{
+    int i;
+    
+    i = epsf_ori_num(orientation);
+
+    if (i >= 0) {
+	ep->placement.orientation = i;
+	return 0;
+    }
+
+    return -1;
 }
 
 
@@ -518,26 +601,23 @@ epsf_set_margins(epsf *ep, int l, int r, int t, int b)
 int
 epsf_set_paper(epsf *ep, const char *paper)
 {
-    int i, pw, ph;
+    int i;
     
-    pw = -1;
     for (i=0; papersize[i].name; i++) {
 	if (strcasecmp(paper, papersize[i].name) == 0) {
-	    pw = papersize[i].width;
-	    ph = papersize[i].height;
-	    break;
+	    ep->placement.paper_width = papersize[i].width;
+	    ep->placement.paper_height = papersize[i].height;
+	    return 0;
 	}
     }
-    if (pw == -1)
-	return -1;
 
-    ep->paper_bbox.urx += pw-ep->paper_width;
-    ep->paper_bbox.ury += ph-ep->paper_height;
+    return -1;
+}
 
-    ep->paper_width = pw;
-    ep->paper_height = ph;
-
-    return 0;
+void
+epsf_set_resolution(epsf *ep, int r)
+{
+    ep->placement.resolution = r;
 }
 
 
@@ -645,11 +725,26 @@ epsf_write_header(epsf *ep)
 int
 epsf_write_setup(epsf *ep)
 {
+    int x0, y0, xd, yd, r;
+
+    x0 = ep->bbox.llx;
+    y0 = ep->bbox.lly;
+    xd = ep->bbox.urx - ep->bbox.llx;
+    yd = ep->bbox.ury - ep->bbox.lly;
+    r = ep->orientation * 90;
+
+    if (ep->orientation == EPSF_ORI_LANDSCAPE
+	|| ep->orientation == EPSF_ORI_UPDOWN)
+	x0 += xd;
+    if (ep->orientation == EPSF_ORI_SEASCAPE
+	|| ep->orientation == EPSF_ORI_UPDOWN)
+	y0 += yd;
+
     stream_puts("save 20 dict begin\n", ep->st);
     stream_printf(ep->st, "%d %d translate %d %d scale\n",
-		  ep->bbox.llx, ep->bbox.lly,
-		  ep->bbox.urx - ep->bbox.llx,
-		  ep->bbox.ury - ep->bbox.lly);
+		  x0, y0, xd, yd);
+    if (r)
+	stream_printf(ep->st, "%d rotate\n", r);
 
     /* XXX: handle other compression methods */
     if (ep->im->i.cspace.type == IMAGE_CS_INDEXED
@@ -675,26 +770,81 @@ static void
 _calculate_bbox(epsf *ep)
 {
     int pw, ph, imw, imh;
-    double scale, sh;
-    
-    pw = ep->paper_bbox.urx - ep->paper_bbox.llx; 
-    ph = ep->paper_bbox.ury - ep->paper_bbox.lly; 
+    double scale, scale_p, scale_l;
+
+    if (ep->placement.paper_width >= 0) {
+	pw = ep->placement.paper_width
+	    - ep->placement.left_margin - ep->placement.right_margin;
+	ph = ep->placement.paper_height
+	    - ep->placement.top_margin - ep->placement.bottom_margin;
+    }
+    else
+	pw = ph = -1;
 
     imw = ep->im->i.width;
     imh = ep->im->i.height;
 
-    scale = pw*1.0/(double)imw;
-    sh = ph*1.0/(double)imh;
-    if (sh < scale)
-	scale = sh;
+    if (ep->placement.resolution >= 0)
+	scale_p = scale_l = 72.0/(double)ep->placement.resolution;
+    else {
+	if (pw < 0)
+	    throws(EINVAL, "neither paper size nor resolution specified");
+
+	scale_p = _calculate_scale(pw, ph, imw, imh);
+	scale_l = _calculate_scale(pw, ph, imh, imw);
+    }
+
+    if (ep->placement.orientation != EPSF_ORI_AUTO)
+	ep->orientation = ep->placement.orientation;
+    else {
+	if (scale_l > scale_p
+	    || ((imw*scale_p > pw || imh*scale_p > ph)
+		&& (imh*scale_l <= pw && imw*scale_l <= ph)))
+	    ep->orientation = EPSF_ORI_LANDSCAPE;
+	else 
+	    ep->orientation = EPSF_ORI_PORTRAIT;
+    }
+
+    if (ep->orientation == EPSF_ORI_PORTRAIT
+	|| ep->orientation == EPSF_ORI_UPDOWN)
+	scale = scale_p;
+    else {
+	int t;
+	t = imw;
+	imw = imh;
+	imh = t;
+	scale = scale_l;
+    }
 
     imw *= scale;
     imh *= scale;
 
-    ep->bbox.llx = (pw-imw)/2 + ep->paper_bbox.llx;
-    ep->bbox.lly = (ph-imh)/2 + ep->paper_bbox.lly;
+    ep->bbox.llx = ep->placement.left_margin;
+    ep->bbox.lly = ep->placement.bottom_margin;
+
+    if (pw >= 0) {
+	if (imw > pw || imh > ph) {
+	    /* XXX: warning: image bigger than printable area */
+	}
+	ep->bbox.llx += (pw-imw) * (ep->placement.gravity%3)/2;
+	ep->bbox.lly += (ph-imh) * (2-(ep->placement.gravity/3))/2;
+    }
+
     ep->bbox.urx = ep->bbox.llx + imw;
     ep->bbox.ury = ep->bbox.lly + imh;
+}
+
+
+
+static double
+_calculate_scale(int pw, int ph, int imw, int imh)
+{
+    double sw, sh;
+
+    sw = pw/(double)imw;
+    sh = ph/(double)imh;
+
+    return (sw < sh ? sw : sh);
 }
 
 

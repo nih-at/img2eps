@@ -1,3 +1,14 @@
+2005-01-04  Dieter Baron  <dillo@danbala.tuwien.ac.at>
+
+	* src/epsf.h (epsf_gravity, epsf_orientation, epsf_placement): new
+	types.
+	* src/epsf.c (epsf_set_gravity, epsf_set_orientation,
+	epsf_set_resolution, _calculate_scale): new functions.
+	* src/epsf.c (epsf_create_defaults, epsf_create, _calculate_bbox):
+	adapt to new placement types.
+	* src/epsf.c (epsf_write_setup): add support for image rotation.
+	* src/img2eps.c: add options for new placement functionality.
+	
 2004-03-03  Dieter Baron  <dillo@danbala.tuwien.ac.at>
 
 	* src/im_jpeg2000.c: adapt to changes in jasper 1.700
