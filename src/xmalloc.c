@@ -1,5 +1,5 @@
 /*
-  $NiH$
+  $NiH: xmalloc.c,v 1.1 2002/09/10 14:05:54 dillo Exp $
 
   xmalloc.c -- allocation functions with exceptions
   Copyright (C) 2002 Dieter Baron
@@ -20,10 +20,13 @@
 void *
 xmalloc(size_t size)
 {
+    static errstr[128];
     void *p;
 
-    if ((p=malloc(size)) == NULL)
-	throwf(ENOMEM, "out of memory allocating %ld bytes", (long)size);
+    if ((p=malloc(size)) == NULL) {
+	sprintf(errstr, "out of memory allocating %ld bytes", (long)size);
+	throws(ENOMEM, errstr);
+    }
 
     return p;
 }
