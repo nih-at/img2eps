@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.22 2005/01/04 19:19:56 dillo Exp $
+  $NiH: epsf.c,v 1.23 2005/01/06 13:19:23 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002, 2005 Dieter Baron
@@ -781,8 +781,14 @@ _calculate_bbox(epsf *ep)
     else
 	pw = ph = -1;
 
-    imw = ep->im->i.width;
-    imh = ep->im->i.height;
+    if (image_order_swapped(ep->im->i.order)) {
+	imw = ep->im->i.height;
+	imh = ep->im->i.width;
+    }
+    else {
+	imw = ep->im->i.width;
+	imh = ep->im->i.height;
+    }
 
     if (ep->placement.resolution >= 0)
 	scale_p = scale_l = 72.0/(double)ep->placement.resolution;
@@ -952,7 +958,7 @@ _write_image_matrix(epsf *ep)
     /* keep in sync with enum image_order in image.h */
     static const char *matrix[] = {
 	NULL, "w00H0h", "w00h00", "W00Hwh", "W00hw0",
-	"0hw00h", "0hW000", "0Hw0wh", "0HW0w0"
+	"0hw00h", "0hW000", "0HW0wh", "0HW0w0"
     };
 
     char b[128], *s;
