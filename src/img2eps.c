@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.13 2003/12/14 09:17:38 dillo Exp $
+  $NiH: img2eps.c,v 1.14 2005/01/04 19:19:57 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002, 2005 Dieter Baron
@@ -70,13 +70,13 @@ static const char help_tail[] = "\
   -3                   use language level 3\n\
   -a, --ascii ENC      use ENC ASCII encoding for binary data\n\
       --level L        use language level L\n\
-  -c, --stdout         write EPSF to stdout\n\
   -C, --compress C     use compression method C for image data\n\
-  -g, --gray           force image to gray scale\n\
+  -c, --stdout         write EPSF to stdout\n\
   -G, --gravity G      set gravity to G\n\
+  -g, --gray           force image to gray scale\n\
   -m, --margin M       set all margins to M\n\
-  -o, --output FILE    write EPSF to FILE\n\
   -O, --orientation O  set orientation to O\n\
+  -o, --output FILE    write EPSF to FILE\n\
   -P, --paper P        set paper size to P\n\
   -r, --resolution R   set resolution to R\n\
   -v, --verbose        be verbose\n\
@@ -84,7 +84,7 @@ static const char help_tail[] = "\
 Report bugs to <dillo@giga.or.at>.\n";
 
 static const char usage[] =
-"usage: %s [-hV] [-123cv] [-a asc] [-C comp] [-G grav] [-m marg] [-o file] [-O ori] [-P paper] file [...]\n";
+"usage: %s [-hV] [-123cgv] [-a asc] [-C comp] [-G grav] [-m marg] [-O ori] [-o file] [-P paper] file [...]\n";
 
 
 enum {
@@ -150,9 +150,6 @@ main(int argc, char *argv[])
 		exit(1);
 	    }
 	    break;
-	case 'c':
-	    cat = 1;
-	    break;
 	case 'C':
 	    par->i.compression = image_compression_num(optarg);
 	    if (par->i.compression == IMAGE_CMP_UNKNOWN) {
@@ -161,23 +158,26 @@ main(int argc, char *argv[])
 		exit(1);
 	    }
 	    break;
-	case 'g':
-	    par->i.cspace.type = IMAGE_CS_GRAY;
+	case 'c':
+	    cat = 1;
 	    break;
 	case 'G':
 	    epsf_set_gravity(par, optarg);
 	    /* XXX: check for error */
 	    break;
+	case 'g':
+	    par->i.cspace.type = IMAGE_CS_GRAY;
+	    break;
 	case 'm':
 	    i = epsf_parse_dimen(optarg);
 	    epsf_set_margins(par, i, i, i, i);
 	    break;
-	case 'o':
-	    outfile = optarg;
-	    break;
 	case 'O':
 	    epsf_set_orientation(par, optarg);
 	    /* XXX: check for error */
+	    break;
+	case 'o':
+	    outfile = optarg;
 	    break;
 	case 'P':
 	    epsf_set_paper(par, optarg);
