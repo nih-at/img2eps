@@ -1,4 +1,6 @@
 bugs:
++ [jpeg] fix PostScript error with pictures from Canon EOS 300D (direct copy)
++ [epsf] fix order transformation matrices
 - [jpeg] fix direct-copy broken on level2 printers
 - [jpeg] 12bit DCT encode produces broken image data (jpeg lib limitation)
 . [jpeg2000] testfiles_jp2/file3.jp2: error reading component 1 of row 0
@@ -6,15 +8,12 @@ bugs:
 enhancements:
 + [ui] dry-run option (don't process, only print info)
 + [ui] more information in verbose mode
-+ [ui] specify paper size as pair of dimens
-+ [ui] specify margins separately
-- [jpeg] use EXIF data to determine pixel order
++ [ui] specify image size
+- [ui] specify paper size as pair of dimens
+- [ui] specify gravity as pair of floats
 - [image] allow cropping of image
 - [epsf] support different scaling in x and y
 - [ui] force specific color space / depth
-- [epsf] supply colorimage emulation for level1 (rgb-8 done)
-- [epsf] (optional) language level check in PostScript code
-- [epsf] compress palette
 . [image] allow bitmap-scaling of image
 . [image] multi-page images (TIFF, MNG, animated GIF)
 . [png] raw read
@@ -22,6 +21,9 @@ enhancements:
 . [tiff] tiled, planar, raw jpeg/ccitt/flate, bit/byte order
 . [jpeg2000] image depth other than 8, 16
 . [image] support for more graphics formats
+. [epsf] supply colorimage emulation for level1 (rgb-8 done)
+. [epsf] (optional) language level check in PostScript code
+. [epsf] compress palette
 . [epsf] masking (1-bit alpha channel)
 . [epsf] preview
 . [epsf] pdf output

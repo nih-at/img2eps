@@ -1,3 +1,17 @@
+2005-01-06  Dieter Baron  <dillo@danbala.tuwien.ac.at>
+
+	* configure.in (NIH_CHECK_SUPPORT): new macro.
+	* configure.in: restructure support checks, add check and option
+	for EXIF, try to find libpng via pkg_config (with fallback to
+	AC_CHECK_LIB).
+	* src/image.h (image_order_swapped): new macro.
+	* src/epsf.c (_calculate_bbox): for column-major pixel order, swap
+	width and height.
+	* src/im_jpeg.c (exif_order): new function.
+	* src/im_jpeg.c (jpeg_open): determine pixel order from EXIF tag.
+
+	* src/img2eps.c (main): add options to specify margins separately.
+
 2005-01-04  Dieter Baron  <dillo@danbala.tuwien.ac.at>
 
 	* src/epsf.h (epsf_gravity, epsf_orientation, epsf_placement): new
