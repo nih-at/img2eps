@@ -1,6 +1,8 @@
 - 12bit DCT encode produces broken image data (jpeg lib limitation)
+- jpeg2000/testfiles_jp2/file3.jp2: error reading component 1 of row 0
 
 - jpeg2000: image depth other than 8, 16
+- test cases: JPEG 2000, interlaced GIF
 - multi-page images (TIFF, MNG, animated GIF)
 - image_info: bit order
 - dry-run option (don't process, only print info)
