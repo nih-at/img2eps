@@ -1,5 +1,5 @@
 /*
-  $NiH: im_tiff.c,v 1.8 2002/10/08 16:51:15 dillo Exp $
+  $NiH: im_tiff.c,v 1.9 2002/10/09 14:46:44 dillo Exp $
 
   im_tiff.c -- TIFF image handling
   Copyright (C) 2002 Dieter Baron
@@ -144,10 +144,6 @@ tiff_open(char *fname)
 	}
 #endif
 
-	if (TIFFNumberOfStrips(im->tif) > 1
-	    && im->im.i.compression != IMAGE_CMP_RLE)
-	    im->im.i.compression = IMAGE_CMP_NONE;
-
 	if (im->im.i.cspace.type == IMAGE_CS_INDEXED) {
 	    im->im.i.cspace.base_type = IMAGE_CS_RGB;
 	    im->im.i.cspace.base_depth = 16;
@@ -167,6 +163,10 @@ tiff_open(char *fname)
     }
 
     im->im.oi = im->im.i;
+
+    if (TIFFNumberOfStrips(im->tif) > 1
+	&& im->im.i.compression != IMAGE_CMP_RLE)
+	im->im.i.compression = IMAGE_CMP_NONE;
 
     return (image *)im;
 }
