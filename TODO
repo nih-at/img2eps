@@ -1,6 +1,3 @@
-- man page
-+ solaris: libpng needs -lm
-
 - image_info: bit order
 - dry-run option (don't process, only print info)
 - png: raw read
@@ -11,6 +8,7 @@
 - supply colorimage emulation for level1 (rgb-8 done)
 - internal documentation
 
+- pdf output
 - rotation support
 - support for more graphics formats
 - compress palette
