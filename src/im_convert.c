@@ -1,5 +1,5 @@
 /*
-  $NiH: im_convert.c,v 1.7 2002/10/09 14:46:43 dillo Exp $
+  $NiH: im_convert.c,v 1.8 2002/10/10 00:15:20 dillo Exp $
 
   im_convert.c -- image conversion handling
   Copyright (C) 2002 Dieter Baron
@@ -176,7 +176,8 @@ image_convert(image *oim, int mask, const image_info *i)
 	if (mask & IMAGE_INF_CSPACE) {
 	    if ((mask & IMAGE_INF_BASE_TYPE)
 		&& ((oim->i.cspace.base_type != IMAGE_CS_GRAY
-		     && oim->i.cspace.base_type != IMAGE_CS_RGB)
+		     && oim->i.cspace.base_type != IMAGE_CS_RGB
+		     && oim->i.cspace.base_type != IMAGE_CS_CMYK)
 		    || (i->cspace.base_type != IMAGE_CS_GRAY
 			&& i->cspace.base_type != IMAGE_CS_RGB)))
 		throws(EOPNOTSUPP, "palette type conversion not supported");
@@ -250,6 +251,19 @@ _convert(image_conv *im, char *pdc, char *psc, int n, int basep)
 	    break;
 	case MAKE2(IMAGE_CS_GRAY, IMAGE_CS_RGB):
 	    c[1] = c[2] = c[0];
+	    break;
+	case MAKE2(IMAGE_CS_GRAY, IMAGE_CS_CMYK):
+	    c[3] = 0xffff-c[0];
+	    c[0] = c[1] = c[2] = 0;
+	    break;
+	case MAKE2(IMAGE_CS_CMYK, IMAGE_CS_GRAY):
+	    c[0] = (c[0]*19+c[1]*38+c[2]*7)/64 + c[3];
+	    c[0] = 0xffff - (c[0]> 0xffff ? 0xffff : c[0]);
+	    break;
+	case MAKE2(IMAGE_CS_CMYK, IMAGE_CS_RGB):
+	    c[0] = 0xffff - (c[0]+c[3] > 0xffff ? 0xffff : c[0]+c[3]);
+	    c[1] = 0xffff - (c[2]+c[3] > 0xffff ? 0xffff : c[2]+c[3]);
+	    c[2] = 0xffff - (c[2]+c[3] > 0xffff ? 0xffff : c[2]+c[3]);
 	    break;
 	}
 
