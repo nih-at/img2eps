@@ -11,71 +11,71 @@ is also provided (although not all of it is implemented yet).
 (im_FORMAT.c), one module for image transformation (im_convert.c) and
 some format independent functions (image.c).
 
+  XXX: return values differ for some functions.  this will be fixed.
 
 
+* FUNCTION image *image_convert(image *im, const image_info *i);
 
-* image *image_open(char *fname);
-
-  Open file FNAME.
-
-  Returns pointer to image on succes, NULL on error.
-
+    Convert image IM to parameters specified in I.  If the image does
+  not support all requested transformations directly, a conversion
+  image object is created and returned.
 
 
-METHODS:
+* METHOD void image_close(image *im);
 
-* int image_close(image *im);
-
-  Close and free image.
-
-  Returns 0 on success, -1 on error.
+    Close and free image.
 
 
-* char *image_get_palette(image *im);
+* METHOD char *image_get_palette(image *im);
 
-  Get palette of image as a row of samples.
+    Get palette of image as a row of samples.
 
-  Returns pointer to palette on success, NULL on error.
-
-
-* int image_read(image *im, char **bp);
-
-  Read one row of image data and point BP at it.
-
-  Returns 0 on success, -1 on error.
+    Returns pointer to palette on success.
 
 
-* int image_read_finish(image *im, int abortp);
+* FUNCTION void image_init_info(image_info *i);
 
-  Finish reading image data.  If ABORTP, image might not have been
+    Initialize image_info struct.  All members are set to `unknown'.
+
+
+* FUNCTION image *image_open(char *fname);
+
+    Open file FNAME.
+
+    Returns pointer to image.
+
+
+* METHOD int image_read(image *im, char **bp);
+
+    Read one row of image data and point BP at it.
+
+    Returns number of bytes read.
+
+
+* METHOD void image_read_finish(image *im, int abortp);
+
+    Finish reading image data.  If ABORTP, image might not have been
   read compiletely.
 
-  Returns 0 on success, -1 on error.
+
+* METHOD void image_read_start(image *im);
+
+    Start reading image data.  Must be called before calls to image_read().
 
 
-* int image_read_start(image *im);
+* METHOD int image_set_cspace(image *im, const image_cspace *cspace);
 
-  Start reading image data.  Must be called before calls to image_read().
+    Request image data in color space CSPACE.  If not all parameter
+  changes are supported, change those that are.  Parameters specified
+  as 0 or UNKNOWN are left unchanged or set to default values derived
+  from other parameteres (if that is neccessary to support all
+  specified parameters.)
 
-  Returns 0 on success, -1 on error.
-
-
-* int image_set_cspace(image *im, image_cspace cspace);
-
-  Request image data in color space CSPACE.
-
-  Returns 0 if transformation supported, -1 otherwise.
+    Returns 0 if all parameters supported, -1 otherwise.
 
 
-* int image_set_depth(image *im, int depth);
+* METHOD int image_set_size(image *im, int width, int height);
 
-  Request image data with DEPTH bits per component.
+    Request that image be scaled to WIDTHxHEIGHT.
 
-  Returns 0 if transformation supported, -1 otherwise.
-
-
-* int image_set_size(image *im, int width, int height);
-
-  Request that image be scaled to WIDTHxHEIGHT.
-
-  Returns 0 if transformation supported, -1 otherwise.
+    Returns 0 if transformation supported, -1 otherwise.

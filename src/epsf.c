@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.5 2002/09/10 14:05:50 dillo Exp $
+  $NiH: epsf.c,v 1.6 2002/09/10 21:40:46 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -88,18 +88,13 @@ const struct _epsf_nn _epsf_nn_cspace[] = {
     { IMAGE_CS_GRAY,         "DeviceGray" },
     { IMAGE_CS_RGB,          "DeviceRGB" },
     { IMAGE_CS_CMYK,         "DeviceCMYK" },
-    { IMAGE_CS_INDEXED_GRAY, "Indexed" },
-    { IMAGE_CS_INDEXED_RGB,  "Indexed" },
-    { IMAGE_CS_INDEXED_CMYK, "Indexed" },
+    { IMAGE_CS_INDEXED,      "Indexed" },
 
     { IMAGE_CS_GRAY,         "gray" },
     { IMAGE_CS_GRAY,         "grey" },
     { IMAGE_CS_RGB,          "rgb" },
     { IMAGE_CS_CMYK,         "cmyk" },
-    { IMAGE_CS_INDEXED_GRAY, "indexed-gray" },
-    { IMAGE_CS_INDEXED_GRAY, "indexed-grey" },
-    { IMAGE_CS_INDEXED_RGB,  "indexed-rgb" },
-    { IMAGE_CS_INDEXED_CMYK, "indexed-cmyk" },
+    { IMAGE_CS_HSV,          "hsv" },
 
     { IMAGE_CS_UNKNOWN, NULL }
 };
@@ -156,18 +151,20 @@ epsf_calculate_parameters(epsf *ep)
 
     /* determine color space */
 
-    if (ep->i.cspace == IMAGE_CS_UNKNOWN) {
+    if (ep->i.cspace.type == IMAGE_CS_UNKNOWN) {
 	/* no /Indexed in LanguageLevel 1 */
-	if (ep->level == 1 && IMAGE_CS_IS_INDEXED(ep->im->i.cspace))
-	    ep->i.cspace = IMAGE_CS_BASE(ep->im->i.cspace);
+	if (ep->level == 1 && ep->im->i.cspace.type == IMAGE_CS_INDEXED)
+	    ep->i.cspace.type = ep->im->i.cspace.base_type;
 	else
-	    ep->i.cspace = ep->im->i.cspace;
+	    ep->i.cspace.type = ep->im->i.cspace.type;
     }
 
-    level = epsf_cspace_langlevel(ep->i.cspace);
+    /* XXX: depth, unsupported color space types */
+
+    level = epsf_cspace_langlevel(&ep->i.cspace);
     if (ep->level && ep->level < level)
 	throwf(1, "color space %s not supported in LanguageLevel %d",
-	       epsf_cspace_name(ep->i.cspace), ep->level);
+	       epsf_cspace_name(ep->i.cspace.type), ep->level);
 
 
     /* determine level needed by ascii encoding */
@@ -237,7 +234,6 @@ epsf_calculate_parameters(epsf *ep)
 
     ep->im = image_convert(ep->im, &ep->i);
 
-
     /* calculate image placement and bounding box */
 
     _calculate_bbox(ep);
@@ -271,7 +267,7 @@ epsf_compression_langlevel(image_compression cmp)
 
 
 epsf *
-epsf_create(epsf *par, stream *st, image *im)
+epsf_create(const epsf *par, stream *st, image *im)
 {
     epsf *ep;
 
@@ -314,23 +310,23 @@ epsf_create_defaults(void)
 
 
 int
-epsf_cspace_langlevel(image_cspace cs)
+epsf_cspace_langlevel(const image_cspace *cs)
 {
-    switch (cs) {
+    switch (cs->type) {
     case IMAGE_CS_UNKNOWN:
     case IMAGE_CS_GRAY:
     case IMAGE_CS_RGB:
     case IMAGE_CS_CMYK:
 	return 1;
 	
-    case IMAGE_CS_INDEXED_GRAY:
-    case IMAGE_CS_INDEXED_RGB:
-    case IMAGE_CS_INDEXED_CMYK:
+    case IMAGE_CS_INDEXED:
 	return 2;
 
     default:
 	return 0;
     }
+
+    /* XXX depth */
 }
 
 
@@ -344,7 +340,7 @@ epsf_free(epsf *ep)
 
 
 int
-epsf_parse_dimen(char *d)
+epsf_parse_dimen(const char *d)
 {
     int i, l;
     char *end;
@@ -365,7 +361,7 @@ epsf_parse_dimen(char *d)
 
 
 int
-epsf_process(stream *st, char *fname, epsf *par)
+epsf_process(stream *st, const char *fname, const epsf *par)
 {
     epsf *ep;
     image *im;
@@ -415,7 +411,7 @@ epsf_set_margins(epsf *ep, int l, int r, int t, int b)
 
 
 int
-epsf_set_paper(epsf *ep, char *paper)
+epsf_set_paper(epsf *ep, const char *paper)
 {
     int i, pw, ph;
     
@@ -543,7 +539,7 @@ epsf_write_setup(epsf *ep)
 		  ep->bbox.ury - ep->bbox.lly);
 
     /* XXX: handle other compression methods */
-    if (IMAGE_CS_IS_INDEXED(ep->im->i.cspace)
+    if (ep->im->i.cspace.type == IMAGE_CS_INDEXED
 	|| ep->i.compression == IMAGE_CMP_RLE)
 	_write_image_dict(ep);
     else
@@ -626,16 +622,16 @@ _write_image_dict(epsf *ep)
 
     i = &ep->im->i;
 
-    if (IMAGE_CS_IS_INDEXED(i->cspace)) {
+    if (i->cspace.type == IMAGE_CS_INDEXED) {
 	stream_printf(ep->st, "[/Indexed /%s %d ", 
-		      epsf_cspace_name(IMAGE_CS_BASE(i->cspace)),
-		      (1<<i->depth) - 1);
+		      epsf_cspace_name(i->cspace.base_type),
+		      (1<<i->cspace.depth) - 1);
 	_write_palette_array(ep);
 	stream_puts("] setcolorspace\n", ep->st);
     }
     else
 	stream_printf(ep->st, "/%s setcolorspace\n",
-		      epsf_cspace_name(i->cspace));
+		      epsf_cspace_name(i->cspace.type));
 
     stream_printf(ep->st, "<<\n\
 /ImageType 1\n\
@@ -643,7 +639,7 @@ _write_image_dict(epsf *ep)
 /Height %d\n\
 /BitsPerComponent %d\n\
 /DataSource currentfile /%sDecode filter",
-		  i->width, i->height, i->depth,
+		  i->width, i->height, i->cspace.depth,
 		  epsf_asc_name(ep->ascii));
     /* XXX: handle other compression methods */
     if (ep->i.compression == IMAGE_CMP_RLE)
@@ -652,10 +648,10 @@ _write_image_dict(epsf *ep)
     stream_puts("\n/ImageMatrix \n", ep->st);
     _write_image_matrix(ep);
     stream_puts("\n/Decode [ ", ep->st);
-    if (IMAGE_CS_IS_INDEXED(i->cspace))
-	stream_printf(ep->st, "0 %d ", (1<<i->depth)-1);
+    if (i->cspace.type == IMAGE_CS_INDEXED)
+	stream_printf(ep->st, "0 %d ", (1<<i->cspace.depth)-1);
     else
-	for (j=0; j<image_cspace_components(i->cspace); j++)
+	for (j=0; j<image_cspace_components(&i->cspace, 0); j++)
 	    stream_puts("0 1 ", ep->st);
     stream_puts("]\n>> image\n", ep->st);
 
@@ -670,7 +666,7 @@ _write_image_l1(epsf *ep)
     stream_printf(ep->st, "%d %d %d\n",
 		  ep->im->i.width,
 		  ep->im->i.height,
-		  ep->im->i.depth);
+		  ep->im->i.cspace.depth);
     _write_image_matrix(ep);
     stream_puts("\n", ep->st);
     if (ep->level == 1) {
@@ -679,11 +675,11 @@ _write_image_l1(epsf *ep)
     else {
 	stream_printf(ep->st, "currentfile /%sDecode filter\n",
 		      epsf_asc_name(ep->ascii));
-	if (ep->im->i.cspace == IMAGE_CS_GRAY)
+	if (ep->im->i.cspace.type == IMAGE_CS_GRAY)
 	    stream_puts("image\n", ep->st);
 	else
 	    stream_printf(ep->st, "false %d colorimage\n",
-			  image_cspace_components(ep->im->i.cspace));
+			  image_cspace_components(&ep->im->i.cspace, 0));
     }
 
     return 0;
@@ -744,13 +740,13 @@ _write_l1_datasrc(epsf *ep)
     int nc, ng;
 
     nc = image_get_row_size(ep->im);
-    ng = (ep->im->i.width * ep->im->i.depth + 7) / 8;
+    ng = (ep->im->i.width * ep->im->i.cspace.depth + 7) / 8;
     
     stream_printf(ep->st, "/picstr %d string def\n", nc);
 
-    switch (ep->im->i.cspace) {
+    switch (ep->im->i.cspace.type) {
     case IMAGE_CS_RGB:
-	if (ep->im->i.depth == 8) {
+	if (ep->im->i.cspace.depth == 8) {
 	    stream_printf(ep->st, "\
 /colorimage where {\n\
  pop { currentfile picstr readhexstring pop } bind false %d colorimage\n\
@@ -764,7 +760,7 @@ _write_l1_datasrc(epsf *ep)
   } for gstr\n\
  } bind image\n\
 } ifelse\n",
-			  image_cspace_components(ep->im->i.cspace),
+			  image_cspace_components(&ep->im->i.cspace, 0),
 			  ng, ng-1);
 	}
 	break;
@@ -773,7 +769,7 @@ _write_l1_datasrc(epsf *ep)
 	stream_printf(ep->st, "\
 { currentfile picstr readhexstring pop } bind\n\
 false %d colorimage\n",
-		      image_cspace_components(ep->im->i.cspace));
+		      image_cspace_components(&ep->im->i.cspace, 0));
 	break;
     }
 }
@@ -799,7 +795,7 @@ _write_palette_array(epsf *ep)
 	st = stream_ascii85_open(ep->st, 1);
     }
     
-    ret = stream_write(st, pal, image_get_palette_size(ep->im));
+    ret = stream_write(st, pal, image_cspace_palette_size(&ep->im->i.cspace));
 
     stream_close(st);
     return ret;

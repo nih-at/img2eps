@@ -1,5 +1,5 @@
 /*
-  $NiH: im_jpeg.c,v 1.4 2002/09/10 15:28:58 dillo Exp $
+  $NiH: im_jpeg.c,v 1.5 2002/09/10 21:40:47 dillo Exp $
 
   im_jpeg.c -- JPEG image handling
   Copyright (C) 2002 Dieter Baron
@@ -22,7 +22,7 @@
 #include "image.h"
 #include "xmalloc.h"
 
-static image_cspace cspace_jpg2img(int cs);
+static image_cs_type cspace_jpg2img(int cs);
 static void error_exit(j_common_ptr cinfo);
 
 
@@ -116,16 +116,9 @@ jpeg_open(char *fname)
     im->im.i.width = im->cinfo->image_width;
     im->im.i.height = im->cinfo->image_height;
     im->im.i.compression = IMAGE_CMP_DCT;
-    im->im.i.depth = 8; /* XXX: correct for compressed? */
-    im->im.i.cspace = cspace_jpg2img(im->cinfo->jpeg_color_space);
-    if (im->im.i.cspace == IMAGE_CS_UNKNOWN) {
-	/*
-	  color space not supported by PostScript,
-	  we have to decompress
-	*/
-	im->im.i.cspace = cspace_jpg2img(im->cinfo->out_color_space);
-	im->im.i.compression = IMAGE_CMP_NONE;
-    }
+    im->im.i.cspace.type = cspace_jpg2img(im->cinfo->jpeg_color_space);
+    im->im.i.cspace.depth = 8; /* XXX: correct for compressed? */
+    /* XXX: alpha */
 
     return (image *)im;
 }
@@ -179,18 +172,22 @@ jpeg_read_start(image_jpeg *im)
 
 
 int
-jpeg_set_cspace_depth(image_jpeg *im, image_cspace cspace, int depth)
+jpeg_set_cspace(image_jpeg *im, const image_cspace *cspace)
 {
     /* support for RGB->grayscale */
     /* XXX: more may be supported, need to check */
 
-    if (depth != im->im.i.depth)
+    if (cspace->depth && cspace->depth != im->im.i.cspace.depth)
+	return -1;
+    if (cspace->transparency != IMAGE_TR_UNKNOWN
+	&& cspace->transparency != im->im.i.cspace.transparency)
 	return -1;
 
-    if (cspace == im->im.i.cspace)
+    if (cspace->type == IMAGE_CS_UNKNOWN
+	|| cspace->type == im->im.i.cspace.type)
 	return 0;
     
-    switch (cspace) {
+    switch (cspace->type) {
     case IMAGE_CS_GRAY:
 	im->cinfo->out_color_space = JCS_GRAYSCALE;
 	break;
@@ -199,7 +196,7 @@ jpeg_set_cspace_depth(image_jpeg *im, image_cspace cspace, int depth)
 	return -1;
     }
 
-    im->im.i.cspace = cspace;
+    im->im.i.cspace.type = cspace->type;
     return 0;
 }
 
@@ -224,7 +221,7 @@ jpeg_set_size(image_jpeg *im, int w, int h)
 
 
 
-static image_cspace
+static image_cs_type
 cspace_jpg2img(int cs)
 {
     switch (cs) {

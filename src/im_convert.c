@@ -1,5 +1,5 @@
 /*
-  $NiH: im_convert.c,v 1.2 2002/09/10 14:05:50 dillo Exp $
+  $NiH: im_convert.c,v 1.3 2002/09/10 21:40:47 dillo Exp $
 
   im_convert.c -- image conversion handling
   Copyright (C) 2002 Dieter Baron
@@ -41,7 +41,7 @@ conv_close(image_conv *im)
 char *
 conv_get_palette(image_conv *im)
 {
-    if (!IMAGE_CS_IS_INDEXED(im->im.i.cspace))
+    if (im->im.i.cspace.type != IMAGE_CS_INDEXED)
 	return NULL;
 
     return image_get_palette(im->oim);
@@ -84,7 +84,7 @@ conv_read_finish(image_conv *im, int abortp)
 
 
 int
-conv_set_cspace_depth(image_conv *im, image_cspace cspace, int depth)
+conv_set_cspace(image_conv *im, const image_cspace *cspace)
 {
     return -1;
 }
@@ -100,7 +100,7 @@ conv_set_size(image_conv *im, int w, int h)
 
 
 image *
-image_convert(image *oim, image_info *i)
+image_convert(image *oim, const image_info *i)
 {
     image_conv *im;
     int need_conv;
@@ -118,11 +118,11 @@ image_convert(image *oim, image_info *i)
 	    throwf(EOPNOTSUPP, "scaling not supported");
 	}
     }
-    if ((i->cspace != IMAGE_CS_UNKNOWN && i->cspace != im->i.cspace)
-	|| (i->depth && i->depth != im->i.depth)) {
-	if (image_set_cspace_depth(oim,
-		i->cspace != IMAGE_CS_UNKNOWN ? i->cspace : oim->i.cspace,
-		i->depth != 0 ? i->depth : oim->i.depth) < 0) {
+    if ((i->cspace.type != IMAGE_CS_UNKNOWN
+	 && i->cspace.type != im->i.cspace.type)
+	|| (i->cspace.depth && i->cspace.depth != im->i.cspace.depth)) {
+	/* XXX: base type & depth */
+	if (image_set_cspace(oim, &i->cspace)) {
 	    need_conv = 1;
 	    /* XXX: not yet */
 	    throwf(EOPNOTSUPP, "color space / depth conversion not supported");

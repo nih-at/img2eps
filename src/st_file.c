@@ -1,5 +1,5 @@
 /*
-  $NiH: st_file.c,v 1.2 2002/09/08 00:27:49 dillo Exp $
+  $NiH: st_file.c,v 1.3 2002/09/10 14:05:53 dillo Exp $
 
   st_file.c -- stdio FILE stream
   Copyright (C) 2002 Dieter Baron
@@ -59,7 +59,7 @@ stream_file_fopen(FILE *f, int closep)
 
 
 stream *
-stream_file_open(char *fname)
+stream_file_open(const char *fname)
 {
     FILE *f;
     stream *st;

@@ -1,5 +1,5 @@
 /*
-  $NiH: im_png.c,v 1.3 2002/09/10 15:28:59 dillo Exp $
+  $NiH: im_png.c,v 1.4 2002/09/10 21:40:48 dillo Exp $
 
   im_png.c -- PNG image handling
   Copyright (C) 2002 Dieter Baron
@@ -73,17 +73,17 @@ png_get_palette(image_png *im)
     int n, sz;
     char *plte;
     
-    if (!IMAGE_CS_IS_INDEXED(im->im.i.cspace))
+    if (im->im.i.cspace.type != IMAGE_CS_INDEXED)
 	return NULL;
 
     if (im->pal)
 	return im->pal;
 
     png_get_PLTE(im->png, im->info, (png_colorp *)&plte, &n);
-    if (n < 1<<im->im.i.depth) {
-	sz = image_get_palette_size((image *)im);
+    if (n < 1<<im->im.i.cspace.depth) {
+	sz = image_cspace_palette_size(&im->im.i.cspace);
 	im->pal = xmalloc(sz);
-	n *= image_cspace_components(im->im.i.cspace);
+	n *= image_cspace_components(&im->im.i.cspace, 0);
 	memcpy(im->pal, plte, n);
 	memset(im->pal+n, 0, sz-n);
 	return im->pal;
@@ -158,19 +158,26 @@ png_open(char *fname)
 	
 	im->pinfo.width = png_get_image_width(im->png, im->info);
 	im->pinfo.height = png_get_image_height(im->png, im->info);
-	im->pinfo.depth = png_get_bit_depth(im->png, im->info);
-	im->pinfo.order = IMAGE_ORD_ROW_LT;
+	im->pinfo.cspace.depth = png_get_bit_depth(im->png, im->info);
 	switch (png_get_color_type(im->png, im->info)) {
-	case PNG_COLOR_TYPE_GRAY:
 	case PNG_COLOR_TYPE_GRAY_ALPHA:
-	    im->pinfo.cspace = IMAGE_CS_GRAY;
+	    im->pinfo.cspace.transparency = IMAGE_TR_ALPHA;
+	    /* fallthrough */
+	case PNG_COLOR_TYPE_GRAY:
+	    im->pinfo.cspace.type = IMAGE_CS_GRAY;
 	    break;
 	case PNG_COLOR_TYPE_PALETTE:
-	    im->pinfo.cspace = IMAGE_CS_INDEXED_RGB;
+	    im->pinfo.cspace.type = IMAGE_CS_INDEXED;
+	    /* XXX: set num colors */
+	    /* XXX: always correct? */
+	    im->pinfo.cspace.base_type = IMAGE_CS_RGB;
+	    im->pinfo.cspace.base_depth = 8;
 	    break;
-	case PNG_COLOR_TYPE_RGB:
 	case PNG_COLOR_TYPE_RGB_ALPHA:
-	    im->pinfo.cspace = IMAGE_CS_RGB;
+	    im->pinfo.cspace.transparency = IMAGE_TR_ALPHA;
+	    /* fallthrough */
+	case PNG_COLOR_TYPE_RGB:
+	    im->pinfo.cspace.type = IMAGE_CS_RGB;
 	    break;
 	}
 
@@ -182,6 +189,7 @@ png_open(char *fname)
 	    im->pinfo.compression = IMAGE_CMP_NONE;
 	    break;
 	}
+	im->pinfo.order = IMAGE_ORD_ROW_LT;
 
 	im->im.i = im->pinfo;
 
@@ -232,24 +240,25 @@ png_read_start(image_png *im)
     exception ex;
 
     if (catch(&ex) == 0) {
-	if (im->pinfo.cspace == IMAGE_CS_INDEXED_RGB
-	    && im->im.i.cspace != im->pinfo.cspace)
+	if (im->pinfo.cspace.type == IMAGE_CS_INDEXED
+	    && im->im.i.cspace.type != im->pinfo.cspace.type)
 	    png_set_palette_to_rgb(im->png);
 	
-	if (im->pinfo.depth != im->im.i.depth) {
-	    if (im->pinfo.cspace == IMAGE_CS_GRAY && im->pinfo.depth)
+	if (im->pinfo.cspace.depth != im->im.i.cspace.depth) {
+	    if (im->pinfo.cspace.type == IMAGE_CS_GRAY
+		&& im->pinfo.cspace.depth /* XXX ?! */)
 		png_set_gray_1_2_4_to_8(im->png);
-	    else if (im->pinfo.depth == 16)
+	    else if (im->pinfo.cspace.depth == 16)
 		png_set_strip_16(im->png);
 	}
 	
 	/* XXX: combine with background? */
 	png_set_strip_alpha(im->png);
 	
-	if (im->pinfo.cspace != im->im.i.cspace) {
-	    if (im->im.i.cspace == IMAGE_CS_GRAY)
+	if (im->pinfo.cspace.type != im->im.i.cspace.type) {
+	    if (im->im.i.cspace.type == IMAGE_CS_GRAY)
 		png_set_rgb_to_gray_fixed(im->png, 1, -1, -1);
-	    else if (im->im.i.cspace == IMAGE_CS_RGB)
+	    else if (im->im.i.cspace.type == IMAGE_CS_RGB)
 		png_set_gray_to_rgb(im->png);
 	}
 	
@@ -283,22 +292,65 @@ png_read_start(image_png *im)
 
 
 int
-png_set_cspace_depth(image_png *im, image_cspace cspace, int depth)
+png_set_cspace(image_png *im, const image_cspace *cspace)
 {
-    if (depth == im->pinfo.depth || depth == 8)
-	im->im.i.depth = depth;
-    else
-	return -1;
-    
-    switch (cspace) {
+    int ret;
+
+    ret = 0;
+
+    /* XXX: this routine is a mess, and it's broken.  indexed handling
+       doesn't work together with other parameters */
+    switch (cspace->type) {
+    case IMAGE_CS_INDEXED:
+	if (im->pinfo.cspace.type != IMAGE_CS_INDEXED
+	    || !IMAGE_CS_EQUAL(depth, cspace, &im->pinfo.cspace)
+	    || !IMAGE_CS_EQUAL(base_type, cspace, &im->pinfo.cspace)
+	    || !IMAGE_CS_EQUAL(base_depth, cspace, &im->pinfo.cspace))
+	    ret = -1;
+	else {
+	    im->im.i.cspace.type = IMAGE_CS_INDEXED;
+	    im->im.i.cspace.depth = im->pinfo.cspace.depth;
+	    if (IMAGE_CS_EQUAL(transparency, cspace, &im->pinfo.cspace)
+		|| cspace->transparency == IMAGE_TR_NONE)
+		im->im.i.cspace.transparency = cspace->transparency;
+	    else
+		ret = -1;
+	}
+	break;
+
+    case IMAGE_CS_UNKNOWN:
     case IMAGE_CS_GRAY:
     case IMAGE_CS_RGB:
-	im->im.i.cspace = cspace;
-	return 0;
+	if (cspace->depth == 0) {
+	    if (im->im.i.cspace.type == IMAGE_CS_INDEXED)
+		im->im.i.cspace.depth = im->pinfo.cspace.base_depth;
+	}
+	else {
+	    if (cspace->depth == 8
+		|| (im->pinfo.cspace.type == IMAGE_CS_INDEXED
+		    && cspace->depth == im->pinfo.cspace.base_depth)
+		|| (im->pinfo.cspace.type != IMAGE_CS_INDEXED
+		    && cspace->depth == im->pinfo.cspace.depth))
+		im->im.i.cspace.depth = cspace->depth;
+	    else
+		ret = -1;
+	}
+	if (cspace->transparency != IMAGE_TR_UNKNOWN) {
+	    if ((cspace->transparency == im->pinfo.cspace.transparency
+		 || cspace->transparency == IMAGE_TR_NONE))
+		im->im.i.cspace.transparency = cspace->transparency;
+	    else
+		ret = -1;
+	}
+	im->im.i.cspace.type = cspace->type;
+	
+	break;
 
     default:
-	return -1;
+	ret = -1;
     }
+
+    return ret;
 }
 
 

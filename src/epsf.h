@@ -2,7 +2,7 @@
 #define HAD_EPSF_H
 
 /*
-  $NiH: epsf.h,v 1.3 2002/09/08 21:31:45 dillo Exp $
+  $NiH: epsf.h,v 1.4 2002/09/09 12:42:32 dillo Exp $
 
   epsf.h -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -66,14 +66,14 @@ char *_epsf_num_name(const struct _epsf_nn *t, int n);
 int epsf_asc_langlevel(epsf_ascii asc);
 int epsf_calculate_parameters(epsf *ep);
 int epsf_compression_langlevel(image_compression cmp);
-epsf *epsf_create(epsf *par, stream *st, image *im);
+epsf *epsf_create(const epsf *par, stream *st, image *im);
 epsf *epsf_create_defaults(void);
-int epsf_cspace_langlevel(image_cspace cs);
+int epsf_cspace_langlevel(const image_cspace *cs);
 void epsf_free(epsf *ep);
-int epsf_parse_dimen(char *d);
-int epsf_process(stream *st, char *fname, epsf *par);
+int epsf_parse_dimen(const char *d);
+int epsf_process(stream *st, const char *fname, const epsf *par);
 void epsf_set_margins(epsf *ep, int l, int r, int t, int b);
-int epsf_set_paper(epsf *ep, char *paper);
+int epsf_set_paper(epsf *ep, const char *paper);
 int epsf_write_data(epsf *ep);
 int epsf_write_header(epsf *ep);
 int epsf_write_setup(epsf *ep);

@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.6 2002/09/10 15:28:59 dillo Exp $
+  $NiH: img2eps.c,v 1.7 2002/09/10 21:40:49 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002 Dieter Baron
@@ -122,7 +122,7 @@ main(int argc, char *argv[])
 	    }
 	    break;
 	case 'g':
-	    par->i.cspace = IMAGE_CS_GRAY;
+	    par->i.cspace.type = IMAGE_CS_GRAY;
 	    break;
 	case 'm':
 	    i = epsf_parse_dimen(optarg);

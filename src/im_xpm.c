@@ -1,5 +1,5 @@
 /*
-  $NiH: im_xpm.c,v 1.1 2002/09/10 21:40:48 dillo Exp $
+  $NiH: im_xpm.c,v 1.2 2002/09/10 21:50:42 dillo Exp $
 
   im_xpm.c -- XPM (X Pixmap) image handling
   Copyright (C) 2002 Dieter Baron
@@ -88,25 +88,30 @@ xpm_get_palette(image_xpm *im)
     int i, n;
     char *p;
 
-    if (!IMAGE_CS_IS_INDEXED(im->im.i.cspace))
+    if (im->im.i.cspace.type != IMAGE_CS_INDEXED)
 	return NULL;
 
-    n = image_get_palette_size((image *)im);
+    n = image_cspace_palette_size(&im->im.i.cspace);
     p = im->pal = xmalloc(n);
-    
+    memset(p, 0, n);
+
     for (i=0; i<im->ncol; i++) {
-	if (im->im.i.cspace == IMAGE_CS_INDEXED_RGB) {
+	if (im->im.i.cspace.base_type == IMAGE_CS_RGB) {
 	    *p++ = im->col[i].r;
 	    *p++ = im->col[i].g;
 	    *p++ = im->col[i].b;
 	}
-	else if (im->flags & GOT_GRAY)
-	    *p++ = im->col[i].gr;
-	else
-	    *p++ = im->col[i].g4 * 17;
+	else {
+	    if (im->im.i.cspace.base_depth == 8) {
+		if (im->flags & GOT_GRAY)
+		    *p++ = im->col[i].gr;
+		else
+		    *p++ = im->col[i].g4 * 17;
+	    }
+	    else		
+		p[i/4] = im->col[i].g4 << (6-(i%4)*2);
+	}
     }
-    if (p < im->pal+n)
-	memset(p, 0, im->pal+n-p);
 
     return im->pal;
 }
@@ -169,18 +174,19 @@ xpm_open(char *fname)
 
     if (im->flags == GOT_MONO) {
 	/* mono only */
-	im->im.i.cspace = IMAGE_CS_GRAY;
-	im->im.i.depth = 1;
+	im->im.i.cspace.type = IMAGE_CS_GRAY;
+	im->im.i.cspace.depth = 1;
     }
     else {
-	im->im.i.cspace = (im->flags & GOT_RGB
-			   ? IMAGE_CS_INDEXED_RGB
-			   : IMAGE_CS_INDEXED_GRAY);
+	im->im.i.cspace.type = IMAGE_CS_INDEXED;
+	im->im.i.cspace.base_type = (im->flags & GOT_RGB
+				     ? IMAGE_CS_RGB
+				     : IMAGE_CS_GRAY);
 	
 	for (i=1; im->ncol > (1<<i); i*=2)
 	    if (i>16)
 		throws(EINVAL, "xpm: more than 64k colors");
-	im->im.i.depth = i;
+	im->im.i.cspace.depth = i;
     }
     im->im.i.compression = IMAGE_CMP_NONE;
     
@@ -197,7 +203,7 @@ xpm_read(image_xpm *im, char **bp)
     struct col *col;
 
     cpp = im->cpp;
-    depth = im->im.i.depth;
+    depth = im->im.i.cspace.depth;
     t = im->buf;
 
     memset(t, 0, image_get_row_size((image *)im));
@@ -213,7 +219,7 @@ xpm_read(image_xpm *im, char **bp)
 	if (col == NULL)
 	    throws(EINVAL, "xpm: unknown color string");
 	
-	if (im->im.i.cspace == IMAGE_CS_GRAY) {
+	if (im->im.i.cspace.type == IMAGE_CS_GRAY) {
 		t[i/8] |= col->m << (7-(i%8));
 	}
 	else {
@@ -267,37 +273,67 @@ xpm_read_finish(image_xpm *im, int abortp)
 
 
 int
-xpm_set_cspace_depth(image_xpm *im, image_cspace cspace, int depth)
+xpm_set_cspace(image_xpm *im, const image_cspace *cspace)
 {
-    int supp;
+    int i, depth, base_depth;
 
-    supp = 0;
-    switch (cspace) {
+    base_depth = depth = 0;
+    switch (cspace->type) {
     case IMAGE_CS_GRAY:
-	if (depth == 1 && im->flags&GOT_MONO)
-	    supp = 1;
+	if (cspace->depth != 1 || !(im->flags&GOT_MONO))
+	    return -1;
 	break;
 
-    case IMAGE_CS_INDEXED_GRAY:
-	if (im->ncol <= (1<<depth)
-	    && (im->flags&GOT_GRAY || im->flags&GOT_GRAY4))
-	    supp = 1;
-	break;
+    case IMAGE_CS_INDEXED:
+	if (cspace->depth && im->ncol > (1<<cspace->depth))
+	    return -1;
+	switch (cspace->base_type) {
+	case IMAGE_CS_GRAY:
+	    if ((im->flags&(GOT_GRAY|GOT_GRAY4)) == 0)
+		return -1;
+	    switch (cspace->base_depth) {
+	    case 0:
+		base_depth = im->flags&GOT_GRAY ? 8 : 4;
+		break;
+	    case 2:
+		if ((im->flags&GOT_GRAY4) == 0)
+		    return -1;
+		break;
+	    case 8:
+		break;
+	    default:
+		return -1;
+	    }
+	    break;
 
-    case IMAGE_CS_INDEXED_RGB:
-	if (im->ncol <= (1<<depth) && im->flags&GOT_RGB)
-	    supp = 1;
+	case IMAGE_CS_RGB:
+	    if ((im->flags&GOT_RGB) == 0
+		|| (cspace->base_depth != 0 && cspace->base_depth != 8))
+		return -1;
+	    base_depth = cspace->base_depth;
+	    break;
+
+	default:
+	    return -1;
+	}
+
+	if (cspace->depth == 0) {
+	    for (i=1; im->ncol > (1<<i); i*=2)
+		;
+	    depth = i;
+	}
 	break;
 
     default:
-	break;
+	return -1;
     }
 
-    if (!supp)
-	return -1;
+    image_cspace_merge(&im->im.i.cspace, cspace);
 
-    im->im.i.cspace = cspace;
-    im->im.i.depth = depth;
+    if (depth)
+	im->im.i.cspace.depth = depth;
+    if (base_depth)
+	im->im.i.cspace.depth = base_depth;
 
     return 0;
 }
@@ -369,7 +405,7 @@ _get_line(char *b, size_t n, FILE *f, char *fname)
 void
 _parse_colors(image_xpm *im)
 {
-    int i, cpp, key, val, flags;
+    int i, cpp, key, val, flags, four;
     char b[1024], *p, *end;
 
     cpp = im->cpp;
@@ -390,6 +426,7 @@ _parse_colors(image_xpm *im)
 	flags = 0;
 	while (*p) {
 	    key = *p++;
+	    four = (*p == '4');
 	    SKIP(p);
 	    switch (key) {
 	    case 'c':
@@ -426,20 +463,18 @@ _parse_colors(image_xpm *im)
 			   p[-1]);
 		}
 		break;
-	
-		
-#if 0
-	    case 'g4':
-		im->col[i].g4 = _get_int(&p);
-		flags |= GOT_GRAY4;
-		break;
-#endif
 
 
 	    case 'g':
-		im->col[i].gr = _get_int(&p);
-		flags |= GOT_GRAY;
-		break;
+		if (four) {
+		    im->col[i].g4 = _get_int(&p);
+		    flags |= GOT_GRAY4;
+		}
+		else {
+		    im->col[i].gr = _get_int(&p);
+		    flags |= GOT_GRAY;
+		    break;
+		}
 	
 		
 	    case 'm':

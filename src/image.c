@@ -1,5 +1,5 @@
 /*
-  $NiH: image.c,v 1.3 2002/09/10 14:05:52 dillo Exp $
+  $NiH: image.c,v 1.4 2002/09/10 21:40:49 dillo Exp $
 
   image.c -- general image functions
   Copyright (C) 2002 Dieter Baron
@@ -18,21 +18,21 @@
 #include "xmalloc.h"
 
 #ifdef USE_GIF
-image *gif_open(char *);
+image *gif_open(const char *);
 #endif
 #ifdef USE_JPEG
-image *jpeg_open(char *);
+image *jpeg_open(const char *);
 #endif
 #ifdef USE_PNG
-image *png_open(char *);
+image *png_open(const char *);
 #endif
 #ifdef USE_TIFF
-image *tiff_open(char *);
+image *tiff_open(const char *);
 #endif
-image *xpm_open(char *);
+image *xpm_open(const char *);
 
 
-image *(*open_tab[])(char *) = {
+image *(*open_tab[])(const char *) = {
 #ifdef USE_PNG
     png_open,
 #endif
@@ -52,7 +52,7 @@ image *(*open_tab[])(char *) = {
 
 
 image *
-_image_create(struct image_functions *f, size_t size, char *fname)
+_image_create(struct image_functions *f, size_t size, const char *fname)
 {
     image *im;
 
@@ -60,7 +60,11 @@ _image_create(struct image_functions *f, size_t size, char *fname)
     im->f = f;
     im->fname = strdup(fname);
     image_init_info(&im->i);
+
+    im->i.cspace.transparency = IMAGE_TR_NONE;
+    im->i.compression = IMAGE_CMP_NONE;
     im->i.order = IMAGE_ORD_ROW_LT;
+
 
     return im;
 }
@@ -76,22 +80,60 @@ _image_notsup(image *im, int a0, int a1)
 
 
 int
-image_cspace_components(image_cspace cspace)
+image_cspace_components(const image_cspace *cspace, int base)
 {
-    switch (cspace) {
+    int n;
+    switch (base ? cspace->base_type : cspace->type) {
     case IMAGE_CS_GRAY:
-    case IMAGE_CS_INDEXED_GRAY:
-    case IMAGE_CS_INDEXED_RGB:
-    case IMAGE_CS_INDEXED_CMYK:
-	return 1;
+    case IMAGE_CS_INDEXED:
+	n = 1;
+	break;
     case IMAGE_CS_RGB:
-	return 3;
+    case IMAGE_CS_HSV:
+	n = 3;
+	break;
     case IMAGE_CS_CMYK:
-	return 4;
+	n = 4;
+	break;
 
     default:
 	return 0;
     }
+
+    if (!base && cspace->transparency == IMAGE_TR_ALPHA)
+	n += 1;
+
+    return n;
+}
+
+
+
+void
+image_cspace_merge(image_cspace *cst, const image_cspace *css)
+{
+    if (css->type != IMAGE_CS_UNKNOWN)
+	cst->type = css->type;
+    if (css->transparency != IMAGE_TR_UNKNOWN)
+	cst->transparency = css->transparency;
+    if (css->depth != 0)
+	cst->depth = css->depth;
+    if (css->type == IMAGE_CS_INDEXED) {
+	if (css->base_type != IMAGE_CS_UNKNOWN)
+	    cst->base_type = css->base_type;
+	if (css->base_depth != 0)
+	    cst->base_depth = css->base_depth;
+    }
+}
+
+
+
+int
+image_cspace_palette_size(const image_cspace *cspace)
+{
+    if (cspace->type != IMAGE_CS_INDEXED)
+	return 0;
+
+    return image_cspace_components(cspace, 1) * (1<<cspace->depth);
 }
 
 
@@ -109,24 +151,12 @@ image_free(image *im)
 
 
 int
-image_get_palette_size(image *im)
-{
-    if (!IMAGE_CS_IS_INDEXED(im->i.cspace))
-	return 0;
-
-    return image_cspace_components(IMAGE_CS_BASE(im->i.cspace))
-	* (1<<im->i.depth);
-}
-
-
-
-int
-image_get_row_size(image *im)
+image_get_row_size(const image *im)
 {
     int n;
 
-    n = im->i.width * image_cspace_components(im->i.cspace);
-    n = (n*im->i.depth+7) / 8;
+    n = im->i.width * image_cspace_components(&im->i.cspace, 0);
+    n = (n*im->i.cspace.depth+7) / 8;
 
     return n;
 }
@@ -137,8 +167,12 @@ void
 image_init_info(image_info *i)
 {
     i->width = i->height = 0;
-    i->cspace = IMAGE_CS_UNKNOWN;
-    i->depth = 0;
+    i->cspace.type = IMAGE_CS_UNKNOWN;
+    i->cspace.transparency = IMAGE_TR_UNKNOWN;
+    i->cspace.depth = 0;
+    i->cspace.base_type = IMAGE_CS_UNKNOWN;
+    i->cspace.base_depth = 0;
+    i->cspace.ncol = 0;
     i->compression = IMAGE_CMP_UNKNOWN;
     i->order = IMAGE_ORD_UNKNOWN;
 }
@@ -146,7 +180,7 @@ image_init_info(image_info *i)
 
 
 image *
-image_open(char *fname)
+image_open(const char *fname)
 {
     image *im;
     int i;
@@ -164,20 +198,4 @@ image_open(char *fname)
 	   "cannot open image `%s': format not recognized", fname);
 
     return NULL;
-}
-
-
-
-int
-image_set_cspace(image *im, image_cspace cspace)
-{
-    return image_set_cspace_depth(im, cspace, im->i.depth);
-}
-
-
-
-int
-image_set_depth(image *im, int depth)
-{
-    return image_set_cspace_depth(im, im->i.cspace, depth);
 }
