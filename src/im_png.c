@@ -1,5 +1,5 @@
 /*
-  $NiH: im_png.c,v 1.8 2002/09/14 02:27:39 dillo Exp $
+  $NiH: im_png.c,v 1.9 2002/10/10 00:14:16 dillo Exp $
 
   im_png.c -- PNG image handling
   Copyright (C) 2002 Dieter Baron
@@ -190,6 +190,9 @@ png_open(char *fname)
 	im->im.i.order = IMAGE_ORD_ROW_LT;
 
 	im->im.oi = im->im.i;
+
+	/* raw read not supported yet */
+	im->im.i.compression = IMAGE_CMP_NONE;
 
 	drop();
     }
