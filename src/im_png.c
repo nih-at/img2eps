@@ -1,5 +1,5 @@
 /*
-  $NiH: im_png.c,v 1.7 2002/09/12 12:31:14 dillo Exp $
+  $NiH: im_png.c,v 1.8 2002/09/14 02:27:39 dillo Exp $
 
   im_png.c -- PNG image handling
   Copyright (C) 2002 Dieter Baron
@@ -78,7 +78,7 @@ png_get_palette(image_png *im)
     if (n < 1<<im->im.i.cspace.depth) {
 	sz = image_cspace_palette_size(&im->im.i.cspace);
 	im->pal = xmalloc(sz);
-	n *= image_cspace_components(&im->im.i.cspace, 0);
+	n *= image_cspace_components(&im->im.i.cspace, 1);
 	memcpy(im->pal, plte, n);
 	memset(im->pal+n, 0, sz-n);
 	return im->pal;
@@ -288,64 +288,65 @@ png_read_start(image_png *im)
 int
 png_set_cspace(image_png *im, int mask, const image_cspace *cspace)
 {
-    int ret;
-
-    ret = 0;
-
     /* XXX: this routine is a mess, and it's broken.  indexed handling
        doesn't work together with other parameters */
-    
-    switch (cspace->type) {
-    case IMAGE_CS_INDEXED:
-	if (im->im.oi.cspace.type != IMAGE_CS_INDEXED
-	    || !IMAGE_CS_EQUAL(depth, cspace, &im->im.oi.cspace)
-	    || !IMAGE_CS_EQUAL(base_type, cspace, &im->im.oi.cspace)
-	    || !IMAGE_CS_EQUAL(base_depth, cspace, &im->im.oi.cspace))
-	    ret = -1;
-	else {
-	    im->im.i.cspace.type = IMAGE_CS_INDEXED;
-	    im->im.i.cspace.depth = im->im.oi.cspace.depth;
-	    if (IMAGE_CS_EQUAL(transparency, cspace, &im->im.oi.cspace)
-		|| cspace->transparency == IMAGE_TR_NONE)
-		im->im.i.cspace.transparency = cspace->transparency;
-	    else
-		ret = -1;
-	}
-	break;
 
-    case IMAGE_CS_UNKNOWN:
-    case IMAGE_CS_GRAY:
-    case IMAGE_CS_RGB:
-	if (cspace->depth == 0) {
-	    if (im->im.i.cspace.type == IMAGE_CS_INDEXED)
-		im->im.i.cspace.depth = im->im.oi.cspace.base_depth;
-	}
-	else {
-	    if (cspace->depth == 8
-		|| (im->im.oi.cspace.type == IMAGE_CS_INDEXED
-		    && cspace->depth == im->im.oi.cspace.base_depth)
-		|| (im->im.oi.cspace.type != IMAGE_CS_INDEXED
-		    && cspace->depth == im->im.oi.cspace.depth))
-		im->im.i.cspace.depth = cspace->depth;
-	    else
-		ret = -1;
-	}
-	if (cspace->transparency != IMAGE_TR_UNKNOWN) {
-	    if ((cspace->transparency == im->im.oi.cspace.transparency
-		 || cspace->transparency == IMAGE_TR_NONE))
-		im->im.i.cspace.transparency = cspace->transparency;
-	    else
-		ret = -1;
-	}
-	im->im.i.cspace.type = cspace->type;
-	
-	break;
+    if (mask & IMAGE_INF_TYPE) {
+	switch (cspace->type) {
+	case IMAGE_CS_INDEXED:
+	    if (im->im.oi.cspace.type == IMAGE_CS_INDEXED
+		&& ((mask & IMAGE_INF_DEPTH) == 0
+		    || cspace->depth == im->im.oi.cspace.depth)) {
+		im->im.i.cspace.type = IMAGE_CS_INDEXED;
+		im->im.i.cspace.depth = im->im.oi.cspace.depth;
+		mask &= ~(IMAGE_INF_TYPE|IMAGE_INF_DEPTH);
 
-    default:
-	ret = -1;
+		if ((mask & IMAGE_INF_BASE_TYPE) == 0
+		    || cspace->base_type == im->im.oi.cspace.base_type) {
+		    im->im.i.cspace.base_type = im->im.oi.cspace.base_type;
+		    mask &= ~IMAGE_INF_BASE_TYPE;
+		}
+		if ((mask & IMAGE_INF_BASE_DEPTH) == 0
+		    || cspace->base_depth == im->im.oi.cspace.base_depth) {
+		    im->im.i.cspace.base_depth = im->im.oi.cspace.base_depth;
+		    mask &= ~IMAGE_INF_BASE_DEPTH;
+		}
+	    }
+	    break;
+	    
+	case IMAGE_CS_GRAY:
+	case IMAGE_CS_RGB:
+	    if ((mask & IMAGE_INF_DEPTH) == 0) {
+		if (im->im.i.cspace.type == IMAGE_CS_INDEXED)
+		    im->im.i.cspace.depth = im->im.oi.cspace.base_depth;
+	    }
+	    else {
+		if (cspace->depth == 8
+		    || (im->im.oi.cspace.type == IMAGE_CS_INDEXED
+			&& cspace->depth == im->im.oi.cspace.base_depth)
+		    || (im->im.oi.cspace.type != IMAGE_CS_INDEXED
+			&& cspace->depth == im->im.oi.cspace.depth)) {
+		    im->im.i.cspace.depth = cspace->depth;
+		    mask &= ~IMAGE_INF_DEPTH;
+		}
+	    }
+	    im->im.i.cspace.type = cspace->type;
+	    mask &= ~IMAGE_INF_TYPE;
+	    break;
+
+	default:
+	}
     }
 
-    return ret;
+    if (mask & IMAGE_INF_TRANSPARENCY) {
+	if ((cspace->transparency == im->im.oi.cspace.transparency
+	     || cspace->transparency == IMAGE_TR_NONE)) {
+	    im->im.i.cspace.transparency = cspace->transparency;
+	    mask &= ~IMAGE_INF_TRANSPARENCY;
+	}
+    }
+
+    return mask;
 }
 
 
