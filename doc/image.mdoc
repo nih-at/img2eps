@@ -1,0 +1,185 @@
+.de BF
+. Bd -filled -offset indent
+..
+.de EF
+. Ed
+. Pp
+..
+.Dd October 15, 2002
+.Dt "IMAGE HANDLING" 3 "img2eps Internal Documentation"
+.Sh NAME
+.Nm "IMAGE HANDLING"
+.Sh INTROUCTION
+.Pp
+This module provides a common interface to all supported image
+formats.  Support for image transformations (color space, depth, size)
+is also provided (although not all of it is implemented yet).
+.Pp
+It is composed of one back end for each supported image format
+.Fa ( im_FORMAT.c ) ,
+one module for image transformation
+.Fa ( im_convert.c )
+and some format independent functions
+.Fa ( image.c ) .
+.Pp
+Unless otherwise noted, an exception is thrown when an error occurs.
+.Pp
+Methods are supposed to be implemented by each back end, called
+.Fa FORMAT_NAME . 
+.Pp
+[XXX: Not all available functions are documented; all methods are,
+however.  Return values differ for some functions; this will be
+fixed.]
+.Sh FUNCTIONS AND METHODS
+.Pp
+FUNCTION 
+.Ft image *
+.Fn image_convert "image *im" "const image_info *i"
+.BF
+Convert image
+.Fa im
+to parameters specified in
+.Fa i .
+If the image does not support all requested transformations directly,
+a conversion image object is created and returned.
+.EF
+METHOD
+.Ft void
+.Fn image_close "image *im"
+.BF
+Close and free image
+.Fa im .
+.EF
+METHOD
+.Ft char *
+.Fn image_get_palette "image *im"
+.BF
+Get palette of image as a row of samples.
+.Pp
+Returns pointer to palette on success.
+.EF
+FUNCTION
+.Ft void
+.Fn image_init_info "image_info *i"
+.BF
+Set all members of
+.Fa i
+to `unknown'.
+.EF
+FUNCTION
+.Ft image *
+.Fn image_open "char *fname"
+.BF
+Open image file
+.Fa fname .
+.Pp
+Returns pointer to image.
+.EF
+METHOD
+.Ft int
+.Fn image_raw_read "image *im" "char **bp"
+.BF
+Read next chunk of raw (compressed) image data and point
+.Fa bp
+at it.
+.Pp
+Returns number of bytes read or 0 after all data has been read.
+.Pp
+If a back end does not support raw reading, it should define
+.Dv NOSUPP_RAW
+and omit this method.
+.EF
+METHOD
+.Ft void
+.Fn image_raw_read_finish "image *im" "int abortp"
+.BF
+Finish reading raw image data.  If
+.Fa abortp 
+is non-zero, image might not have been read compiletely.  This method
+must not be called when raw reading is not in progress.
+.Pp
+If a back end does not support raw reading, it should define
+.Dv NOSUPP_RAW
+and omit this method.
+.EF
+METHOD
+.Ft void
+.Fn image_read_start "image *im"
+.BF
+Start reading image data.  This method must be called before calls to
+.Fn image_raw_read .
+If the image's compression is
+.Dv IMAGE_CMP_NONE ,
+this method must not be called.
+.Pp
+If a back end does not support raw reading, it should define
+.Dv NOSUPP_RAW
+and omit this method.
+.EF
+METHOD
+.Ft int
+.Fn image_read "image *im" "char **bp"
+.BF
+Read one row of image data and point
+.Fa bp
+at it.
+.Pp
+Returns number of bytes read or 0 after the last row has been read.
+[XXX: Most back ends always return 0 and rely on the caller to count
+rows.  This should be fixed.]
+.EF
+METHOD
+.Ft void
+.Fn image_read_finish "image *im" "int abortp"
+.BF
+Finish reading image data.  If
+.Fa abortp
+is non-zero, image might not have been read compiletely.
+.EF
+METHOD
+.Ft void
+.Fn image_read_start "image *im"
+.BF
+Start reading image data.  Must be called before calls to
+.Fn image_read .
+.EF
+METHOD
+.Ft int
+.Fn image_set_cspace "image *im" "int mask" "const image_cspace *cspace"
+.BF
+Request conversion of image data to the format specified in
+.Fa cspace .
+If not all parameter changes are supported, change those that are.
+Parameters not included in
+.Fa mask
+are left unchanged or set to default values derived from other
+parameteres (if that is neccessary to support all specified
+parameters.)
+.Pp
+Returns 0 if all parameters supported, \-1 otherwise.  For images of
+type
+.Fa im_convert ,
+an exception is thrown if not all specified parameters are supported.
+.Pp
+If no conversion is supported by a back end, it should define
+.Dv NOSUPP_CSPACE
+and omit this method.
+.EF
+METHOD
+.Ft int
+.Fn image_set_size "image *im" "int width" "int height"
+.BF
+Request that image be scaled to
+.Fa width
+x
+.Fa height
+pixels.
+.Pp
+Returns 0 if transformation supported, \-1 otherwise.  For images of
+type
+.Fa im_convert ,
+an exception is thrown if the transformation is not supported.
+.Pp
+If no conversion is supported by a back end, it should define
+.Dv NOSUPP_SCALE
+and omit this method.
