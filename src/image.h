@@ -2,7 +2,7 @@
 #define _HAD_IMAGE_H
 
 /*
-  $NiH: image.h,v 1.4 2002/09/11 22:44:20 dillo Exp $
+  $NiH: image.h,v 1.5 2002/09/12 12:31:15 dillo Exp $
 
   image.h -- image header
   Copyright (C) 2002 Dieter Baron
@@ -200,6 +200,9 @@ image *image_open(const char *fname);
 
 #define image_close(im)		      IMAGE_METH0(close, (im))
 #define image_get_palette(im)	      IMAGE_METH0(get_palette, (im))
+#define image_raw_read(im, bp)	      IMAGE_METH1(raw_read, (im), (bp))
+#define image_raw_read_finish(im, ab) IMAGE_METH1(raw_read_finish, (im), (ab))
+#define image_raw_read_start(im)      IMAGE_METH0(raw_read_start, (im))
 #define image_read(im, bp)	      IMAGE_METH1(read, (im), (bp))
 #define image_read_finish(im, ab)     IMAGE_METH1(read_finish, (im), (ab))
 #define image_read_start(im)	      IMAGE_METH0(read_start, (im))

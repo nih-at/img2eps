@@ -1,5 +1,5 @@
 /*
-  $NiH: im_jpeg.c,v 1.6 2002/09/11 22:44:18 dillo Exp $
+  $NiH: im_jpeg.c,v 1.7 2002/09/12 12:31:13 dillo Exp $
 
   im_jpeg.c -- JPEG image handling
   Copyright (C) 2002 Dieter Baron
@@ -13,16 +13,16 @@
 #ifdef USE_JPEG
 
 #include <errno.h>
-#include <setjmp.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <jpeglib.h>
-
-#define NOSUPP_RAW
 
 #include "exceptions.h"
 #include "image.h"
 #include "xmalloc.h"
+
+#define BUFSIZE		4096	/* buffer size for raw reads */
 
 static image_cs_type cspace_jpg2img(int cs);
 static void error_exit(j_common_ptr cinfo);
@@ -34,9 +34,10 @@ struct image_jpeg {
 
     struct jpeg_decompress_struct *cinfo;
     struct jpeg_error_mgr *jerr;
-    FILE *f;
-    char *buf;
-    int buflen;
+    FILE *f;			/* underlying file */
+    char *buf;			/* buffer for reads */
+    int buflen;			/* size of buffer */
+    long pos;			/* remembered position in file (raw read) */
 };
 
 IMAGE_DECLARE(jpeg);
@@ -119,6 +120,51 @@ jpeg_open(char *fname)
     /* XXX: alpha */
 
     return (image *)im;
+}
+
+
+
+int
+jpeg_raw_read(image_jpeg *im, char **bp)
+{
+    int n;
+    
+    if ((n=fread(im->buf, 1, im->buflen, im->f)) < 0)
+	throwf(errno, "read error on jpeg file `%s': %s",
+	       im->im.fname, strerror(errno));
+
+    *bp = im->buf;
+    return n;
+}
+
+
+
+void
+jpeg_raw_read_finish(image_jpeg *im, int abortp)
+{
+    if (fseek(im->f, im->pos, SEEK_SET) == -1)
+	throwf(errno, "cannot restore position in jpeg file `%s': %s",
+	       im->im.fname, strerror(errno));
+
+    free(im->buf);
+    im->buf = NULL;
+}
+
+
+
+void
+jpeg_raw_read_start(image_jpeg *im)
+{
+    if ((im->pos=ftell(im->f)) == -1)
+	throwf(errno, "cannot determine position in jpeg file `%s': %s",
+	       im->im.fname, strerror(errno));
+    
+    if (fseek(im->f, 0, SEEK_SET) == -1)
+	throwf(errno, "cannot rewind jpeg file `%s': %s",
+	       im->im.fname, strerror(errno));
+
+    im->buflen = BUFSIZE;
+    im->buf = xmalloc(BUFSIZE);
 }
 
 

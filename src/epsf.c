@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.7 2002/09/11 22:44:17 dillo Exp $
+  $NiH: epsf.c,v 1.8 2002/09/11 23:56:26 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -440,12 +440,16 @@ epsf_set_paper(epsf *ep, const char *paper)
 int
 epsf_write_data(epsf *ep)
 {
-    int i, n;
+    int i, n, raw;
     char *b;
     stream *st, *st2;
     volatile int imread_open;
     exception ex, ex2, *exp;
 
+    raw = (ep->i.compression != IMAGE_CMP_NONE
+	   && ep->i.compression == ep->im->i.compression);
+
+    st = st2 = NULL;
     imread_open = 0;
     if (catch(&ex) == 0) {
 	if (ep->ascii == EPSF_ASC_HEX)
@@ -453,38 +457,53 @@ epsf_write_data(epsf *ep)
 	else
 	    st2 = stream_ascii85_open(ep->st, 1);
 
-	switch (ep->i.compression) {
-	case IMAGE_CMP_RLE:
-	    st = stream_runlength_open(st2);
-	    break;
+	if (raw) {
+	    image_raw_read_start(ep->im);
+	    imread_open = 1;
+
+	    while ((n=image_raw_read(ep->im, &b)) > 0)
+		stream_write(st2, b, n);
 	    
-	default:
-	    st = st2;
-	    st2 = NULL;
+	    imread_open = 0;
+	    image_raw_read_finish(ep->im, 0);
 	}
+	else {
+	    switch (ep->i.compression) {
+	    case IMAGE_CMP_RLE:
+		st = stream_runlength_open(st2);
+		break;
+		
+	    default:
+		st = st2;
+		st2 = NULL;
+	    }
 
-	image_read_start(ep->im);
-	imread_open = 1;
-
-	n = image_get_row_size(ep->im);
-	for (i=0; i<ep->im->i.height; i++) {
-	    image_read(ep->im, &b);
-	
-	    stream_write(st, b, n);
+	    image_read_start(ep->im);
+	    imread_open = 1;
+	    
+	    n = image_get_row_size(ep->im);
+	    for (i=0; i<ep->im->i.height; i++) {
+		image_read(ep->im, &b);
+		
+		stream_write(st, b, n);
+	    }
+	    
+	    imread_open = 0;
+	    image_read_finish(ep->im, 0);
 	}
-
-	imread_open = 0;
-	image_read_finish(ep->im, 0);
-
 	drop();
     }
 
     exp = (ex.code ? &ex2 : &ex);
     if (catch(exp) == 0) {
 	if (imread_open) {
-	    image_read_finish(ep->im, 0);
+	    if (raw)
+		image_raw_read_finish(ep->im, 1);
+	    else
+		image_read_finish(ep->im, 1);
 	}
-	stream_close(st);
+	if (st)
+	    stream_close(st);
 	if (st2)
 	    stream_close(st2);
 	drop();
@@ -540,7 +559,7 @@ epsf_write_setup(epsf *ep)
 
     /* XXX: handle other compression methods */
     if (ep->im->i.cspace.type == IMAGE_CS_INDEXED
-	|| ep->i.compression == IMAGE_CMP_RLE)
+	|| ep->i.compression != IMAGE_CMP_NONE)
 	_write_image_dict(ep);
     else
 	_write_image_l1(ep);
@@ -642,7 +661,7 @@ _write_image_dict(epsf *ep)
 		  i->width, i->height, i->cspace.depth,
 		  epsf_asc_name(ep->ascii));
     /* XXX: handle other compression methods */
-    if (ep->i.compression == IMAGE_CMP_RLE)
+    if (ep->i.compression != IMAGE_CMP_NONE)
 	stream_printf(ep->st, " /%sDecode filter",
 		      epsf_compression_name(ep->i.compression));
     stream_puts("\n/ImageMatrix \n", ep->st);
