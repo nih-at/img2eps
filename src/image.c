@@ -1,5 +1,5 @@
 /*
-  $NiH: image.c,v 1.6 2002/09/12 12:31:15 dillo Exp $
+  $NiH: image.c,v 1.7 2002/09/14 02:27:40 dillo Exp $
 
   image.c -- general image functions
   Copyright (C) 2002 Dieter Baron
@@ -72,9 +72,9 @@ _image_create(struct image_functions *f, size_t size, const char *fname)
 
 
 int
-_image_notsup(image *im, int a0, int a1)
+_image_notsup_cspace(image *im, int mask, const image_cspace *cspace)
 {
-    return -1;
+    return image_cspace_diffs(&im->i.cspace, mask, cspace);
 }
 
 
@@ -83,6 +83,14 @@ int
 _image_notsup_raw(image *im, int a0, int a1)
 {
     throws(EOPNOTSUPP, "raw reading not supported");
+    return -1;
+}
+
+
+
+int
+_image_notsup_scale(image *im, int w, int h)
+{
     return -1;
 }
 

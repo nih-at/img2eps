@@ -2,7 +2,7 @@
 #define _HAD_IMAGE_H
 
 /*
-  $NiH: image.h,v 1.6 2002/09/12 13:52:14 dillo Exp $
+  $NiH: image.h,v 1.7 2002/09/14 02:27:40 dillo Exp $
 
   image.h -- image header
   Copyright (C) 2002 Dieter Baron
@@ -117,12 +117,13 @@ struct image_functions {
 #define IMAGE_CS_EQUAL(field, new, old) \
 		    ((new)->field == 0 || (new)->field == (old)->field)
 
-int _image_notsup(image *, int, int);
+int _image_notsup_cspace(image *im, int mask, const image_cspace *cspace);
 int _image_notsup_raw(image *, int, int);
+int _image_notsup_scale(image *im, int w, int h);
 
 #ifdef NOSUPP_CSPACE
 #define IMAGE_DECL_CSPACE(name)
-#define IMAGE_METH_CSPACE(name)	(int (*)())_image_notsup
+#define IMAGE_METH_CSPACE(name)	_image_notsup_cspace
 #else
 #define IMAGE_DECL_CSPACE(name)			\
 int name##_set_cspace(image_##name *, int, const image_cspace *);
@@ -130,7 +131,7 @@ int name##_set_cspace(image_##name *, int, const image_cspace *);
 #endif
 #ifdef NOSUPP_SCALE
 #define IMAGE_DECL_SCALE(name)
-#define IMAGE_METH_SCALE(name)	_image_notsup
+#define IMAGE_METH_SCALE(name)	_image_notsup_scale
 #else
 #define IMAGE_DECL_SCALE(name)			\
 int name##_set_size(image_##name *, int, int);
