@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.19 2002/10/12 18:17:09 dillo Exp $
+  $NiH: epsf.c,v 1.20 2002/10/13 01:25:01 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -425,20 +425,21 @@ epsf_free(epsf *ep)
 int
 epsf_parse_dimen(const char *d)
 {
-    int i, l;
+    int i;
+    double f;
     char *end;
 
-    l = strtol(d, &end, 10);
+    f = strtod(d, &end);
 
     if (*end) {
 	for (i=0; dimen[i].name; i++) {
 	    if (strcasecmp(dimen[i].name, end) == 0)
-		return (l*dimen[i].nom)/dimen[i].denom;
+		return (int)(f*dimen[i].nom)/dimen[i].denom;
 	}
 	return -1;
     }
 
-    return l;
+    return (int)f;
 }
 
 
