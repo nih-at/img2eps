@@ -1,0 +1,8 @@
+# tiff indexed, converted to grayscale (12bit)
+#
+#	$NiH$
+#
+return 0
+options -g
+input pal4.tif
+output pal-gray12.eps pal4.eps
