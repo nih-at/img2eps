@@ -1,5 +1,5 @@
 /*
-  $NiH: image.c,v 1.2 2002/09/08 21:31:46 dillo Exp $
+  $NiH: image.c,v 1.3 2002/09/10 14:05:52 dillo Exp $
 
   image.c -- general image functions
   Copyright (C) 2002 Dieter Baron
@@ -29,6 +29,8 @@ image *png_open(char *);
 #ifdef USE_TIFF
 image *tiff_open(char *);
 #endif
+image *xpm_open(char *);
+
 
 image *(*open_tab[])(char *) = {
 #ifdef USE_PNG
@@ -40,6 +42,7 @@ image *(*open_tab[])(char *) = {
 #ifdef USE_TIFF
     tiff_open,
 #endif
+    xpm_open,
 #ifdef USE_GIF
     gif_open,
 #endif
@@ -57,6 +60,7 @@ _image_create(struct image_functions *f, size_t size, char *fname)
     im->f = f;
     im->fname = strdup(fname);
     image_init_info(&im->i);
+    im->i.order = IMAGE_ORD_ROW_LT;
 
     return im;
 }
@@ -122,7 +126,7 @@ image_get_row_size(image *im)
     int n;
 
     n = im->i.width * image_cspace_components(im->i.cspace);
-    n = (n*8 + im->i.depth-1) / im->i.depth;
+    n = (n*im->i.depth+7) / 8;
 
     return n;
 }
@@ -160,4 +164,20 @@ image_open(char *fname)
 	   "cannot open image `%s': format not recognized", fname);
 
     return NULL;
+}
+
+
+
+int
+image_set_cspace(image *im, image_cspace cspace)
+{
+    return image_set_cspace_depth(im, cspace, im->i.depth);
+}
+
+
+
+int
+image_set_depth(image *im, int depth)
+{
+    return image_set_cspace_depth(im, im->i.cspace, depth);
 }

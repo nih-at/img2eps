@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.5 2002/09/10 14:05:52 dillo Exp $
+  $NiH: img2eps.c,v 1.6 2002/09/10 15:28:59 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002 Dieter Baron
@@ -20,6 +20,7 @@
 #include "image.h"
 #include "stream.h"
 #include "stream_types.h"
+#include "xmalloc.h"
 
 char *prg;
 
@@ -243,8 +244,7 @@ extsubst(char *fname, char *newext)
     if (q == NULL)
 	q = p+strlen(p);
 
-    if ((s=malloc(q-p + strlen(newext) + 2)) == NULL)
-	return NULL;
+    s = xmalloc(q-p + strlen(newext) + 2);
 
     strncpy(s, p, q-p);
     q = s+strlen(s);

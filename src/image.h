@@ -2,7 +2,7 @@
 #define _HAD_IMAGE_H
 
 /*
-  $NiH: image.h,v 1.1 2002/09/07 20:58:00 dillo Exp $
+  $NiH: image.h,v 1.2 2002/09/08 21:31:47 dillo Exp $
 
   image.h -- image header
   Copyright (C) 2002 Dieter Baron
@@ -84,8 +84,7 @@ struct image_functions {
     int (*read)(image *, char **);
     int (*read_finish)(image *, int);
     int (*read_start)(image *);
-    int (*set_cspace)(image *, image_cspace);
-    int (*set_depth)(image *, int);
+    int (*set_cspace_depth)(image *, image_cspace, int);
     int (*set_size)(image *, int, int);
 };
 
@@ -96,16 +95,8 @@ int _image_notsup(image *, int, int);
 #define IMAGE_METH_CSPACE(name)	(int (*)())_image_notsup
 #else
 #define IMAGE_DECL_CSPACE(name)			\
-int name##_set_cspace(image_##name *, image_cspace);
-#define IMAGE_METH_CSPACE(name)	(int (*)())name##_set_cspace
-#endif
-#ifdef NOSUPP_DEPTH
-#define IMAGE_DECL_DEPTH(name)
-#define IMAGE_METH_DEPTH(name)	(int (*)())_image_notsup
-#else
-#define IMAGE_DECL_DEPTH(name)			\
-int name##_set_depth(image_##name *, int);
-#define IMAGE_METH_DEPTH(name)	(int (*)())name##_set_depth
+int name##_set_cspace_depth(image_##name *, image_cspace, int);
+#define IMAGE_METH_CSPACE(name)	(int (*)())name##_set_cspace_depth
 #endif
 #ifdef NOSUPP_SCALE
 #define IMAGE_DECL_SCALE(name)
@@ -125,7 +116,6 @@ int name##_read(image_##name *, char **);	\
 int name##_read_finish(image_##name *, int);	\
 int name##_read_start(image_##name *);		\
 IMAGE_DECL_CSPACE(name)				\
-IMAGE_DECL_DEPTH(name)				\
 IMAGE_DECL_SCALE(name)				\
 struct image_functions name##_functions  = {	\
     (int (*)())name##_close,			\
@@ -135,7 +125,6 @@ struct image_functions name##_functions  = {	\
     (int (*)())name##_read_finish,		\
     (int (*)())name##_read_start,		\
     IMAGE_METH_CSPACE(name),			\
-    IMAGE_METH_DEPTH(name),			\
     IMAGE_METH_SCALE(name)			\
 }
 
@@ -158,6 +147,8 @@ int image_get_row_size(image *im);
 image *image_convert(image *oim, image_info *i);
 void image_init_info(image_info *i);
 image *image_open(char *fname);
+int image_set_cspace(image *im, image_cspace cspace);
+int image_set_depth(image *im, int depth);
 
 #define IMAGE_METH0(name, im)		(((image *)(im))->f->name\
 						((image *)(im)))
@@ -171,8 +162,8 @@ image *image_open(char *fname);
 #define image_read(im, bp)	      IMAGE_METH1(read, (im), (bp))
 #define image_read_finish(im, ab)     IMAGE_METH1(read_finish, (im), (ab))
 #define image_read_start(im)	      IMAGE_METH0(read_start, (im))
-#define image_set_cspace(im, cs)      IMAGE_METH1(set_cspace, (im), (cs))
-#define image_set_depth(im, d)        IMAGE_METH1(set_depth, (im), (d))
+#define image_set_cspace_depth(im, cs, d)\
+  				IMAGE_METH2(set_cspace_depth, (im), (cs), (d))
 #define image_set_size(im, w, h)      IMAGE_METH2(set_size, (im), (w), (h))
 
 #endif /* image.h */

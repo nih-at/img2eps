@@ -1,5 +1,5 @@
 /*
-  $NiH: im_convert.c,v 1.1 2002/09/08 21:31:45 dillo Exp $
+  $NiH: im_convert.c,v 1.2 2002/09/10 14:05:50 dillo Exp $
 
   im_convert.c -- image conversion handling
   Copyright (C) 2002 Dieter Baron
@@ -84,15 +84,7 @@ conv_read_finish(image_conv *im, int abortp)
 
 
 int
-conv_set_cspace(image_conv *im, image_cspace cspace)
-{
-    return -1;
-}
-
-
-
-int
-conv_set_depth(image_conv *im, int depth)
+conv_set_cspace_depth(image_conv *im, image_cspace cspace, int depth)
 {
     return -1;
 }
@@ -126,18 +118,14 @@ image_convert(image *oim, image_info *i)
 	    throwf(EOPNOTSUPP, "scaling not supported");
 	}
     }
-    if (i->cspace != IMAGE_CS_UNKNOWN && i->cspace != im->i.cspace) {
-	if (image_set_cspace(oim, i->cspace) < 0) {
+    if ((i->cspace != IMAGE_CS_UNKNOWN && i->cspace != im->i.cspace)
+	|| (i->depth && i->depth != im->i.depth)) {
+	if (image_set_cspace_depth(oim,
+		i->cspace != IMAGE_CS_UNKNOWN ? i->cspace : oim->i.cspace,
+		i->depth != 0 ? i->depth : oim->i.depth) < 0) {
 	    need_conv = 1;
 	    /* XXX: not yet */
-	    throwf(EOPNOTSUPP, "color space conversion not supported");
-	}
-    }
-    if (i->depth && i->depth != im->i.depth) {
-	if (image_set_depth(oim, i->depth) < 0) {
-	    need_conv = 1;
-	    /* XXX: not yet */
-	    throwf(EOPNOTSUPP, "depth conversion not supported");
+	    throwf(EOPNOTSUPP, "color space / depth conversion not supported");
 	}
     }
 

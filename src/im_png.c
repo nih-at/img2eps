@@ -1,5 +1,5 @@
 /*
-  $NiH: im_png.c,v 1.2 2002/09/10 14:05:51 dillo Exp $
+  $NiH: im_png.c,v 1.3 2002/09/10 15:28:59 dillo Exp $
 
   im_png.c -- PNG image handling
   Copyright (C) 2002 Dieter Baron
@@ -149,39 +149,48 @@ png_open(char *fname)
     }
 
     png_set_error_fn(im->png, NULL, _error_fn, _warn_fn);
-    
-    png_init_io(im->png, im->f);
-    png_set_sig_bytes(im->png, 8);
 
-    png_read_info(im->png, im->info);
+    if (catch(&ex) == 0) {
+	png_init_io(im->png, im->f);
+	png_set_sig_bytes(im->png, 8);
+	
+	png_read_info(im->png, im->info);
+	
+	im->pinfo.width = png_get_image_width(im->png, im->info);
+	im->pinfo.height = png_get_image_height(im->png, im->info);
+	im->pinfo.depth = png_get_bit_depth(im->png, im->info);
+	im->pinfo.order = IMAGE_ORD_ROW_LT;
+	switch (png_get_color_type(im->png, im->info)) {
+	case PNG_COLOR_TYPE_GRAY:
+	case PNG_COLOR_TYPE_GRAY_ALPHA:
+	    im->pinfo.cspace = IMAGE_CS_GRAY;
+	    break;
+	case PNG_COLOR_TYPE_PALETTE:
+	    im->pinfo.cspace = IMAGE_CS_INDEXED_RGB;
+	    break;
+	case PNG_COLOR_TYPE_RGB:
+	case PNG_COLOR_TYPE_RGB_ALPHA:
+	    im->pinfo.cspace = IMAGE_CS_RGB;
+	    break;
+	}
 
-    im->pinfo.width = png_get_image_width(im->png, im->info);
-    im->pinfo.height = png_get_image_height(im->png, im->info);
-    im->pinfo.depth = png_get_bit_depth(im->png, im->info);
-    switch (png_get_color_type(im->png, im->info)) {
-    case PNG_COLOR_TYPE_GRAY:
-    case PNG_COLOR_TYPE_GRAY_ALPHA:
-	im->pinfo.cspace = IMAGE_CS_GRAY;
-	break;
-    case PNG_COLOR_TYPE_PALETTE:
-	im->pinfo.cspace = IMAGE_CS_INDEXED_RGB;
-	break;
-    case PNG_COLOR_TYPE_RGB:
-    case PNG_COLOR_TYPE_RGB_ALPHA:
-	im->pinfo.cspace = IMAGE_CS_RGB;
-	break;
+	switch (png_get_compression_type(im->png, im->info)) {
+	case PNG_COMPRESSION_TYPE_BASE:
+	    im->pinfo.compression = IMAGE_CMP_FLATE;
+	    break;
+	default:
+	    im->pinfo.compression = IMAGE_CMP_NONE;
+	    break;
+	}
+
+	im->im.i = im->pinfo;
+
+	drop();
     }
-
-    switch (png_get_compression_type(im->png, im->info)) {
-    case PNG_COMPRESSION_TYPE_BASE:
-	im->pinfo.compression = IMAGE_CMP_FLATE;
-	break;
-    default:
-	im->pinfo.compression = IMAGE_CMP_NONE;
-	break;
+    else {
+	image_close((image *)im);
+	throw(&ex);
     }
-
-    im->im.i = im->pinfo;
 
     return (image *)im;
 }
@@ -274,8 +283,13 @@ png_read_start(image_png *im)
 
 
 int
-png_set_cspace(image_png *im, image_cspace cspace)
+png_set_cspace_depth(image_png *im, image_cspace cspace, int depth)
 {
+    if (depth == im->pinfo.depth || depth == 8)
+	im->im.i.depth = depth;
+    else
+	return -1;
+    
     switch (cspace) {
     case IMAGE_CS_GRAY:
     case IMAGE_CS_RGB:
@@ -285,19 +299,6 @@ png_set_cspace(image_png *im, image_cspace cspace)
     default:
 	return -1;
     }
-}
-
-
-
-int
-png_set_depth(image_png *im, int depth)
-{
-    if (depth == im->pinfo.depth || depth == 8) {
-	im->im.i.depth = depth;
-	return 0;
-    }
-    else
-	return -1;
 }
 
 

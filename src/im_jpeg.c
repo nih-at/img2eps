@@ -1,5 +1,5 @@
 /*
-  $NiH: im_jpeg.c,v 1.3 2002/09/10 14:05:51 dillo Exp $
+  $NiH: im_jpeg.c,v 1.4 2002/09/10 15:28:58 dillo Exp $
 
   im_jpeg.c -- JPEG image handling
   Copyright (C) 2002 Dieter Baron
@@ -17,8 +17,6 @@
 #include <stdio.h>
 
 #include <jpeglib.h>
-
-#define NOSUPP_DEPTH
 
 #include "exceptions.h"
 #include "image.h"
@@ -181,11 +179,14 @@ jpeg_read_start(image_jpeg *im)
 
 
 int
-jpeg_set_cspace(image_jpeg *im, image_cspace cspace)
+jpeg_set_cspace_depth(image_jpeg *im, image_cspace cspace, int depth)
 {
     /* support for RGB->grayscale */
     /* XXX: more may be supported, need to check */
-    
+
+    if (depth != im->im.i.depth)
+	return -1;
+
     if (cspace == im->im.i.cspace)
 	return 0;
     

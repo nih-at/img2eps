@@ -1,5 +1,5 @@
 /*
-  $NiH: im_gif.c,v 1.2 2002/09/08 21:31:45 dillo Exp $
+  $NiH: im_gif.c,v 1.3 2002/09/10 14:05:51 dillo Exp $
 
   im_gif.c -- GIF image handling
   Copyright (C) 2002 Dieter Baron
@@ -15,7 +15,6 @@
 #include <gif_lib.h>
 
 #define NOSUPP_CSPACE
-#define NOSUPP_DEPTH
 #define NOSUPP_SCALE
 
 #include "exceptions.h"
@@ -70,11 +69,10 @@ gif_open(char *fname)
 	im = image_create(gif, fname);
 	drop();
     }
-    
-    DGifCloseFile(im->gif);
-
-    if (ex.code)
+    else {
+	DGifCloseFile(im->gif);
 	throw(&ex);
+    }
 
     im->im.i.width = gif->SWidth;
     im->im.i.height = gif->SHeight;

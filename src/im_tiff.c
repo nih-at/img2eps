@@ -1,5 +1,5 @@
 /*
-  $NiH: im_tiff.c,v 1.1 2002/09/08 21:31:46 dillo Exp $
+  $NiH: im_tiff.c,v 1.2 2002/09/10 14:05:51 dillo Exp $
 
   im_tiff.c -- TIFF image handling
   Copyright (C) 2002 Dieter Baron
@@ -19,7 +19,6 @@
 #include <tiffio.h>
 
 #define NOSUPP_CSPACE
-#define NOSUPP_DEPTH
 #define NOSUPP_SCALE
 #include "image.h"
 

@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.4 2002/09/09 12:42:32 dillo Exp $
+  $NiH: epsf.c,v 1.5 2002/09/10 14:05:50 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -127,6 +127,7 @@ static void _calculate_bbox(epsf *ep);
 static int _write_image_dict(epsf *ep);
 static int _write_image_l1(epsf *ep);
 static int _write_image_matrix(epsf *ep);
+static void _write_l1_datasrc(epsf *ep);
 static int _write_palette_array(epsf *ep);
 
 
@@ -159,6 +160,8 @@ epsf_calculate_parameters(epsf *ep)
 	/* no /Indexed in LanguageLevel 1 */
 	if (ep->level == 1 && IMAGE_CS_IS_INDEXED(ep->im->i.cspace))
 	    ep->i.cspace = IMAGE_CS_BASE(ep->im->i.cspace);
+	else
+	    ep->i.cspace = ep->im->i.cspace;
     }
 
     level = epsf_cspace_langlevel(ep->i.cspace);
@@ -671,19 +674,17 @@ _write_image_l1(epsf *ep)
     _write_image_matrix(ep);
     stream_puts("\n", ep->st);
     if (ep->level == 1) {
-	stream_printf(ep->st, "/picstr %d string def\n",
-		      image_get_row_size(ep->im));
-	stream_puts("{ currentfile picstr readhexstring pop } bind\n",
-		    ep->st);
+	_write_l1_datasrc(ep);
     }
-    else
+    else {
 	stream_printf(ep->st, "currentfile /%sDecode filter\n",
 		      epsf_asc_name(ep->ascii));
-    if (ep->im->i.cspace == IMAGE_CS_GRAY)
-	stream_puts("image\n", ep->st);
-    else
-	stream_printf(ep->st, "false %d colorimage\n",
-		      image_cspace_components(ep->im->i.cspace));
+	if (ep->im->i.cspace == IMAGE_CS_GRAY)
+	    stream_puts("image\n", ep->st);
+	else
+	    stream_printf(ep->st, "false %d colorimage\n",
+			  image_cspace_components(ep->im->i.cspace));
+    }
 
     return 0;
 }
@@ -695,16 +696,23 @@ _write_image_matrix(epsf *ep)
 {
     /* keep in sync with enum image_order in image.h */
     static const char *matrix[] = {
-	"w00H0h", "w00h00", "W00Hwh", "W00hw0",
+	NULL, "w00H0h", "w00h00", "W00Hwh", "W00hw0",
 	"0hw00h", "0hW000", "0Hw0wh", "0HW0w0"
     };
 
     char b[128], *s;
     const char *p;
+    int order;
+
+    order = ep->im->i.order;
+
+    if (order < 0 || order >= sizeof(matrix)/sizeof(matrix[0])
+	|| matrix[order] == NULL)
+	throws(EINVAL, "unsupported pixel order");
 
     strcpy(b, "[");
     s = b+1;
-    for (p=matrix[ep->i.order]; *p; p++) {
+    for (p=matrix[order]; *p; p++) {
 	switch (*p) {
 	case 'w':
 	    sprintf(s, " %d", ep->im->i.width);
@@ -726,6 +734,48 @@ _write_image_matrix(epsf *ep)
     strcpy(s, " ]");
 
     return stream_puts(b, ep->st);
+}
+
+
+
+static void
+_write_l1_datasrc(epsf *ep)
+{
+    int nc, ng;
+
+    nc = image_get_row_size(ep->im);
+    ng = (ep->im->i.width * ep->im->i.depth + 7) / 8;
+    
+    stream_printf(ep->st, "/picstr %d string def\n", nc);
+
+    switch (ep->im->i.cspace) {
+    case IMAGE_CS_RGB:
+	if (ep->im->i.depth == 8) {
+	    stream_printf(ep->st, "\
+/colorimage where {\n\
+ pop { currentfile picstr readhexstring pop } bind false %d colorimage\n\
+} {\n\
+ /gstr %d string def\n\
+ { currentfile picstr readhexstring pop 0 1 %d \n\
+  { gstr exch dup 3 mul dup picstr exch get 27 mul\n\
+    picstr 2 index 1 add get 91 mul add\n\
+    picstr 2 index 2 add get 10 mul add\n\
+    128 idiv exch pop put\n\
+  } for gstr\n\
+ } bind image\n\
+} ifelse\n",
+			  image_cspace_components(ep->im->i.cspace),
+			  ng, ng-1);
+	}
+	break;
+	
+    default:
+	stream_printf(ep->st, "\
+{ currentfile picstr readhexstring pop } bind\n\
+false %d colorimage\n",
+		      image_cspace_components(ep->im->i.cspace));
+	break;
+    }
 }
 
 

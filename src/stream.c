@@ -1,5 +1,5 @@
 /*
-  $NiH: stream.c,v 1.3 2002/09/10 14:05:54 dillo Exp $
+  $NiH: stream.c,v 1.4 2002/09/10 15:28:59 dillo Exp $
 
   stream.c -- general stream functions
   Copyright (C) 2002 Dieter Baron
@@ -16,6 +16,7 @@
 
 #include "exceptions.h"
 #include "stream.h"
+#include "xmalloc.h"
 
 
 

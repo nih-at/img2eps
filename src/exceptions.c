@@ -1,5 +1,5 @@
 /*
-  $NiH: exceptions.c,v 1.2 2002/09/10 14:05:50 dillo Exp $
+  $NiH: exceptions.c,v 1.3 2002/09/10 15:26:26 dillo Exp $
 
   exceptions.c -- exception (catch/throw) system
   Copyright (C) 2002 Dieter Baron
@@ -105,7 +105,7 @@ throwf(int code, const char *fmt, ...)
     va_list argp;
 
     va_start(argp, fmt);
-    vasprintf((char **)s, fmt, argp);
+    vasprintf(&s, fmt, argp);
     va_end(argp);
 
     if (s == NULL)
