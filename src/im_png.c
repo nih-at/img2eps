@@ -1,5 +1,5 @@
 /*
-  $NiH: im_png.c,v 1.4 2002/09/10 21:40:48 dillo Exp $
+  $NiH: im_png.c,v 1.5 2002/09/11 22:44:19 dillo Exp $
 
   im_png.c -- PNG image handling
   Copyright (C) 2002 Dieter Baron
@@ -101,7 +101,8 @@ png_open(char *fname)
     char sig[8];
     FILE *f;
     exception ex;
-
+    png_colorp plte;
+    
     if ((f=fopen(fname, "rb")) == NULL)
 	return NULL;
 
@@ -168,6 +169,8 @@ png_open(char *fname)
 	    break;
 	case PNG_COLOR_TYPE_PALETTE:
 	    im->pinfo.cspace.type = IMAGE_CS_INDEXED;
+	    png_get_PLTE(im->png, im->info, &plte,
+			 &im->pinfo.cspace.ncol);
 	    /* XXX: set num colors */
 	    /* XXX: always correct? */
 	    im->pinfo.cspace.base_type = IMAGE_CS_RGB;
