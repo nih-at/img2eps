@@ -8,6 +8,7 @@ TESTCASES=	gif.test \
 		jpg-gray.test \
 		jpg-lzw.test \
 		level1.test \
+		ori-auto.test \
 		pal-gray.test \
 		pal-gray12.test\
 		png-1.test \
