@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.9 2002/09/12 13:52:14 dillo Exp $
+  $NiH: epsf.c,v 1.10 2002/09/14 02:27:37 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -28,7 +28,13 @@
 #else
 #define DEFAULT_L2_CMP	IMAGE_CMP_RLE
 #endif
+#ifdef HAVE_LIBZ
 #define DEFAULT_L3_CMP	IMAGE_CMP_FLATE
+#elif defined(USE_LZW_COMPRESS)
+#define DEFAULT_L3_CMP	IMAGE_CMP_LZW
+#else
+#define DEFAULT_L3_CMP	IMAGE_CMP_RLE
+#endif
 
 struct papersize {
     const char *name;
@@ -60,10 +66,10 @@ struct dimen {
 };
 
 struct dimen dimen[] = {
-    { "cm",  7200,  254 },
-    { "in",    72,    1 },
-    { "mm", 72000, 2540 },
-    { "pt",     1,    1 },
+    { "cm",  3600, 127 },
+    { "in",    72,   1 },
+    { "mm",   360, 127 },
+    { "pt",     1,   1 },
     { NULL, 0, 0 }
 };
 
