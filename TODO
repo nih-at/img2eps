@@ -1,3 +1,4 @@
+- multi-page images (TIFF, MNG, animated GIF)
 - image_info: bit order
 - dry-run option (don't process, only print info)
 - png: raw read

@@ -1,5 +1,5 @@
 /*
-  $NiH: im_gif.c,v 1.8 2002/10/11 00:51:03 dillo Exp $
+  $NiH: im_gif.c,v 1.9 2002/10/12 00:02:07 dillo Exp $
 
   im_gif.c -- GIF image handling
   Copyright (C) 2002 Dieter Baron
@@ -61,8 +61,10 @@ struct image_gif {
 
     char *pal;
 
+    int interlace;	/* whether image is interlaced */
     int n;		/* size of one row */
-    char *p;		/* pointer to data of next row */
+    int row;		/* current row */
+    char *p;		/* pointer to image data */
 };
 
 IMAGE_DECLARE(gif);
@@ -148,8 +150,33 @@ gif_open(char *fname)
 int
 gif_read(image_gif *im, char **bp)
 {
-    *bp = im->p;
-    im->p += im->n;
+    int row;
+
+    if (!im->interlace)
+	row = im->row;
+    else {
+	switch (im->row%8) {
+	case 0:
+	    row = im->row/8;
+	    break;
+	case 4:
+	    row = im->row/8 + (im->im.i.height-1)/8 + 1;
+	    break;
+	case 2:
+	case 6:
+	    row = im->row/4 + (im->im.i.height-1)/4 + 1;
+	    break;
+	case 1:
+	case 3:
+	case 5:
+	case 7:
+	    row = im->row/2 + (im->im.i.height-1)/2 + 1;
+	    break;
+	}
+    }
+
+    *bp = im->p + row*im->n;
+    im->row++;
     return -1;
 }
 
@@ -175,8 +202,10 @@ gif_read_start(image_gif *im)
 
     /* XXX: check that image uses whole screen */
 
+    im->interlace = im->gif->SavedImages[0].ImageDesc.Interlace;
     im->n = image_get_row_size((image *)im);
     im->p = im->gif->SavedImages[0].RasterBits;
+    im->row = 0;
     
     return;
 }
