@@ -1,4 +1,4 @@
-.\"  $NiH: img2eps.mdoc,v 1.9 2002/10/16 12:51:38 dillo Exp $
+.\"  $NiH: img2eps.mdoc,v 1.10 2005/01/04 19:36:33 dillo Exp $
 .\"
 .\"  img2eps.mdoc -- man page for img2eps(1)
 .\"  Copyright (C) 2002, 2005 Dieter Baron and Thomas Klausner
@@ -42,17 +42,21 @@
 .Nm ""
 .Op Fl 123
 .Op Fl a | Fl -ascii Ar ENC
+.Op Fl -bottom-margin Ar M
 .Op Fl C | Fl -compress Ar C
 .Op Fl c | Fl -stdout
 .Op Fl G | Fl -gravity Ar G
 .Op Fl g | -gray | -grey
 .Op Fl h | Fl -help
+.Op Fl -left-margin Ar M
 .Op Fl -level
 .Op Fl m | Fl -margin Ar M
 .Op Fl O | Fl -orientation Ar O
 .Op Fl o | Fl -output Ar FILE
 .Op Fl P | Fl -paper Ar P
 .Op Fl r | Fl -resolution Ar r
+.Op Fl -right-margin Ar M
+.Op Fl -top-margin Ar M
 .Op Fl v | Fl -verbose
 .Op Fl -version
 .Ar file ...
@@ -100,6 +104,9 @@ ASCII85
 .It
 ASCIIHEX
 .El
+.It Fl -bottom-margin Ar M
+Set bottom margin to
+.Ar M .
 .It Fl C Ar C
 .It Fl -compress Ar C
 Use compression method
@@ -149,6 +156,9 @@ Convert image to grayscale.
 .It Fl h
 .It Fl -help
 Display a short help message.
+.It Fl -left-margin Ar M
+Set left margin to
+.Ar M .
 .It Fl -level Ar L
 Use only features present in PostScript language level
 .Ar L .
@@ -227,6 +237,12 @@ tabloid
 .It Fl r Ar R
 .It Fl -resolution Ar R
 Specify the resolution to print the image at, in dpi (dots per inch).
+.It Fl -right-margin Ar M
+Set right margin to
+.Ar M .
+.It Fl -top-margin Ar M
+Set top margin to
+.Ar M .
 .It Fl V
 .It Fl -version
 Display version number.

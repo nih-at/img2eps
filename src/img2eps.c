@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.14 2005/01/04 19:19:57 dillo Exp $
+  $NiH: img2eps.c,v 1.15 2005/01/04 19:39:28 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002, 2005 Dieter Baron
@@ -63,23 +63,27 @@ static const char help_head[] =
 PACKAGE " " VERSION " by Dieter Baron <dillo@giga.or.at>\n\n";
 
 static const char help_tail[] = "\
-  -h, --help           display this help message\n\
-  -V, --version        display version number\n\
-  -1                   use language level 1\n\
-  -2                   use language level 2\n\
-  -3                   use language level 3\n\
-  -a, --ascii ENC      use ENC ASCII encoding for binary data\n\
-      --level L        use language level L\n\
-  -C, --compress C     use compression method C for image data\n\
-  -c, --stdout         write EPSF to stdout\n\
-  -G, --gravity G      set gravity to G\n\
-  -g, --gray           force image to gray scale\n\
-  -m, --margin M       set all margins to M\n\
-  -O, --orientation O  set orientation to O\n\
-  -o, --output FILE    write EPSF to FILE\n\
-  -P, --paper P        set paper size to P\n\
-  -r, --resolution R   set resolution to R\n\
-  -v, --verbose        be verbose\n\
+  -h, --help             display this help message\n\
+  -V, --version          display version number\n\
+  -1                     use language level 1\n\
+  -2                     use language level 2\n\
+  -3                     use language level 3\n\
+  -a, --ascii ENC        use ENC ASCII encoding for binary data\n\
+      --bottom-margin M  set bottom margin to M\n\
+  -C, --compress C       use compression method C for image data\n\
+  -c, --stdout           write EPSF to stdout\n\
+  -G, --gravity G        set gravity to G\n\
+  -g, --gray             force image to gray scale\n\
+      --left-margin M    set left margin to M\n\
+      --level L          use language level L\n\
+  -m, --margin M         set all margins to M\n\
+  -O, --orientation O    set orientation to O\n\
+  -o, --output FILE      write EPSF to FILE\n\
+  -P, --paper P          set paper size to P\n\
+  -r, --resolution R     set resolution to R\n\
+      --right-margin M   set right margin to M\n\
+      --top-margin M     set top margin to M\n\
+  -v, --verbose          be verbose\n\
 \n\
 Report bugs to <dillo@giga.or.at>.\n";
 
@@ -88,28 +92,36 @@ static const char usage[] =
 
 
 enum {
-    OPT_LEVEL = 256
+    OPT_BOTTOMM = 256,
+    OPT_LEFTM,
+    OPT_LEVEL,
+    OPT_RIGHTM,
+    OPT_TOPM
 };
 
 #define OPTIONS "hV123a:cC:gG:m:o:O:P:r:v"
 
 static const struct option options[] = {
-    { "help",         0, 0, 'h' },
-    { "version",      0, 0, 'V' },
-    { "ascii",        1, 0, 'a' },
-    { "compress",     1, 0, 'C' },
-    { "compression",  1, 0, 'C' },
-    { "gravity",      1, 0, 'G' },
-    { "gray",         0, 0, 'g' },
-    { "grey",         0, 0, 'g' },
-    { "level",        1, 0, OPT_LEVEL },
-    { "margin",       1, 0, 'm' },
-    { "orientation",  1, 0, 'O' },
-    { "output",       1, 0, 'o' },
-    { "paper",        1, 0, 'P' },
-    { "resolution",   1, 0, 'r' },
-    { "stdout",       0, 0, 'c' },
-    { "verbose",      0, 0, 'v' },
+    { "help",          0, 0, 'h' },
+    { "version",       0, 0, 'V' },
+    { "ascii",         1, 0, 'a' },
+    { "bottom-margin", 1, 0, OPT_BOTTOMM },
+    { "compress",      1, 0, 'C' },
+    { "compression",   1, 0, 'C' },
+    { "gravity",       1, 0, 'G' },
+    { "gray",          0, 0, 'g' },
+    { "grey",          0, 0, 'g' },
+    { "left-margin", 1, 0, OPT_LEFTM },
+    { "level",         1, 0, OPT_LEVEL },
+    { "margin",        1, 0, 'm' },
+    { "orientation",   1, 0, 'O' },
+    { "output",        1, 0, 'o' },
+    { "paper",         1, 0, 'P' },
+    { "resolution",    1, 0, 'r' },
+    { "right-margin", 1, 0, OPT_RIGHTM },
+    { "top-margin",    1, 0, OPT_TOPM },
+    { "stdout",        0, 0, 'c' },
+    { "verbose",       0, 0, 'v' },
     
     { NULL, 0, 0, 0 }
 };
@@ -189,6 +201,12 @@ main(int argc, char *argv[])
 	case 'v':
 	    par->flags |= EPSF_FLAG_VERBOSE;
 	    break;
+	case OPT_BOTTOMM:
+	    epsf_set_margins(par, -1, -1, -1, epsf_parse_dimen(optarg));
+	    break;
+	case OPT_LEFTM:
+	    epsf_set_margins(par, epsf_parse_dimen(optarg), -1, -1, -1);
+	    break;
 	case OPT_LEVEL:
 	    i = atoi(optarg);
 	    if (i<1 || i>3) {
@@ -196,6 +214,12 @@ main(int argc, char *argv[])
 		exit(1);
 	    }
 	    par->level = i;
+	    break;
+	case OPT_RIGHTM:
+	    epsf_set_margins(par, -1, epsf_parse_dimen(optarg), -1, -1);
+	    break;
+	case OPT_TOPM:
+	    epsf_set_margins(par, -1, -1, epsf_parse_dimen(optarg), -1);
 	    break;
 
 	case 'V':
