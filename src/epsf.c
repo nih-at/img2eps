@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.12 2002/10/08 00:18:16 dillo Exp $
+  $NiH: epsf.c,v 1.13 2002/10/08 16:43:16 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002 Dieter Baron
@@ -166,6 +166,15 @@ epsf_calculate_parameters(epsf *ep)
     }
     if (ep->i.cspace.type == IMAGE_CS_INDEXED)
 	ep->i.cspace.base_depth = 8;
+    else if (ep->i.cspace.type == IMAGE_CS_GRAY) {
+	if (ep->level != 1 && ep->im->i.cspace.type == IMAGE_CS_INDEXED
+	    && ep->im->i.cspace.depth < 8) {
+	    /* select indexed grayscale if we can and it saves space */
+	    ep->i.cspace.type = IMAGE_CS_INDEXED;
+	    ep->i.cspace.base_type = IMAGE_CS_GRAY;
+	    ep->i.cspace.base_depth = 8;
+	}
+    }
 
     /* XXX: depth, unsupported color space types */
 
