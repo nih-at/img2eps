@@ -1,5 +1,5 @@
 /*
-  $NiH: st_ascii85.c,v 1.3 2002/09/10 14:05:52 dillo Exp $
+  $NiH: st_ascii85.c,v 1.4 2002/10/12 00:02:10 dillo Exp $
 
   st_ascii85.c -- ASCII85Encode stream
   Copyright (C) 2002 Dieter Baron
@@ -54,8 +54,6 @@ STREAM_DECLARE(ascii85);
 
 
 #define BLKSIZE 2048	/* buffer size */
-
-static const char hex[16] = "0123456789ABCDEF";
 
 
 

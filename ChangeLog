@@ -1,0 +1,4 @@
+2002-10-22  Dieter Baron  <dillo@danbala.tuwien.ac.at>
+
+	* src/st_ascii85.c: remove unused variable hex.
+
