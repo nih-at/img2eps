@@ -1,4 +1,5 @@
 bugs:
++ [epsf] fix placement of image with -S
 + [epsf] fix order transformation matrices
 + [jpeg] fix PostScript error with pictures from Canon EOS 300D (direct copy)
 - [jpeg] fix direct-copy broken on level2 printers
@@ -27,7 +28,6 @@ enhancements:
 
 other:
 + [doc] regen .man
-+ [config] remove --disable-lzw (patent expired)
 + [regress] fix tiff.test (image format not recognized on danbala)
 - [???] image_info: bit order
 - [regress] more tests

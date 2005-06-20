@@ -1,5 +1,5 @@
 /*
-  $NiH: st_lzw.c,v 1.2 2002/10/08 00:17:32 dillo Exp $
+  $NiH: st_lzw.c,v 1.3 2002/10/15 03:03:50 dillo Exp $
 
   st_lzw.c -- LZWEncode filter
 
@@ -75,8 +75,6 @@
 #include "stream_types.h"
 
 
-
-#ifdef USE_LZW_COMPRESS
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -521,17 +519,3 @@ cl_hash(stream_lzw *zs, count_int cl_hsize)	/* Reset code table. */
 	for (i += 16; i > 0; i--)
 		*--htab_p = m1;
 }
-
-#else /* USE_LZW_COMPRESS */
-
-
-
-stream *
-stream_lzw_open(stream *ost, void *params)
-{
-    throws(EOPNOTSUPP, "lzw compression disabled (at compile time)");
-    return NULL;
-}
-
-#endif /* USE_LZW_COMPRESS */
-

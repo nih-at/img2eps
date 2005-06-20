@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.25 2005/01/07 11:30:14 dillo Exp $
+  $NiH: epsf.c,v 1.26 2005/01/07 12:03:03 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002, 2005 Dieter Baron
@@ -56,17 +56,11 @@
 #define DEFAULT_PAPER		"a4"
 #define DEFAULT_RESOLUTION	"-1"
 
-#ifdef USE_LZW_COMPRESS
 #define DEFAULT_L2_CMP	IMAGE_CMP_LZW
-#else
-#define DEFAULT_L2_CMP	IMAGE_CMP_RLE
-#endif
 #ifdef HAVE_LIBZ
 #define DEFAULT_L3_CMP	IMAGE_CMP_FLATE
-#elif defined(USE_LZW_COMPRESS)
-#define DEFAULT_L3_CMP	IMAGE_CMP_LZW
 #else
-#define DEFAULT_L3_CMP	IMAGE_CMP_RLE
+#define DEFAULT_L3_CMP	IMAGE_CMP_LZW
 #endif
 
 struct papersize {

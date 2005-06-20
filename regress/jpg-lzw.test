@@ -2,9 +2,9 @@
 #   image: 133x53 rgb 8bps, jpeg compressed
 #    EPSF: 133x53 rgb 8bps, lzw compressed, ASCII85, level 2
 #
-#	$NiH: jpg-lzw.test,v 1.2 2002/10/10 15:20:29 dillo Exp $
+#	$NiH: jpg-lzw.test,v 1.3 2002/10/11 23:30:21 dillo Exp $
 #
-features JPEG LZW_COMPRESS
+features JPEG
 return 0
 options -Clzw
 input col.jpg
