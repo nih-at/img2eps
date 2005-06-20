@@ -1,3 +1,8 @@
+2005-06-21  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
+
+	* configure.in, doc/Makefile.am: man format handling without
+	symlinks.
+
 2005-06-20  Dieter Baron  <dillo@danbala.tuwien.ac.at>
 
 	* src/epsf.c (_calculate_bbox): if image dimensions are given,

@@ -1,8 +1,6 @@
-man_MANS=img2eps.1
+man1_MANS=img2eps.@MANFMT@
 
 EXTRA_DIST=img2eps.mdoc img2eps.man image.mdoc image.ps stream.mdoc stream.ps
-
-DISTCLEANFILES=img2eps.1
 
 SUFFIXES=.ps .mdoc
 
