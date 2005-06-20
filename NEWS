@@ -4,6 +4,7 @@ New in 0.2:
 * support for JPEG 2000 image format
 * support for EXIF Orientation tag (auto-rotate images)
 * fix handling of interlaced GIF images
+* LZW compression no longer optional (patent expired)
 
 New in 0.1 (2002/10/16):
 
