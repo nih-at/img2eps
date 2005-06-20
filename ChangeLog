@@ -1,5 +1,9 @@
 2005-06-20  Dieter Baron  <dillo@danbala.tuwien.ac.at>
 
+	* src/epsf.c (_calculate_bbox): if image dimensions are given,
+	still calculate paper dimensions (instead of using uninitialized
+	values.)
+
 	* configure.in: remove --disable-lzw option.
 
 2005-01-07  Dieter Baron  <dillo@danbala.tuwien.ac.at>

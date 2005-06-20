@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.26 2005/01/07 12:03:03 dillo Exp $
+  $NiH: epsf.c,v 1.27 2005/06/20 21:17:39 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002, 2005 Dieter Baron
@@ -839,6 +839,15 @@ _calculate_bbox(epsf *ep)
 	imh = ep->im->i.height;
     }
 	
+    if (ep->placement.paper_width > 0) {
+	pw = ep->placement.paper_width
+	    - ep->placement.left_margin - ep->placement.right_margin;
+	ph = ep->placement.paper_height
+	    - ep->placement.top_margin - ep->placement.bottom_margin;
+    }
+    else
+	pw = ph = -1;
+	
     if (ep->placement.image_width > 0 || ep->placement.image_height > 0) {
 	if (ep->placement.resolution_x > 0)
 	    throws(EINVAL, "both image size and resolution specified");
@@ -857,15 +866,6 @@ _calculate_bbox(epsf *ep)
 	}
     }
     else {
-	if (ep->placement.paper_width > 0) {
-	    pw = ep->placement.paper_width
-		- ep->placement.left_margin - ep->placement.right_margin;
-	    ph = ep->placement.paper_height
-		- ep->placement.top_margin - ep->placement.bottom_margin;
-	}
-	else
-	    pw = ph = -1;
-	
 	if (ep->placement.resolution_x >= 0) {
 	    imw *= 72.0/(double)ep->placement.resolution_x;
 	    imh *= 72.0/(double)ep->placement.resolution_y;

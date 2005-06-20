@@ -14,6 +14,7 @@ TESTCASES=	gif.test \
 		png-1.test \
 		png-gray1.test \
 		png-2.test \
+		scale.test \
 		tiff.test \
 		tiff-flate.test \
 		tiff-inv1.test \
@@ -55,6 +56,7 @@ OUTPUTS=	gif.eps \
 		png-1.eps \
 		png-gray1.eps \
 		png-2.eps \
+		scale.eps \
 		tiff.eps \
 		tiff-flate.eps \
 		tiff-indexed.eps \
