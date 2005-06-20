@@ -1,6 +1,6 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: img2eps.mdoc,v 1.10 2005/01/04 19:36:33 dillo Exp 
-.\"  $NiH: img2eps.mdoc,v 1.10 2005/01/04 19:36:33 dillo Exp $
+.\" from NiH: img2eps.mdoc,v 1.13 2005/01/07 11:38:07 wiz Exp 
+.\"  $NiH: img2eps.mdoc,v 1.13 2005/01/07 11:38:07 wiz Exp $
 .\"
 .\"  img2eps.mdoc \-- man page for img2eps(1)
 .\"  Copyright (C) 2002, 2005 Dieter Baron and Thomas Klausner
@@ -34,26 +34,33 @@
 .\"  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 .\"  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.TH IMG2EPS 1 "January 4, 2005" NiH
+.TH IMG2EPS 1 "January 7, 2005" NiH
 .SH "NAME"
 img2eps \- package raster images into EPS file
 .SH "SYNOPSIS"
 .B img2eps
 [\fB-123\fR]
 [\fB-a\fR | \fB--ascii\fR \fBENC\fR]
+[\fB--bottom-margin\fR \fBM\fR]
 [\fB-C\fR | \fB--compress\fR \fBC\fR]
 [\fB-c\fR | \fB--stdout\fR]
 [\fB-G\fR | \fB--gravity\fR \fBG\fR]
 [\fB-g\fR | \-gray | \-grey]
 [\fB-h\fR | \fB--help\fR]
+[\fB--height\fR \fBH\fR]
+[\fB--left-margin\fR \fBM\fR]
 [\fB--level\fR]
 [\fB-m\fR | \fB--margin\fR \fBM\fR]
 [\fB-O\fR | \fB--orientation\fR \fBO\fR]
 [\fB-o\fR | \fB--output\fR \fBFILE\fR]
 [\fB-P\fR | \fB--paper\fR \fBP\fR]
-[\fB-r\fR | \fB--resolution\fR \fBr\fR]
+[\fB-r\fR | \fB--resolution\fR \fBR\fR]
+[\fB--right-margin\fR \fBM\fR]
+[\fB-s\fR | \fB--size\fR \fBS\fR]
+[\fB--top-margin\fR \fBM\fR]
 [\fB-v\fR | \fB--verbose\fR]
-[\fB--version\fR]
+[\fB-V\fR | \fB--version\fR]
+[\fB--width\fR \fBW\fR]
 \fBfile ...\fR
 .SH "DESCRIPTION"
 .B img2eps
@@ -81,89 +88,108 @@ XPM
 If possible, the compressed image data is copied directly to the EPS file.
 .SH "The Options"
 .RS
-.TP 15
+.TP 20
 \fB-1\fR
 Use only features present in PostScript language level 1.
-.TP 15
+.TP 20
 \fB-2\fR
 Use only features present in PostScript language level 2.
-.TP 15
+.TP 20
 \fB-3\fR
 Explicitly allow the use of PostScript language level 3 features.
-.TP 15
+.TP 20
 \fB-a\fR \fBENC\fR
-.TP 15
+.TP 20
 \fB--ascii\fR \fBENC\fR
 Use
 \fBENC\fR
 ASCII encoding for binary data.
 Supported encodings are:
 .RS
-.IP \(bu 15
+.IP \(bu 20
 ASCII85
-.IP \(bu 15
+.IP \(bu 20
 ASCIIHEX
 .RE
-.TP 15
+.TP 20
+\fB--bottom-margin\fR \fBM\fR
+Set bottom margin to
+\fBM.\fR
+.TP 20
 \fB-C\fR \fBC\fR
-.TP 15
+.TP 20
 \fB--compress\fR \fBC\fR
 Use compression method
 \fBC\fR
 for image data.
 Supported compression methods are:
 .RS
-.IP \(bu 15
+.IP \(bu 20
 DCT (jpeg)
-.IP \(bu 15
+.IP \(bu 20
 Flate (zlib)
-.IP \(bu 15
+.IP \(bu 20
 LZW
-.IP \(bu 15
+.IP \(bu 20
 RunLength (PackBits)
 .RE
-.TP 15
+.TP 20
 \fB-c\fR
-.TP 15
+.TP 20
 \fB--stdout\fR
 Write EPSF to standard output.
 If this option is used, only one input file may be specified.
-.TP 15
+.TP 20
 \fB-G\fR \fBG\fR
-.TP 15
+.TP 20
 \fB--gravity\fR \fBG\fR
-Specify the placement of image within the printable area of the page:
+Specify the placement of image within the printable area of the page.
+The gravity can be either a pair of numbers (see below) in the range
+of 0 to 1 inclusive, which specify how much of the free space is
+placed to the left / above the image, or one of the following
+pre-defined settings:
 .RS
-.IP \(bu 15
+.IP \(bu 20
 top-left
-.IP \(bu 15
+.IP \(bu 20
 top
-.IP \(bu 15
+.IP \(bu 20
 top-right
-.IP \(bu 15
+.IP \(bu 20
 left
-.IP \(bu 15
+.IP \(bu 20
 center
-.IP \(bu 15
+.IP \(bu 20
 right
-.IP \(bu 15
+.IP \(bu 20
 bottom-left
-.IP \(bu 15
+.IP \(bu 20
 bottom
-.IP \(bu 15
+.IP \(bu 20
 bottom-right
 .RE
-.TP 15
+.TP 20
 \fB-g\fR
-.TP 15
+.TP 20
 \fB--gray\fR
 Convert image to grayscale.
-.TP 15
+.TP 20
+\fB-height\fR \fBH\fR
+Specify the height of the image to be
+\fBH,\fR
+which should be a dimen (see below).
+The width will be computed to keep the aspect ratio of the original image.
+.TP 20
 \fB-h\fR
-.TP 15
+.TP 20
 \fB--help\fR
 Display a short help message.
-.TP 15
+.TP 20
+\fB--left-margin\fR \fBM\fR
+Set left margin to
+\fBM,\fR
+which should be a dimen (see below).
+.TP 20
 \fB--level\fR \fBL\fR
 Use only features present in PostScript language level
 \fBL.\fR
@@ -173,28 +199,16 @@ Alternatively, you can also use the
 and
 \fB-3\fR
 options.
-.TP 15
+.TP 20
 \fB-m\fR \fBM\fR
-.TP 15
+.TP 20
 \fB--margin\fR \fBM\fR
 Set all margins to
 \fBM,\fR
-which should be a number optionally followed by a unit.
-Supported units are:
-.RS
-.IP \(bu 15
-cm
-.IP \(bu 15
-in
-.IP \(bu 15
-mm
-.IP \(bu 15
-pt (PostScript point, 1/72in)
-.RE
-If no unit is specified, pt is assumed.
-.TP 15
+which should be a dimen (see below).
+.TP 20
 \fB-O\fR \fBO\fR
-.TP 15
+.TP 20
 \fB--orientation\fR \fBO\fR
 Set orientation (rotation) of image:
 .RS
@@ -212,7 +226,7 @@ seascape
 Rotate image 90 degrees clockwise.
 .TP 15
 auto
-Use portrait or landscape, whichever results in a larger image.
+Use portrait or landscape, whichever fits the image better.
 .RE
 .TP 15
 \fB-o\fR \fBFILE\fR
@@ -227,7 +241,8 @@ If this option is used, only one input file may be specified.
 \fB--paper\fR \fBP\fR
 Set paper size to
 \fBP.\fR
-Supported sizes are:
+The paper size can be specified either as a pair of dimens (see
+below), or by using one of the following pre-defined sizes:
 .RS
 .IP \(bu 15
 10x14
@@ -257,12 +272,62 @@ tabloid
 .TP 15
 \fB--resolution\fR \fBR\fR
 Specify the resolution to print the image at, in dpi (dots per inch).
+\fBR\fR
+can be a number to specify equal horizontal and vertical resolution
+or a pair of numbers (see below) to specify horizontal and vertical
+resolutions separately.
+.TP 15
+\fB--right-margin\fR \fBM\fR
+Set right margin to
+\fBM,\fR
+which should be a dimen (see below).
+.TP 15
+\fB-S\fR \fBS\fR
+.TP 15
+\fB--size\fR \fBS\fR
+Specify the size of the printed image.
+\fBS\fR
+should be a pair of dimens (see below).
+.TP 15
+\fB--top-margin\fR \fBM\fR
+Set top margin to
+\fBM,\fR
+which should be a dimen (see below).
 .TP 15
 \fB-V\fR
 .TP 15
 \fB--version\fR
 Display version number.
+.TP 15
+\fB-width\fR \fBW\fR
+Specify the width of the image to be
+\fBW,\fR
+which should be a dimen (see below).
+The height will be computed to keep the aspect ratio of the original image.
 .RE
+.SS "Dimens and Pairs"
+A dimen is a number optionally followed by a unit.
+Supported units are:
+.RS
+.IP \(bu 15
+cm
+.IP \(bu 15
+in
+.IP \(bu 15
+mm
+.IP \(bu 15
+pt (PostScript point, 1/72in)
+.RE
+If no unit is specified, pt is assumed.
+.PP
+A pair of numbers should be separated by any one of
+.Sq x,
+.Sq *,
+or
+.Sq \&,.
+.PP
+A pair of dimens is a pair of numbers optionally followed by a unit,
+which applies to both numbers of the pair.
 .SS "Language Levels"
 There are three major versions of PostScript, called Language Levels:
 .PP
