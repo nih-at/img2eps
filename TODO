@@ -7,6 +7,7 @@ bugs:
 . [jpeg2000] testfiles_jp2/file3.jp2: error reading component 1 of row 0
 
 enhancements:
++ [doc] man format handling without symlinks
 + [ui] option to disable direct-copy
 + [ui] dry-run option (don't process, only print info)
 + [ui] more information in verbose mode
