@@ -1,6 +1,6 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: img2eps.mdoc,v 1.13 2005/01/07 11:38:07 wiz Exp 
-.\"  $NiH: img2eps.mdoc,v 1.13 2005/01/07 11:38:07 wiz Exp $
+.\" from NiH: img2eps.mdoc,v 1.14 2005/07/06 14:23:23 dillo Exp 
+.\"  $NiH: img2eps.mdoc,v 1.14 2005/07/06 14:23:23 dillo Exp $
 .\"
 .\"  img2eps.mdoc \-- man page for img2eps(1)
 .\"  Copyright (C) 2002, 2005 Dieter Baron and Thomas Klausner
@@ -55,6 +55,7 @@ img2eps \- package raster images into EPS file
 [\fB-o\fR | \fB--output\fR \fBFILE\fR]
 [\fB-P\fR | \fB--paper\fR \fBP\fR]
 [\fB-r\fR | \fB--resolution\fR \fBR\fR]
+[\fB-R\fR | \fB--recompress\fR]
 [\fB--right-margin\fR \fBM\fR]
 [\fB-s\fR | \fB--size\fR \fBS\fR]
 [\fB--top-margin\fR \fBM\fR]
@@ -276,6 +277,13 @@ Specify the resolution to print the image at, in dpi (dots per inch).
 can be a number to specify equal horizontal and vertical resolution
 or a pair of numbers (see below) to specify horizontal and vertical
 resolutions separately.
+.TP 15
+\fB-R\fR
+.TP 15
+\fB--recompress\fR
+Force recompression of image data, even if a direct copy would be
+possible.  This might be necessary since PostScript stricter image
+data constraints than other image manipulation software.
 .TP 15
 \fB--right-margin\fR \fBM\fR
 Set right margin to
