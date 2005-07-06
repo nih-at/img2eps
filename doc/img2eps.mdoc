@@ -1,4 +1,4 @@
-.\"  $NiH: img2eps.mdoc,v 1.13 2005/01/07 11:38:07 wiz Exp $
+.\"  $NiH: img2eps.mdoc,v 1.14 2005/07/06 14:23:23 dillo Exp $
 .\"
 .\"  img2eps.mdoc -- man page for img2eps(1)
 .\"  Copyright (C) 2002, 2005 Dieter Baron and Thomas Klausner
@@ -52,6 +52,7 @@
 .Op Fl -left-margin Ar M
 .Op Fl -level
 .Op Fl m | Fl -margin Ar M
+.Op Fl n | Fl -dry-run
 .Op Fl O | Fl -orientation Ar O
 .Op Fl o | Fl -output Ar FILE
 .Op Fl P | Fl -paper Ar P
@@ -187,6 +188,9 @@ options.
 Set all margins to
 .Ar M ,
 which should be a dimen (see below).
+.It Fl n
+.It Fl dry-run
+Don't create EPSF, only print information about what would have been done.
 .It Fl O Ar O
 .It Fl -orientation Ar O
 Set orientation (rotation) of image:

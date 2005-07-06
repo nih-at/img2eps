@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.18 2005/01/07 12:03:03 dillo Exp $
+  $NiH: img2eps.c,v 1.19 2005/07/06 14:23:24 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002, 2005 Dieter Baron
@@ -78,6 +78,7 @@ static const char help_tail[] = "\
       --left-margin M    set left margin to M\n\
       --level L          use language level L\n\
   -m, --margin M         set all margins to M\n\
+  -n, --dry-run          print info only, don't create EPSF\n\
   -O, --orientation O    set orientation to O\n\
   -o, --output FILE      write EPSF to FILE\n\
   -P, --paper P          set paper size to P\n\
@@ -114,6 +115,7 @@ static const struct option options[] = {
     { "bottom-margin", 1, 0, OPT_BOTTOMM },
     { "compress",      1, 0, 'C' },
     { "compression",   1, 0, 'C' },
+    { "dry-run",       0, 0, 'n' },
     { "gravity",       1, 0, 'G' },
     { "gray",          0, 0, 'g' },
     { "grey",          0, 0, 'g' },
@@ -149,13 +151,14 @@ main(int argc, char *argv[])
     epsf *par;
     char *outfile, *end;
     exception ex;
-    int cat;
+    int cat, dry_run;
 
     prg = argv[0];
 
     par = epsf_create_defaults();
     cat = 0;
     outfile = NULL;
+    dry_run = 0;
     
     opterr = 0;
     while ((c=getopt_long(argc, argv, OPTIONS, options, 0)) != EOF) {
@@ -188,6 +191,10 @@ main(int argc, char *argv[])
 	case 'm':
 	    if (epsf_set_margins(par, optarg, EPSF_MARG_ALL) < 0)
 		illegal_argument("margin", optarg);
+	    break;
+	case 'n':
+	    par->flags |= EPSF_FLAG_VERBOSE;
+	    dry_run = 1;
 	    break;
 	case 'O':
 	    if (epsf_set_orientation(par, optarg) < 0)
@@ -282,11 +289,13 @@ main(int argc, char *argv[])
 	st = NULL;
 	
 	if (catch(&ex) == 0) {
-	    if (cat)
-		st = stream_file_fopen(stdout, 0);
-	    else
-		st = stream_file_open(outfile);
-
+	    if (!dry_run) {
+		if (cat)
+		    st = stream_file_fopen(stdout, 0);
+		else
+		    st = stream_file_open(outfile);
+	    }
+	    
 	    epsf_process(st, argv[optind], par);
 	    drop();
 	}
@@ -311,7 +320,8 @@ main(int argc, char *argv[])
 		
 	    if (catch(&ex) == 0) {
 		outfile = extsubst(argv[i], "eps");
-		st = stream_file_open(outfile);
+		if (!dry_run)
+		    st = stream_file_open(outfile);
 		epsf_process(st, argv[i], par);
 		drop();
 	    }

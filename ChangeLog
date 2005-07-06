@@ -1,5 +1,10 @@
 2005-07-06  Dieter Baron  <dillo@danbala.tuwien.ac.at>
 
+	* src/img2eps.c (main): add -n option.
+	* src/epsf.c (epsf_process): don't output EPSF if st is NULL.
+	
+	* src/epsf.c (epsf_print_parameters): print bounding box
+	
 	* src/img2eps.c (main): new options -R.
 	* src/epsf.c (epsf_calculate_parameters, epsf_print_parameters,
 	epsf_write_data): use EPSF_FLAG_DIRECT_COPY.

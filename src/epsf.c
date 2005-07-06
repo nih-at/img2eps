@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.28 2005/06/20 21:56:22 dillo Exp $
+  $NiH: epsf.c,v 1.29 2005/07/06 14:23:23 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002, 2005 Dieter Baron
@@ -510,7 +510,9 @@ epsf_print_parameters(const epsf *ep)
 	   ep->level,
 	   (ep->flags & EPSF_FLAG_DIRECT_COPY ? ", direct copy" : ""));
     
-    /* XXX: bbox */
+    printf("    BBox: %d %d %d %d\n",
+	   ep->bbox.llx, ep->bbox.lly,
+	   ep->bbox.urx, ep->bbox.ury);
 }
 
 
@@ -530,12 +532,14 @@ epsf_process(stream *st, const char *fname, const epsf *par)
 	ep = epsf_create(par, st, im);
 
 	epsf_calculate_parameters(ep);
-	if (par->flags & EPSF_FLAG_VERBOSE)
+	if (ep->flags & EPSF_FLAG_VERBOSE)
 	    epsf_print_parameters(ep);
-	epsf_write_header(ep);
-	epsf_write_setup(ep);
-	epsf_write_data(ep);
-	epsf_write_trailer(ep);
+	if (st) {
+	    epsf_write_header(ep);
+	    epsf_write_setup(ep);
+	    epsf_write_data(ep);
+	    epsf_write_trailer(ep);
+	}
 	drop();
     }
 
