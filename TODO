@@ -1,12 +1,11 @@
 bugs:
 + [epsf] fix order transformation matrices
-+ [jpeg] fix PostScript error with pictures from Canon EOS 300D (direct copy)
+- [jpeg] fix PostScript error with pictures from Canon EOS 300D (direct copy)
 - [jpeg] fix direct-copy broken on level2 printers
 - [jpeg] 12bit DCT encode produces broken image data (jpeg lib limitation)
 . [jpeg2000] testfiles_jp2/file3.jp2: error reading component 1 of row 0
 
 enhancements:
-+ [ui] option to disable direct-copy
 + [ui] dry-run option (don't process, only print info)
 + [ui] more information in verbose mode
 - [image] allow cropping of image
@@ -27,7 +26,7 @@ enhancements:
 
 other:
 + [doc] regen .man
-+ [regress] fix tiff.test (image format not recognized on danbala)
+- [regress] fix tiff.test (image format not recognized on danbala)
 - [???] image_info: bit order
 - [regress] more tests
 . [regress] JPEG 2000, interlaced GIF

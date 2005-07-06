@@ -15,6 +15,7 @@ TESTCASES=	gif.test \
 		png-gray1.test \
 		png-2.test \
 		scale.test \
+		recompress.test \
 		tiff.test \
 		tiff-flate.test \
 		tiff-inv1.test \

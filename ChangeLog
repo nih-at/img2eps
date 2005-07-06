@@ -1,3 +1,12 @@
+2005-07-06  Dieter Baron  <dillo@danbala.tuwien.ac.at>
+
+	* src/img2eps.c (main): new options -R.
+	* src/epsf.c (epsf_calculate_parameters, epsf_print_parameters,
+	epsf_write_data): use EPSF_FLAG_DIRECT_COPY.
+	* src/epsf.c (epsf_create_defaults): set flags to default value.
+	* src/epsf.c (epsf_create): copy flags.
+	* src/epsf.h (EPSF_FLAG_DIRECT_COPY): new flag.
+
 2005-06-21  Thomas Klausner  <wiz@danbala.tuwien.ac.at>
 
 	* configure.in, doc/Makefile.am: man format handling without

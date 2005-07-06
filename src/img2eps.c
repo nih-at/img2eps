@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.17 2005/01/07 11:30:14 dillo Exp $
+  $NiH: img2eps.c,v 1.18 2005/01/07 12:03:03 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002, 2005 Dieter Baron
@@ -83,6 +83,7 @@ static const char help_tail[] = "\
   -P, --paper P          set paper size to P\n\
   -r, --resolution R     set resolution to R\n\
       --right-margin M   set right margin to M\n\
+  -R, --recompress       force recompression of image data\n\
   -S, --size S           set image size to S\n\
       --top-margin M     set top margin to M\n\
   -v, --verbose          be verbose\n\
@@ -104,7 +105,7 @@ enum {
     OPT_WIDTH
 };
 
-#define OPTIONS "hV123a:cC:gG:m:o:O:P:r:S:v"
+#define OPTIONS "hV123a:cC:gG:m:o:O:P:r:RS:v"
 
 static const struct option options[] = {
     { "help",          0, 0, 'h' },
@@ -124,6 +125,7 @@ static const struct option options[] = {
     { "output",        1, 0, 'o' },
     { "paper",         1, 0, 'P' },
     { "resolution",    1, 0, 'r' },
+    { "recompress",    1, 0, 'R' },
     { "right-margin",  1, 0, OPT_RIGHTM },
     { "size",          1, 0, 'S' },
     { "top-margin",    1, 0, OPT_TOPM },
@@ -201,6 +203,9 @@ main(int argc, char *argv[])
 	case 'r':
 	    if (epsf_set_resolution(par, optarg) < 0)
 		illegal_argument("resolution", optarg);
+	    break;
+	case 'R':
+	    par->flags &= ~EPSF_FLAG_DIRECT_COPY;
 	    break;
 	case 'S':
 	    if (epsf_set_image_size(par, optarg, EPSF_SIZE_BOTH) < 0)

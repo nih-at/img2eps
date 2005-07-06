@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.27 2005/06/20 21:17:39 dillo Exp $
+  $NiH: epsf.c,v 1.28 2005/06/20 21:56:22 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002, 2005 Dieter Baron
@@ -55,6 +55,7 @@
 #define DEFAULT_ORIENTATION	"portrait"
 #define DEFAULT_PAPER		"a4"
 #define DEFAULT_RESOLUTION	"-1"
+#define DEFAULT_FLAGS		EPSF_FLAG_DIRECT_COPY
 
 #define DEFAULT_L2_CMP	IMAGE_CMP_LZW
 #ifdef HAVE_LIBZ
@@ -335,7 +336,13 @@ epsf_calculate_parameters(epsf *ep)
 
     level = level2 > level ? level2 : level;
     
-    
+    /* check whether direct copy is possible */
+
+    if (ep->i.compression == IMAGE_CMP_NONE
+	|| ep->i.compression != ep->im->i.compression) {
+	ep->flags &= ~EPSF_FLAG_DIRECT_COPY;
+    }
+
     /* use best available encoding method */
 
     if (ep->ascii == EPSF_ASC_UNKNOWN) {
@@ -410,6 +417,7 @@ epsf_create(const epsf *par, stream *st, image *im)
     ep->placement = par->placement;
     ep->level = par->level;
     ep->i = par->i;
+    ep->flags = par->flags;
 
     return ep;
 }
@@ -433,6 +441,7 @@ epsf_create_defaults(void)
     ep->ascii = EPSF_ASC_UNKNOWN;
     ep->level = 0;
     image_init_info(&ep->i);
+    ep->flags = DEFAULT_FLAGS;
 
     return ep;
 }
@@ -499,9 +508,7 @@ epsf_print_parameters(const epsf *ep)
 	   image_info_print(&ep->i),
 	   epsf_asc_name(ep->ascii),
 	   ep->level,
-	   ((ep->i.compression != IMAGE_CMP_NONE
-	     && ep->i.compression == ep->im->i.compression)
-	    ? ", direct copy" : ""));
+	   (ep->flags & EPSF_FLAG_DIRECT_COPY ? ", direct copy" : ""));
     
     /* XXX: bbox */
 }
@@ -681,21 +688,18 @@ epsf_set_resolution(epsf *ep, const char *r)
 int
 epsf_write_data(epsf *ep)
 {
-    int i, n, raw;
+    int i, n;
     char *b;
     stream *st, *st2;
     volatile int imread_open;
     exception ex, ex2, *exp;
-
-    raw = (ep->i.compression != IMAGE_CMP_NONE
-	   && ep->i.compression == ep->im->i.compression);
 
     st = st2 = NULL;
     imread_open = 0;
     if (catch(&ex) == 0) {
 	st2 = stream_ascii_open(ep->st, ep->ascii, ep->level > 1);
 
-	if (raw) {
+	if (ep->flags & EPSF_FLAG_DIRECT_COPY) {
 	    image_raw_read_start(ep->im);
 	    imread_open = 1;
 
@@ -727,7 +731,7 @@ epsf_write_data(epsf *ep)
     exp = (ex.code ? &ex2 : &ex);
     if (catch(exp) == 0) {
 	if (imread_open) {
-	    if (raw)
+	    if (ep->flags & EPSF_FLAG_DIRECT_COPY)
 		image_raw_read_finish(ep->im, 1);
 	    else
 		image_read_finish(ep->im, 1);

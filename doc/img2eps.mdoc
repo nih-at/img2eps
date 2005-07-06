@@ -1,4 +1,4 @@
-.\"  $NiH: img2eps.mdoc,v 1.12 2005/01/07 11:30:35 dillo Exp $
+.\"  $NiH: img2eps.mdoc,v 1.13 2005/01/07 11:38:07 wiz Exp $
 .\"
 .\"  img2eps.mdoc -- man page for img2eps(1)
 .\"  Copyright (C) 2002, 2005 Dieter Baron and Thomas Klausner
@@ -56,6 +56,7 @@
 .Op Fl o | Fl -output Ar FILE
 .Op Fl P | Fl -paper Ar P
 .Op Fl r | Fl -resolution Ar R
+.Op Fl R | Fl -recompress
 .Op Fl -right-margin Ar M
 .Op Fl s | Fl -size Ar S
 .Op Fl -top-margin Ar M
@@ -243,6 +244,11 @@ Specify the resolution to print the image at, in dpi (dots per inch).
 can be a number to specify equal horizontal and vertical resolution
 or a pair of numbers (see below) to specify horizontal and vertical
 resolutions separately.
+.It Fl R
+.It Fl -recompress
+Force recompression of image data, even if a direct copy would be
+possible.  This might be necessary since PostScript stricter image
+data constraints than other image manipulation software.
 .It Fl -right-margin Ar M
 Set right margin to
 .Ar M ,

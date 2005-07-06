@@ -2,7 +2,7 @@
 #define HAD_EPSF_H
 
 /*
-  $NiH: epsf.h,v 1.10 2005/01/04 19:19:56 dillo Exp $
+  $NiH: epsf.h,v 1.11 2005/01/07 11:30:14 dillo Exp $
 
   epsf.h -- EPS file fragments
   Copyright (C) 2002, 2005 Dieter Baron
@@ -119,7 +119,8 @@ struct epsf {
 
 typedef struct epsf epsf;
 
-#define EPSF_FLAG_VERBOSE	1
+#define EPSF_FLAG_VERBOSE	0x1
+#define EPSF_FLAG_DIRECT_COPY	0x2
 
 
 
