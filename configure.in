@@ -3,7 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl init
 
 AC_PREREQ(2.50)
-AC_REVISION([$NiH: configure.in,v 1.19 2005/06/20 21:17:38 dillo Exp $])
+AC_REVISION([$NiH: configure.in,v 1.20 2005/06/20 22:04:55 wiz Exp $])
 AC_INIT([img2eps], [0.1])
 AC_CONFIG_SRCDIR([src/im_gif.c])
 AC_CONFIG_HEADERS([config.h])
@@ -44,7 +44,8 @@ then
   PKG_CHECK_MODULES(EXIF, libexif,
 		    [CFLAGS="$EXIF_CFLAGS $CFLAGS"
 		     LIBS="$EXIF_LIBS $LIBS"
-		     have_exif=yes])
+		     have_exif=yes],
+		    [have_exif=no])
 fi
 if test "$with_png" = "yes"
 then
