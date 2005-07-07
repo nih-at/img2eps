@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.19 2005/07/06 14:23:24 dillo Exp $
+  $NiH: img2eps.c,v 1.20 2005/07/06 14:43:06 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002, 2005 Dieter Baron
@@ -89,7 +89,31 @@ static const char help_tail[] = "\
       --top-margin M     set top margin to M\n\
   -v, --verbose          be verbose\n\
       --width W          set image width to W\n\
-\n\
+\n"
+#if defined(USE_EXIF) || defined(USE_GIF) || defined(USE_JPEG) || defined(USE_JPEG2000) || defined(USE_PNG) || defined(USE_TIFF)
+"Support for the following optional features is included:\n\
+\t"
+#ifdef USE_EXIF
+" exif"
+#endif
+#ifdef USE_GIF
+" gif"
+#endif
+#ifdef USE_JPEG
+" jpeg"
+#endif
+#ifdef USE_JPEG2000
+" jpeg2000"
+#endif
+#ifdef USE_PNG
+" png"
+#endif
+#ifdef USE_TIFF
+" tiff"
+#endif
+"\n"
+#endif /* any optional feature */
+"\n\
 Report bugs to <dillo@giga.or.at>.\n";
 
 static const char usage[] =
