@@ -1,4 +1,4 @@
-.\"  $NiH: img2eps.mdoc,v 1.14 2005/07/06 14:23:23 dillo Exp $
+.\"  $NiH: img2eps.mdoc,v 1.15 2005/07/06 14:43:05 dillo Exp $
 .\"
 .\"  img2eps.mdoc -- man page for img2eps(1)
 .\"  Copyright (C) 2002, 2005 Dieter Baron and Thomas Klausner
@@ -32,7 +32,7 @@
 .\"  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 .\"  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd January 7, 2005
+.Dd July 7, 2005
 .Dt IMG2EPS 1
 .Os
 .Sh NAME
@@ -49,6 +49,7 @@
 .Op Fl g | -gray | -grey
 .Op Fl h | Fl -help
 .Op Fl -height Ar H
+.Op Fl -ignore-order
 .Op Fl -left-margin Ar M
 .Op Fl -level
 .Op Fl m | Fl -margin Ar M
@@ -170,6 +171,9 @@ The width will be computed to keep the aspect ratio of the original image.
 .It Fl h
 .It Fl -help
 Display a short help message.
+.It Fl -ignore-order
+Ignore pixel order information from image and assume row major
+left to right, top to bottom.
 .It Fl -left-margin Ar M
 Set left margin to
 .Ar M ,
@@ -329,8 +333,7 @@ compression method of the image is used.
 If the image is compressed with DCT (jpeg), DCT compression is used
 even if recompression is necessary.
 Otherwise, the best lossless compression method available is used,
-which is Flate for language level 3, LZW (or RunLength if LZW encoding
-is disabled) for language level 2.
+which is Flate for language level 3 and LZW for language level 2.
 Language level 1 disallows compression altogether.
 .Pp
 ASCII85 encoding is used for language level 2 or 3, ASCIIHEX for
@@ -338,7 +341,7 @@ language level 1.
 .Pp
 If no language level is specified, the lowest level that supports the
 color space type, depth, and, for direct copy or DCT encoding, the
-compression method is used.
+compression method used.
 .Sh EXIT STATUS
 The
 .Nm
@@ -361,6 +364,14 @@ The manual page was written with the help of
 The LZW compression routines and various library function replacements
 (for portability) were taken from the NetBSD Project.
 .Sh BUGS
+Since PostScript's JPEG decoder is stricter than most software
+implementations, directly copying JPEG compressed data causes
+PostScript errors for some images.  This is not detected by
+.Nm .
+Use
+.Fl R ( -recompress )
+for such images.
+.Pp
 Emulation of the colorimage operator is provided only for 8bit RGB
 images.
 (The presence of the operator is assumed for other color formats.)

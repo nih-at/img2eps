@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.20 2005/07/06 14:43:06 dillo Exp $
+  $NiH: img2eps.c,v 1.21 2005/07/07 09:04:44 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002, 2005 Dieter Baron
@@ -75,6 +75,7 @@ static const char help_tail[] = "\
   -G, --gravity G        set gravity to G\n\
   -g, --gray             force image to gray scale\n\
       --height H         set image height to H\n\
+      --ignore-order     ignore pixel order information from image\n\
       --left-margin M    set left margin to M\n\
       --level L          use language level L\n\
   -m, --margin M         set all margins to M\n\
@@ -123,6 +124,7 @@ static const char usage[] =
 enum {
     OPT_BOTTOMM = 256,
     OPT_HEIGHT,
+    OPT_IGNORE_ORDER,
     OPT_LEFTM,
     OPT_LEVEL,
     OPT_RIGHTM,
@@ -144,6 +146,7 @@ static const struct option options[] = {
     { "gray",          0, 0, 'g' },
     { "grey",          0, 0, 'g' },
     { "height",        1, 0, OPT_HEIGHT },
+    { "ignore-order",  0, 0, OPT_IGNORE_ORDER },
     { "left-margin",   1, 0, OPT_LEFTM },
     { "level",         1, 0, OPT_LEVEL },
     { "margin",        1, 0, 'm' },
@@ -252,6 +255,9 @@ main(int argc, char *argv[])
 	case OPT_HEIGHT:
 	    if (epsf_set_image_size(par, optarg, EPSF_SIZE_HEIGHT) < 0)
 		illegal_argument("image height", optarg);
+	    break;
+	case OPT_IGNORE_ORDER:
+	    par->flags |= EPSF_FLAG_IGNORE_ORDER;
 	    break;
 	case OPT_LEFTM:
 	    if (epsf_set_margins(par, optarg, EPSF_MARG_LEFT) < 0)

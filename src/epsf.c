@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.30 2005/07/06 14:43:06 dillo Exp $
+  $NiH: epsf.c,v 1.31 2005/07/07 00:43:12 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002, 2005 Dieter Baron
@@ -369,6 +369,14 @@ epsf_calculate_parameters(epsf *ep)
     else
 	ep->i.cspace.inverted = ep->im->i.cspace.inverted;
 
+
+    /* pixel order */
+
+    if (ep->flags & EPSF_FLAG_IGNORE_ORDER)
+	ep->i.order = IMAGE_ORD_ROW_LT;
+    else
+	ep->i.order = ep->im->i.order;
+    
 
     /* calculate image placement and bounding box */
 
@@ -838,7 +846,7 @@ _calculate_bbox(epsf *ep)
 
     ep->orientation = ep->placement.orientation;
 
-    if (image_order_swapped(ep->im->i.order)) {
+    if (image_order_swapped(ep->i.order)) {
 	imw = ep->im->i.height;
 	imh = ep->im->i.width;
     }
