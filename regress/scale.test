@@ -2,10 +2,9 @@
 #   image: 320x200 indexed 8bps (rgb 8bps)
 #    EPSF: 320x200 indexed 8bps (rgb 8bps), flate compressed, ASCII85, level 3
 #
-#	$NiH: gif.test,v 1.2 2002/10/11 23:30:20 dillo Exp $
+#	$NiH: scale.test,v 1.1 2005/06/20 21:56:21 dillo Exp $
 #
-features GIF
 return 0
 options -S10x15cm
-input porsche.gif
-output scale.eps porsche.eps
+input xpdf.xpm
+output scale.eps xpdf.eps

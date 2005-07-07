@@ -8,6 +8,7 @@ TESTCASES=	gif.test \
 		jpg-gray.test \
 		jpg-lzw.test \
 		level1.test \
+		order.test \
 		ori-auto.test \
 		pal-gray.test \
 		pal-gray12.test\
@@ -30,6 +31,7 @@ TESTCASES=	gif.test \
 INPUTS=		col.jpg \
 		col.tif \
 		dump.tif \
+		exif.jpg \
 		fax2d.tif \
 		flate.tif \
 		idx1.xpm \
@@ -52,11 +54,15 @@ OUTPUTS=	gif.eps \
 		jpg-gray.eps \
 		jpg-lzw.eps \
 		level1.eps \
+		order.eps \
+		order-ignore.eps \
+		ori-auto.eps \
 		pal-gray.eps \
 		pal-gray12.eps \
 		png-1.eps \
 		png-gray1.eps \
 		png-2.eps \
+		recompress.eps \
 		scale.eps \
 		tiff.eps \
 		tiff-flate.eps \

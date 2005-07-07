@@ -1,0 +1,8 @@
+# jpeg, direct copy of compressed data, exif rotated
+#
+#	$NiH$
+#
+features JPEG EXIF
+return 0
+input exif.jpg
+output order.eps exif.eps

@@ -1,0 +1,9 @@
+# jpeg, direct copy of compressed data, exif rotation ignored
+#
+#	$NiH$
+#
+features JPEG EXIF
+return 0
+options --ignore-order
+input exif.jpg
+output order.eps exif.eps
