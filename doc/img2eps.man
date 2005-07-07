@@ -1,6 +1,6 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: img2eps.mdoc,v 1.14 2005/07/06 14:23:23 dillo Exp 
-.\"  $NiH: img2eps.mdoc,v 1.14 2005/07/06 14:23:23 dillo Exp $
+.\" from NiH: img2eps.mdoc,v 1.15 2005/07/06 14:43:05 dillo Exp 
+.\"  $NiH: img2eps.mdoc,v 1.15 2005/07/06 14:43:05 dillo Exp $
 .\"
 .\"  img2eps.mdoc \-- man page for img2eps(1)
 .\"  Copyright (C) 2002, 2005 Dieter Baron and Thomas Klausner
@@ -34,7 +34,7 @@
 .\"  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 .\"  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.TH IMG2EPS 1 "January 7, 2005" NiH
+.TH IMG2EPS 1 "July 7, 2005" NiH
 .SH "NAME"
 img2eps \- package raster images into EPS file
 .SH "SYNOPSIS"
@@ -48,9 +48,11 @@ img2eps \- package raster images into EPS file
 [\fB-g\fR | \-gray | \-grey]
 [\fB-h\fR | \fB--help\fR]
 [\fB--height\fR \fBH\fR]
+[\fB--ignore-order\fR]
 [\fB--left-margin\fR \fBM\fR]
 [\fB--level\fR]
 [\fB-m\fR | \fB--margin\fR \fBM\fR]
+[\fB-n\fR | \fB--dry-run\fR]
 [\fB-O\fR | \fB--orientation\fR \fBO\fR]
 [\fB-o\fR | \fB--output\fR \fBFILE\fR]
 [\fB-P\fR | \fB--paper\fR \fBP\fR]
@@ -186,6 +188,10 @@ The width will be computed to keep the aspect ratio of the original image.
 \fB--help\fR
 Display a short help message.
 .TP 20
+\fB--ignore-order\fR
+Ignore pixel order information from image and assume row major
+left to right, top to bottom.
+.TP 20
 \fB--left-margin\fR \fBM\fR
 Set left margin to
 \fBM,\fR
@@ -207,6 +213,11 @@ options.
 Set all margins to
 \fBM,\fR
 which should be a dimen (see below).
+.TP 20
+\fB-n\fR
+.TP 20
+\fB-dry-run\fR
+Don't create EPSF, only print information about what would have been done.
 .TP 20
 \fB-O\fR \fBO\fR
 .TP 20
@@ -367,8 +378,7 @@ compression method of the image is used.
 If the image is compressed with DCT (jpeg), DCT compression is used
 even if recompression is necessary.
 Otherwise, the best lossless compression method available is used,
-which is Flate for language level 3, LZW (or RunLength if LZW encoding
-is disabled) for language level 2.
+which is Flate for language level 3 and LZW for language level 2.
 Language level 1 disallows compression altogether.
 .PP
 ASCII85 encoding is used for language level 2 or 3, ASCIIHEX for
@@ -376,7 +386,7 @@ language level 1.
 .PP
 If no language level is specified, the lowest level that supports the
 color space type, depth, and, for direct copy or DCT encoding, the
-compression method is used.
+compression method used.
 .SH "EXIT STATUS"
 The
 .B img2eps
@@ -399,6 +409,14 @@ Thomas Klausner <tk@giga.or.at.>
 The LZW compression routines and various library function replacements
 (for portability) were taken from the NetBSD Project.
 .SH "BUGS"
+Since PostScript's JPEG decoder is stricter than most software
+implementations, directly copying JPEG compressed data causes
+PostScript errors for some images.  This is not detected by
+.Nm.
+Use
+\fB-R\fR ( \-recompress )
+for such images.
+.PP
 Emulation of the colorimage operator is provided only for 8bit RGB
 images.
 (The presence of the operator is assumed for other color formats.)
