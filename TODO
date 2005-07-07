@@ -1,4 +1,5 @@
 bugs:
++ [config] don't abort on missing libexif
 . [jpeg] 12bit DCT encode produces broken image data (jpeg lib limitation)
 . [jpeg] fix direct-copy broken on level2 printers
 . [jpeg] fix PostScript error with pictures from Canon EOS 300D (direct copy)
@@ -6,6 +7,7 @@ bugs:
 
 enhancements:
 - [ui] force specific color space / depth
+- [ui] in verbose mode: orientation, bit/byte order
 . [image] allow cropping of image
 . [image] allow bitmap-scaling of image
 . [image] multi-page images (TIFF, MNG, animated GIF)
