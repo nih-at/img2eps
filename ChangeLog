@@ -1,5 +1,13 @@
 2005-07-07  Dieter Baron  <dillo@danbala.tuwien.ac.at>
 
+	* src/img2eps.c (main): new option --ignore-order.
+	* src/epsf.c (epsf_calculate_parameters, _calculate_bbox): handle
+	EPSF_FLAG_IGNORE_ORDER.
+	* src/epsf.h (EPSF_FLAG_IGNORE_ORDER): new flag.
+
+	* src/img2eps.c (help_tail): include list of optional libraries
+	for which support is enabled.
+
 	* src/image.c (image_info_print): return const char *.
 
 	* src/image.h (image_order_swapped): IMAGE_ORD_ROW_RB is not
@@ -14,7 +22,7 @@
 	
 	* src/epsf.c (epsf_print_parameters): print bounding box
 	
-	* src/img2eps.c (main): new options -R.
+	* src/img2eps.c (main): new option -R.
 	* src/epsf.c (epsf_calculate_parameters, epsf_print_parameters,
 	epsf_write_data): use EPSF_FLAG_DIRECT_COPY.
 	* src/epsf.c (epsf_create_defaults): set flags to default value.

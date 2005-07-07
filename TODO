@@ -1,5 +1,4 @@
 bugs:
-+ [doc] jpeg direct copy may break on printers
 . [jpeg] 12bit DCT encode produces broken image data (jpeg lib limitation)
 . [jpeg] fix direct-copy broken on level2 printers
 . [jpeg] fix PostScript error with pictures from Canon EOS 300D (direct copy)
@@ -7,7 +6,6 @@ bugs:
 
 enhancements:
 - [ui] in verbose mode: orientation, bit/byte order
-- [ui] option to ignore image orientation
 . [ui] force specific color space / depth
 . [image] allow cropping of image
 . [image] allow bitmap-scaling of image
@@ -27,8 +25,6 @@ enhancements:
 
 other:
 - [regress] more tests
-- [regress] exif orientation
-- [regress] scale: use xpm
 - [image] image_info: bit order
 . [regress] JPEG 2000, interlaced GIF
 . [doc] internal documentation
