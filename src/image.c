@@ -1,5 +1,5 @@
 /*
-  $NiH: image.c,v 1.15 2002/10/13 01:35:49 dillo Exp $
+  $NiH: image.c,v 1.16 2002/11/13 01:41:39 dillo Exp $
 
   image.c -- general image functions
   Copyright (C) 2002 Dieter Baron
@@ -324,7 +324,7 @@ image_info_mask(const image_info *i)
 
 
 
-char *
+const char *
 image_info_print(const image_info *i)
 {
     static char b[8192];

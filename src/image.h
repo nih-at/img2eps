@@ -2,7 +2,7 @@
 #define _HAD_IMAGE_H
 
 /*
-  $NiH: image.h,v 1.14 2005/01/06 17:03:55 dillo Exp $
+  $NiH: image.h,v 1.15 2005/07/07 00:42:55 dillo Exp $
 
   image.h -- image header
   Copyright (C) 2002 Dieter Baron
@@ -253,7 +253,7 @@ int image_cspace_palette_size(const image_cspace *);
 void image_free(image *);
 int image_get_row_size(const image *);
 int image_info_mask(const image_info *);
-char *image_info_print(const image_info *);
+const char *image_info_print(const image_info *);
 
 /* external interface */
 
