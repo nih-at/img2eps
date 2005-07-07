@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.29 2005/07/06 14:23:23 dillo Exp $
+  $NiH: epsf.c,v 1.30 2005/07/06 14:43:06 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002, 2005 Dieter Baron
@@ -1117,7 +1117,7 @@ _write_image_matrix(epsf *ep)
     /* keep in sync with enum image_order in image.h */
     static const char *matrix[] = {
 	NULL, "w00H0h", "w00h00", "W00Hwh", "W00hw0",
-	"0hw00h", "0hW000", "0HW0wh", "0HW0w0"
+	"0Hw00h", "0hw000", "0HW0wh", "0hW0w0"
     };
 
     char b[128], *s;

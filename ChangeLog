@@ -1,3 +1,10 @@
+2005-07-07  Dieter Baron  <dillo@danbala.tuwien.ac.at>
+
+	* src/image.h (image_order_swapped): IMAGE_ORD_ROW_RB is not
+	swapped.
+	* src/epsf.c (_write_image_matrix): fix image_order transformation
+	matrices.
+
 2005-07-06  Dieter Baron  <dillo@danbala.tuwien.ac.at>
 
 	* src/img2eps.c (main): add -n option.

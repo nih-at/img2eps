@@ -1,5 +1,4 @@
 bugs:
-+ [epsf] fix order transformation matrices
 . [jpeg] 12bit DCT encode produces broken image data (jpeg lib limitation)
 . [jpeg] fix direct-copy broken on level2 printers
 . [jpeg] fix PostScript error with pictures from Canon EOS 300D (direct copy)
