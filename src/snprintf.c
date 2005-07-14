@@ -1,4 +1,4 @@
-/*	$NiH$	*/
+/*	$NiH: snprintf.c,v 1.1 2002/10/10 15:22:14 dillo Exp $	*/
 /*	$NetBSD: snprintf.c,v 1.2 2002/01/31 19:23:14 tv Exp $	*/
 
 /*
@@ -39,7 +39,7 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #if 0
-RCSID("$Id: snprintf.c,v 1.2 2002/01/31 19:23:14 tv Exp $");
+RCSID("$Id: snprintf.c,v 1.1 2002/10/10 15:22:14 dillo Exp $");
 #endif
 #endif
 #include <stdio.h>
@@ -336,7 +336,9 @@ xyzprintf (struct state *state, const char *char_format, va_list ap)
       int flags          = 0;
       int width          = 0;
       int prec           = -1;
+#ifdef HAVE_LONG_LONG
       int long_long_flag = 0;
+#endif
       int long_flag      = 0;
       int short_flag     = 0;
 
@@ -397,7 +399,9 @@ xyzprintf (struct state *state, const char *char_format, va_list ap)
 	long_flag = 1;
 	c = *format++;
 	if (c == 'l') {
+#ifdef HAVE_LONG_LONG
 	    long_long_flag = 1;
+#endif
 	    c = *format++;
 	}
       }
