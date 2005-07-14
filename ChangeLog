@@ -1,5 +1,7 @@
 2005-07-14  Dieter Baron  <dillo@danbala.tuwien.ac.at>
 
+	* configure.in: bump version to 0.2.
+
 	* src/epsf.c (_calculate_bbox): explicitly convert double to int
 	for consistency across platforms.
 
