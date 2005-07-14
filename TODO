@@ -5,7 +5,7 @@ bugs:
 . [jpeg2000] testfiles_jp2/file3.jp2: error reading component 1 of row 0
 
 enhancements:
-- [ui] in verbose mode: orientation, bit/byte order
+. [ui] in verbose mode: orientation, bit/byte order
 . [ui] force specific color space / depth
 . [image] allow cropping of image
 . [image] allow bitmap-scaling of image
@@ -24,9 +24,8 @@ enhancements:
 . [epsf] pdf output
 
 other:
-+ [regress] sunsite: Killed
-- [regress] more tests
-- [image] image_info: bit order
+. [regress] more tests
+. [image] image_info: bit order
 . [regress] JPEG 2000, interlaced GIF
 . [doc] internal documentation
 . [???] predictors
