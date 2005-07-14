@@ -2,7 +2,7 @@
 #define _HAD_IMAGE_H
 
 /*
-  $NiH: image.h,v 1.15 2005/07/07 00:42:55 dillo Exp $
+  $NiH: image.h,v 1.16 2005/07/07 06:31:53 dillo Exp $
 
   image.h -- image header
   Copyright (C) 2002 Dieter Baron
@@ -231,13 +231,15 @@ struct image_functions name##_functions  = {	\
 						fname))
 
 
-extern const struct _num_name _image_nn_cspace[];
 extern const struct _num_name _image_nn_compression[];
+extern const struct _num_name _image_nn_cspace[];
 
-#define image_cspace_name(a)	(num2name(_image_nn_cspace, (a), 2))
 #define image_compression_name(a) (num2name(_image_nn_compression, (a), 2))
-#define image_cspace_num(a)	(name2num(_image_nn_cspace, (a)))
-#define image_compression_num(a) (name2num(_image_nn_compression, (a)))
+#define image_compression_num(a) \
+	((image_compression)name2num(_image_nn_compression, (a)))
+#define image_cspace_name(a)	(num2name(_image_nn_cspace, (a), 2))
+#define image_cspace_num(a)	\
+	((image_cs_type)name2num(_image_nn_cspace, (a)))
 
 #define image_order_swapped(o)	((o)>4)
 

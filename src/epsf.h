@@ -2,7 +2,7 @@
 #define HAD_EPSF_H
 
 /*
-  $NiH: epsf.h,v 1.12 2005/07/06 14:23:23 dillo Exp $
+  $NiH: epsf.h,v 1.13 2005/07/07 09:30:34 dillo Exp $
 
   epsf.h -- EPS file fragments
   Copyright (C) 2002, 2005 Dieter Baron
@@ -129,13 +129,13 @@ extern const struct _num_name _epsf_nn_asc[];
 extern const struct _num_name _epsf_nn_ori[];
 
 #define epsf_asc_name(a)	(num2name(_epsf_nn_asc, (a), 1))
-#define epsf_asc_num(a)		(name2num(_epsf_nn_asc, (a)))
+#define epsf_asc_num(a)		((epsf_ascii)name2num(_epsf_nn_asc, (a)))
 
 #define epsf_grav_name(a)	(num2name(_epsf_nn_grav, (a), 1))
-#define epsf_grav_num(a)	(name2num(_epsf_nn_grav, (a)))
+#define epsf_grav_num(a)	((epsf_gravity)name2num(_epsf_nn_grav, (a)))
 
 #define epsf_ori_name(a)	(num2name(_epsf_nn_ori, (a), 1))
-#define epsf_ori_num(a)		(name2num(_epsf_nn_ori, (a)))
+#define epsf_ori_num(a)		((epsf_orientation)name2num(_epsf_nn_ori, (a)))
 
 #define epsf_cspace_name(a)	(num2name(_image_nn_cspace, (a), 1))
 #define epsf_compression_name(a) (num2name(_image_nn_compression, (a), 1))

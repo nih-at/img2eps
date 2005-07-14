@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.31 2005/07/07 00:43:12 dillo Exp $
+  $NiH: epsf.c,v 1.32 2005/07/07 09:30:34 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002, 2005 Dieter Baron
@@ -636,16 +636,15 @@ epsf_set_margins(epsf *ep, const char *m, int which)
 int
 epsf_set_orientation(epsf *ep, const char *orientation)
 {
-    int i;
+    epsf_orientation i;
     
     i = epsf_ori_num(orientation);
 
-    if (i >= 0) {
-	ep->placement.orientation = i;
-	return 0;
-    }
-
-    return -1;
+    if (i == EPSF_ORI_UNKNOWN)
+	return -1;
+    
+    ep->placement.orientation = i;
+    return 0;
 }
 
 

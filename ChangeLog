@@ -1,3 +1,15 @@
+2005-07-14  Dieter Baron  <dillo@danbala.tuwien.ac.at>
+
+	* src/epsf.h (epsf_asc_num, epsf_grav_num, epsf_ori_num),
+	src/image.h (image_compression_num, image_cspace_num) : cast to
+	correct enum type.
+
+	* src/epsf.c (epsf_set_orientation): use correct enum type for
+	variable.
+
+	* src/snprintf.c (xyzprintf): declare/use long_long_flag only if
+	we have long long.
+
 2005-07-07  Dieter Baron  <dillo@danbala.tuwien.ac.at>
 
 	* src/img2eps.c (main): new option --ignore-order.
