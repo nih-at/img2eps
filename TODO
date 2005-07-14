@@ -24,7 +24,6 @@ enhancements:
 . [epsf] pdf output
 
 other:
-+ [regress] fsmat: bbox width off by one
 + [regress] sunsite: Killed
 - [regress] more tests
 - [image] image_info: bit order

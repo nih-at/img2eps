@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.32 2005/07/07 09:30:34 dillo Exp $
+  $NiH: epsf.c,v 1.33 2005/07/14 12:39:40 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002, 2005 Dieter Baron
@@ -36,6 +36,7 @@
 
 
 #include <errno.h>
+#include <math.h>
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
@@ -178,6 +179,8 @@ const struct _num_name _epsf_nn_asc[] = {
 };
 
 
+
+#define TOINT(d)	((int)(floor((d)+0.1)))
 
 static void _calculate_bbox(epsf *ep);
 static double _calculate_scale(int, int, int, int);
@@ -868,22 +871,22 @@ _calculate_bbox(epsf *ep)
 	    throws(EINVAL, "both image size and resolution specified");
 
 	if (ep->placement.image_width <= 0) {
-	    imh *= ep->placement.image_width/(double)imw;
-	    imw = ep->placement.image_width;
+	    imh = TOINT(imh * (ep->placement.image_width/(double)imw));
+	    imw = TOINT(ep->placement.image_width);
 	}
 	else if (ep->placement.image_height <= 0) {
-	    imw *= ep->placement.image_height/(double)imh;
-	    imh = ep->placement.image_height;
+	    imw = TOINT(imw * (ep->placement.image_height/(double)imh));
+	    imh = TOINT(ep->placement.image_height);
 	}
 	else {
-	    imw = ep->placement.image_width;
-	    imh = ep->placement.image_height;
+	    imw = TOINT(ep->placement.image_width);
+	    imh = TOINT(ep->placement.image_height);
 	}
     }
     else {
 	if (ep->placement.resolution_x >= 0) {
-	    imw *= 72.0/(double)ep->placement.resolution_x;
-	    imh *= 72.0/(double)ep->placement.resolution_y;
+	    imw = TOINT(imw * (72.0/(double)ep->placement.resolution_x));
+	    imh = TOINT(imh * (72.0/(double)ep->placement.resolution_y));
 	}
 	else {
 	    if (pw < 0)
@@ -902,8 +905,8 @@ _calculate_bbox(epsf *ep)
 		    ep->orientation = EPSF_ORI_PORTRAIT;
 	    }
 
-	    imw *= scale;
-	    imh *= scale;
+	    imw = TOINT(imw * scale);
+	    imh = TOINT(imh * scale);
 	}
     }
     
@@ -925,14 +928,14 @@ _calculate_bbox(epsf *ep)
     if (pw < 0)
 	ep->bbox.llx = ep->bbox.llx = 0;
     else {
-	ep->bbox.llx = ep->placement.left_margin;
-	ep->bbox.lly = ep->placement.bottom_margin;
+	ep->bbox.llx = TOINT(ep->placement.left_margin);
+	ep->bbox.lly = TOINT(ep->placement.bottom_margin);
 
 	if (imw > pw || imh > ph) {
 	    /* XXX: warning: image bigger than printable area */
 	}
-	ep->bbox.llx += (pw-imw) * ep->placement.gravity_x;
-	ep->bbox.lly += (ph-imh) * ep->placement.gravity_y;
+	ep->bbox.llx += TOINT((pw-imw) * ep->placement.gravity_x);
+	ep->bbox.lly += TOINT((ph-imh) * ep->placement.gravity_y);
     }
 
     ep->bbox.urx = ep->bbox.llx + imw;

@@ -1,5 +1,8 @@
 2005-07-14  Dieter Baron  <dillo@danbala.tuwien.ac.at>
 
+	* src/epsf.c (_calculate_bbox): explicitly convert double to int
+	for consistency across platforms.
+
 	* src/epsf.h (epsf_asc_num, epsf_grav_num, epsf_ori_num),
 	src/image.h (image_compression_num, image_cspace_num) : cast to
 	correct enum type.
