@@ -1,4 +1,4 @@
-.\"  $NiH: img2eps.mdoc,v 1.15 2005/07/06 14:43:05 dillo Exp $
+.\"  $NiH: img2eps.mdoc,v 1.16 2005/07/07 09:30:33 dillo Exp $
 .\"
 .\"  img2eps.mdoc -- man page for img2eps(1)
 .\"  Copyright (C) 2002, 2005 Dieter Baron and Thomas Klausner
@@ -163,11 +163,12 @@ bottom-right
 .It Fl g
 .It Fl -gray
 Convert image to grayscale.
-.It Fl height Ar H
+.It Fl -height Ar H
 Specify the height of the image to be
 .Ar H ,
 which should be a dimen (see below).
-The width will be computed to keep the aspect ratio of the original image.
+If the width is not specified also, it will be computed to keep the
+aspect ratio of the original image.
 .It Fl h
 .It Fl -help
 Display a short help message.
@@ -193,7 +194,7 @@ Set all margins to
 .Ar M ,
 which should be a dimen (see below).
 .It Fl n
-.It Fl dry-run
+.It Fl -dry-run
 Don't create EPSF, only print information about what would have been done.
 .It Fl O Ar O
 .It Fl -orientation Ar O
@@ -273,11 +274,12 @@ which should be a dimen (see below).
 .It Fl V
 .It Fl -version
 Display version number.
-.It Fl width Ar W
+.It Fl -width Ar W
 Specify the width of the image to be
 .Ar W ,
 which should be a dimen (see below).
-The height will be computed to keep the aspect ratio of the original image.
+If the height is not specified also, it will be computed to keep the
+aspect ratio of the original image.
 .El
 .Ss Dimens and Pairs
 A dimen is a number optionally followed by a unit.
