@@ -1,6 +1,6 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: img2eps.mdoc,v 1.15 2005/07/06 14:43:05 dillo Exp 
-.\"  $NiH: img2eps.mdoc,v 1.15 2005/07/06 14:43:05 dillo Exp $
+.\" from NiH: img2eps.mdoc,v 1.17 2005/07/15 10:07:59 dillo Exp 
+.\"  $NiH: img2eps.mdoc,v 1.17 2005/07/15 10:07:59 dillo Exp $
 .\"
 .\"  img2eps.mdoc \-- man page for img2eps(1)
 .\"  Copyright (C) 2002, 2005 Dieter Baron and Thomas Klausner
@@ -177,11 +177,12 @@ bottom-right
 \fB--gray\fR
 Convert image to grayscale.
 .TP 20
-\fB-height\fR \fBH\fR
+\fB--height\fR \fBH\fR
 Specify the height of the image to be
 \fBH,\fR
 which should be a dimen (see below).
-The width will be computed to keep the aspect ratio of the original image.
+If the width is not specified also, it will be computed to keep the
+aspect ratio of the original image.
 .TP 20
 \fB-h\fR
 .TP 20
@@ -216,7 +217,7 @@ which should be a dimen (see below).
 .TP 20
 \fB-n\fR
 .TP 20
-\fB-dry-run\fR
+\fB--dry-run\fR
 Don't create EPSF, only print information about what would have been done.
 .TP 20
 \fB-O\fR \fBO\fR
@@ -318,11 +319,12 @@ which should be a dimen (see below).
 \fB--version\fR
 Display version number.
 .TP 15
-\fB-width\fR \fBW\fR
+\fB--width\fR \fBW\fR
 Specify the width of the image to be
 \fBW,\fR
 which should be a dimen (see below).
-The height will be computed to keep the aspect ratio of the original image.
+If the height is not specified also, it will be computed to keep the
+aspect ratio of the original image.
 .RE
 .SS "Dimens and Pairs"
 A dimen is a number optionally followed by a unit.
