@@ -1,4 +1,4 @@
-.\"  $NiH: img2eps.mdoc,v 1.18 2005/07/15 19:07:19 dillo Exp $
+.\"  $NiH: img2eps.mdoc,v 1.19 2005/07/19 09:54:52 dillo Exp $
 .\"
 .\"  img2eps.mdoc -- man page for img2eps(1)
 .\"  Copyright (C) 2002, 2005 Dieter Baron and Thomas Klausner
@@ -356,6 +356,7 @@ utility exits 0 on success, and \*[Gt]0 if an error occurs.
 .%D 1999
 .Re
 .Sh AUTHORS
+.An -nosplit
 .Nm
 was written by
 .An Dieter Baron Aq dillo@giga.or.at .
@@ -371,7 +372,8 @@ implementations, directly copying JPEG compressed data causes
 PostScript errors for some images.  This is not detected by
 .Nm .
 Use
-.Fl R ( -recompress )
+.Fl R
+.Pq Fl -recompress
 for such images.
 .Pp
 Emulation of the colorimage operator is provided only for 8bit RGB
