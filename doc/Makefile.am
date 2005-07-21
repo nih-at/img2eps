@@ -10,7 +10,7 @@ all-local: image.ps stream.ps
 	groff -Tps -mandoc $< > $@
 
 .mdoc.man:
-	mdoc2man $< > $@.$$$$ && diff -I NiH $@.$$$$ $@ || mv $@.$$$$ $@; \
+	mdoc2man $< > $@.$$$$ && diff -I NiH $@ $@.$$$$ || mv $@.$$$$ $@; \
 	rm -f $@.$$$$
 
 .mdoc.html:
