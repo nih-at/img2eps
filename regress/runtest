@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#  $NiH: runtest,v 1.5 2002/10/13 00:19:47 dillo Exp $
+#  $NiH: runtest,v 1.6 2002/10/16 13:41:17 dillo Exp $
 #
 #  runtest -- run regression tests
 #  Copyright (C) 2002 Dieter Baron and Thomas Klausner
@@ -48,7 +48,7 @@
 #
 #	stdout TEXT
 #	    img2pes is expected print TEXT to stdout.  If multiple
-#	    error commands are used, the messages are expected in
+#	    stdout commands are used, the messages are expected in
 #	    the order given. 
 #   
 #	error TEXT
