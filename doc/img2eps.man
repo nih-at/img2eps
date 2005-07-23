@@ -1,6 +1,6 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: img2eps.mdoc,v 1.18 2005/07/15 19:07:19 dillo Exp 
-.\"  $NiH: img2eps.mdoc,v 1.18 2005/07/15 19:07:19 dillo Exp $
+.\" from NiH: img2eps.mdoc,v 1.20 2005/07/19 17:59:03 dillo Exp 
+.\"  $NiH: img2eps.mdoc,v 1.20 2005/07/19 17:59:03 dillo Exp $
 .\"
 .\"  img2eps.mdoc \-- man page for img2eps(1)
 .\"  Copyright (C) 2002, 2005 Dieter Baron and Thomas Klausner
@@ -34,7 +34,7 @@
 .\"  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 .\"  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.TH IMG2EPS 1 "July 15, 2005" NiH
+.TH IMG2EPS 1 "July 19, 2005" NiH
 .SH "NAME"
 img2eps \- package raster images into EPS file
 .SH "SYNOPSIS"
@@ -294,8 +294,8 @@ resolutions separately.
 .TP 15
 \fB--recompress\fR
 Force recompression of image data, even if a direct copy would be
-possible.  This might be necessary since PostScript stricter image
-data constraints than other image manipulation software.
+possible.  This might be necessary since PostScript imposes stricter
+image data constraints than other image manipulation software.
 .TP 15
 \fB--right-margin\fR \fBM\fR
 Set right margin to
@@ -401,6 +401,7 @@ gs(1)
 .%D 1999
 .Re
 .SH "AUTHORS"
+
 .B img2eps
 was written by
 Dieter Baron <dillo@giga.or.at.>
@@ -417,7 +418,7 @@ PostScript errors for some images.  This is not detected by
 .Nm.
 Use
 \fB-R\fR
-.Pq \fB--recompress\fR
+(\fB--recompress\fR)
 for such images.
 .PP
 Emulation of the colorimage operator is provided only for 8bit RGB
