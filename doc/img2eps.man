@@ -416,7 +416,8 @@ implementations, directly copying JPEG compressed data causes
 PostScript errors for some images.  This is not detected by
 .Nm.
 Use
-\fB-R\fR ( \-recompress )
+\fB-R\fR
+.Pq \fB--recompress\fR
 for such images.
 .PP
 Emulation of the colorimage operator is provided only for 8bit RGB
