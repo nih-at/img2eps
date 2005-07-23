@@ -1,5 +1,5 @@
 /*
-  $NiH: im_xpm.c,v 1.5 2002/09/14 02:27:39 dillo Exp $
+  $NiH: im_xpm.c,v 1.6 2002/10/12 00:02:09 dillo Exp $
 
   im_xpm.c -- XPM (X Pixmap) image handling
   Copyright (C) 2002 Dieter Baron
@@ -290,7 +290,7 @@ xpm_read_start(image_xpm *im)
 void
 xpm_read_finish(image_xpm *im, int abortp)
 {
-    free (im->buf);
+    free(im->buf);
     im->buf = NULL;
 }
 
