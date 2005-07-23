@@ -1,5 +1,5 @@
 /*
-  $NiH: stream.c,v 1.9 2002/10/08 00:18:17 dillo Exp $
+  $NiH: stream.c,v 1.10 2002/10/12 00:02:13 dillo Exp $
 
   stream.c -- general stream functions
   Copyright (C) 2002 Dieter Baron
@@ -54,8 +54,6 @@ stream *(*_asc_tab[])(stream *, int) = {
     stream_ascii85_open
 };
 
-static stream *_cmp_unsupp(stream *, void *);
-
 /* keep in sync with enum image_compression in image.h */
 stream *(*_cmp_tab[])(stream *, void *) = {
     NULL,
@@ -63,7 +61,7 @@ stream *(*_cmp_tab[])(stream *, void *) = {
     stream_runlength_open,
     stream_lzw_open,
     stream_flate_open,
-    _cmp_unsupp, /* ccitt */
+    stream_ccitt_open,
     stream_dct_open
 };
 
@@ -159,13 +157,4 @@ int
 stream_puts(const char *s, stream *st)
 {
     return stream_write(st, s, strlen(s));
-}
-
-
-
-static stream *
-_cmp_unsupp(stream *st, void *params)
-{
-    throws(EOPNOTSUPP, "compression method not supported");
-    return NULL;
 }

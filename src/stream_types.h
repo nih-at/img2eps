@@ -2,7 +2,7 @@
 #define _HAD_STREAM_TYPES_H
 
 /*
-  $NiH: stream_types.h,v 1.10 2002/10/12 00:02:14 dillo Exp $
+  $NiH: stream_types.h,v 1.11 2003/12/14 09:50:42 dillo Exp $
 
   stream_types.h -- specific stream open functions
   Copyright (C) 2002 Dieter Baron
@@ -44,6 +44,7 @@
 
 stream *stream_ascii85_open(stream *, int);
 stream *stream_asciihex_open(stream *, int);
+stream *stream_ccitt_open(stream *, void *);
 stream *stream_dct_open(stream *, void *);
 stream *stream_file_fopen(FILE *, int);
 stream *stream_file_open(const char *);

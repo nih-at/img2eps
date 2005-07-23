@@ -12,10 +12,12 @@ img2eps_SOURCES=epsf.c \
 		im_jpeg2000.c \
 		im_png.c \
 		im_tiff.c \
+		im_xbm.c \
 		im_xpm.c \
 		stream.c \
 		st_ascii85.c \
 		st_asciihex.c \
+		st_ccitt.c \
 		st_dct.c \
 		st_file.c \
 		st_flate.c \

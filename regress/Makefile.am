@@ -1,6 +1,7 @@
 EXTRA_DIST=runtest ${TESTCASES} ${INPUTS} ${OUTPUTS}
 
-TESTCASES=	gif.test \
+TESTCASES=	fax.test \
+		gif.test \
 		idx1.test \
 		idx2.test \
 		idx4.test \

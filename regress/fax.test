@@ -1,0 +1,10 @@
+# jpeg, direct copy of compressed data
+#   image: 133x53 rgb 8bps, jpeg compressed
+#    EPSF: 133x53 rgb 8bps, jpeg compressed, ASCII85, level 2, direct copy
+#
+#	$NiH: jpg.test,v 1.3 2002/10/11 23:30:21 dillo Exp $
+#
+return 0
+options -Cfax
+input fax.xbm
+output fax.eps fax.eps

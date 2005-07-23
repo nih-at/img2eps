@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.33 2005/07/14 12:39:40 dillo Exp $
+  $NiH: epsf.c,v 1.34 2005/07/14 13:12:25 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002, 2005 Dieter Baron
@@ -1075,9 +1075,14 @@ _write_image_dict(epsf *ep)
 		  i->width, i->height, i->cspace.depth,
 		  epsf_asc_name(ep->ascii));
     /* XXX: handle other compression methods */
-    if (ep->i.compression != IMAGE_CMP_NONE)
+    if (ep->i.compression != IMAGE_CMP_NONE) {
+	/* XXX: this is an ugly hack */
+	if (ep->i.compression == IMAGE_CMP_CCITT)
+	    stream_printf(ep->st, "\n<</Columns %d>>",
+			  i->width);
 	stream_printf(ep->st, " /%sDecode filter",
 		      epsf_compression_name(ep->i.compression));
+    }
     stream_puts("\n/ImageMatrix \n", ep->st);
     _write_image_matrix(ep);
     stream_puts("\n/Decode [ ", ep->st);

@@ -1,3 +1,12 @@
+2005-07-23  Dieter Baron  <dillo@danbala.tuwien.ac.at>
+
+	* src/Makefile.am, src/image.c, src/im_xbm.c: add support for XBM
+	image format.
+	* src/Makefile.am, src/epsf.c, src/stream.c, src/st_ccitt.c: add
+	support for CCITT Fax Group 3 1-D compression.
+
+	* src/util.c (mirror_byte): new function.
+
 2005-07-14  Dieter Baron  <dillo@danbala.tuwien.ac.at>
 
 	* configure.in: bump version to 0.2.

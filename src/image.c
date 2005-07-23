@@ -1,5 +1,5 @@
 /*
-  $NiH: image.c,v 1.16 2002/11/13 01:41:39 dillo Exp $
+  $NiH: image.c,v 1.17 2005/07/07 06:31:53 dillo Exp $
 
   image.c -- general image functions
   Copyright (C) 2002 Dieter Baron
@@ -60,6 +60,7 @@ image *png_open(const char *);
 #ifdef USE_TIFF
 image *tiff_open(const char *);
 #endif
+image *xbm_open(const char *);
 image *xpm_open(const char *);
 
 
@@ -74,6 +75,7 @@ image *(*open_tab[])(const char *) = {
     tiff_open,
 #endif
     xpm_open,
+    xbm_open,
 #ifdef USE_GIF
     gif_open,
 #endif

@@ -1,3 +1,8 @@
+New in 0.3:
+
+* support for CCITT Fax Group 3 1-D compression
+* support for XBM image format
+
 New in 0.2 (2005/07/14):
 
 * support for specifying resolution, size, orientation, and placement of image
