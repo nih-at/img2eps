@@ -1,3 +1,7 @@
+2005-07-24  Dieter Baron  <dillo@danbala.tuwien.ac.at>
+
+	* src/util.c (bitspan): new function.
+
 2005-07-23  Dieter Baron  <dillo@danbala.tuwien.ac.at>
 
 	* src/Makefile.am, src/image.c, src/im_xbm.c: add support for XBM

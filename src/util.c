@@ -1,5 +1,5 @@
 /*
-  $NiH: util.c,v 1.2 2002/10/12 00:02:14 dillo Exp $
+  $NiH: util.c,v 1.3 2005/07/23 00:17:06 dillo Exp $
 
   util.c -- utility functions
   Copyright (C) 2002 Dieter Baron
@@ -38,6 +38,57 @@
 #include <string.h>
 
 #include "util.h"
+
+
+
+#define BIT(d, o)	(((*((unsigned char *)(d)))>>(7-(o)))&0x1)
+
+int
+bitspan(const char *d, int off, int len, int bit)
+{
+    static const int mask_right[] = {
+	0xff, 0x7f, 0x3f, 0x1f, 0x0f, 0x07, 0x03, 0x01
+    };
+#if 0
+    static const int mask_left[] = {
+	0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe, 0xff
+    };
+#endif
+
+    const unsigned char *data;
+    int run;
+
+    data = d + off/8;
+    len -= off;
+    off %= 8;
+
+    if (bit == -1)
+	bit = BIT(data, off);
+
+    run = 0;
+
+    if (len+off >= 8
+	&& (data[0] & mask_right[off]) == (bit ? mask_right[off] : 0x00)) {
+	/* run extends to end of first byte */
+	run += 8-off;
+	data++;
+	off = 0;
+
+	/* run across full bytes */
+	while (run+8 <= len && data[0] == (bit ? 0xff : 0x00)) {
+	    data++;
+	    run += 8;
+	}
+    }
+
+    /* check last byte */
+    while (run < len && BIT(data, off) == bit) {
+	run++;
+	off++;
+    }
+
+    return run;
+}
 
 
 

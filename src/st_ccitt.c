@@ -1,5 +1,5 @@
 /*
-  $NiH$
+  $NiH: st_ccitt.c,v 1.1 2005/07/23 00:20:21 dillo Exp $
 
   st_ccitt.c -- CCITTFaxEncode stream
   Copyright (C) 2005 Dieter Baron
@@ -53,16 +53,47 @@ STREAM_DECLARE(ccitt);
 
 
 
+#define PRINT_EOL	1
+#define PRINT_RTC	1
+
+#define CODE_MAX_TERM		  64
+#define CODE_MAX_MAKEUP		(1728+CODE_MAX_TERM)
+#define CODE_MAX_EXTENDED	(2560+CODE_MAX_TERM)
+#define CODE_MAX_VERTICAL	   4
+
 struct code {
     unsigned short len;
     unsigned short code;
 };
 
-static const struct code eol = {
+static const struct code code_eol = {
     12, 0x0001
 };
 
-static const struct code term[2][64] = {
+#if 0
+static const struct code code_pass = {
+    4, 0x0001
+};
+
+static const struct code code_horizontal = {
+    3, 0x0001
+};
+
+static const struct code code_vertical_0[] = {
+    { 7, 0x0003 },
+    { 6, 0x0003 },
+    { 3, 0x0003 },
+    { 1, 0x0001 },
+    { 3, 0x0002 },
+    { 6, 0x0002 },
+    { 7, 0x0002 }
+};
+
+/* so we can use the difference as index */
+static const struct code *code_vertical = code_vertical_0+CODE_MAX_VERTICAL-1;
+#endif
+
+static const struct code code_term[2][CODE_MAX_TERM] = {
     { { 10, 0x0037 },
       {  3, 0x0002 },
       {  2, 0x0003 },
@@ -195,7 +226,7 @@ static const struct code term[2][64] = {
     }
 };
 
-static const struct code makeup[2][27] = {
+static const struct code code_makeup[2][27] = {
     { { 10, 0x000f },
       { 12, 0x00c8 },
       { 12, 0x00c9 },
@@ -254,7 +285,7 @@ static const struct code makeup[2][27] = {
     }
 };
 
-static const struct code extended_makeup[] = {
+static const struct code code_extended[] = {
     { 11, 0x0008 },
     { 11, 0x000c },
     { 11, 0x000d },
@@ -277,7 +308,9 @@ static const struct code extended_makeup[] = {
 static void flush(stream_ccitt *);
 static void put_code(stream_ccitt *, const struct code *);
 static void put_run(stream_ccitt *, int, int);
+#if PRINT_RTC
 static void put_rtc(stream_ccitt *);
+#endif
 
 
 
@@ -285,7 +318,9 @@ static void put_rtc(stream_ccitt *);
 int
 ccitt_close(stream_ccitt *st)
 {
+#if PRINT_RTC
     put_rtc(st);
+#endif
 
     if (st->len > 0) {
 	/* pad to byte boundary */
@@ -325,8 +360,6 @@ stream_ccitt_open(stream *ost, void *params)
 
 
 
-#define BIT(b, x)	((((unsigned char *)(b))[(x)/8] >> (7-((x)%8))) & 1)
-
 int
 ccitt_write(stream_ccitt *st, const char *b, int n)
 {
@@ -335,20 +368,18 @@ ccitt_write(stream_ccitt *st, const char *b, int n)
     
     /* XXX: assumes one scanline at a time */
 
-    put_code(st, &eol);
+#if PRINT_EOL
+    put_code(st, &code_eol);
+#endif
 
-    len = 0;
+    x = 0;
     bit = 1;
-    for (x=0; x<st->width; x++) {
-	if (BIT(b, x) == bit)
-	    len++;
-	else {
-	    put_run(st, bit, len);
-	    len = 1;
-	    bit = !bit;
-	}
+    while (x < st->width) {
+	len = bitspan(b, x, st->width, bit);
+	put_run(st, bit, len);
+	x += len;
+	bit = !bit;
     }
-    put_run(st, bit, len);
 
     return 0;
 }
@@ -381,18 +412,28 @@ put_code(stream_ccitt *st, const struct code *code)
 static void
 put_run(stream_ccitt *st, int bit, int len)
 {
-    /* XXX: check that len is small enough */
-
-    if (len >= 64)
-	put_code(st, &makeup[bit][(len/64)-1]);
-    put_code(st, &term[bit][len%64]);
+    while (len >= CODE_MAX_EXTENDED) {
+	put_code(st, &code_extended[CODE_MAX_EXTENDED/CODE_MAX_TERM-1]);
+	len -= CODE_MAX_EXTENDED;
+    }
+    if (len >= CODE_MAX_MAKEUP) {
+	put_code(st, &code_extended[(len-CODE_MAX_MAKEUP)/CODE_MAX_TERM]);
+    }
+    else if (len >= CODE_MAX_TERM) {
+	put_code(st, &code_makeup[bit][(len-CODE_MAX_TERM)/CODE_MAX_TERM]);
+    }
+    put_code(st, &code_term[bit][len%CODE_MAX_TERM]);
 }
 
+
+
+#if PRINT_RTC
 static void
 put_rtc(stream_ccitt *st)
 {
     int i;
 
     for (i=0; i<6; i++)
-	put_code(st, &eol);
+	put_code(st, &code_eol);
 }
+#endif

@@ -2,7 +2,7 @@
 #define HAD_UTIL_H
 
 /*
-  $NiH: util.h,v 1.3 2003/12/14 09:50:43 dillo Exp $
+  $NiH: util.h,v 1.4 2005/07/23 00:17:06 dillo Exp $
 
   util.h -- utility functions
   Copyright (C) 2002 Dieter Baron
@@ -43,6 +43,7 @@ struct _num_name {
     const char *name;
 };
 
+int bitspan(const char *, int, int, int);
 int mirror_byte(int);
 int name2num(const struct _num_name *, const char *);
 const char *num2name(const struct _num_name *, int, int);
