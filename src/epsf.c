@@ -1,5 +1,5 @@
 /*
-  $NiH: epsf.c,v 1.34 2005/07/14 13:12:25 dillo Exp $
+  $NiH: epsf.c,v 1.35 2005/07/23 00:17:06 dillo Exp $
 
   epsf.c -- EPS file fragments
   Copyright (C) 2002, 2005 Dieter Baron
@@ -182,18 +182,19 @@ const struct _num_name _epsf_nn_asc[] = {
 
 #define TOINT(d)	((int)(floor((d)+0.1)))
 
-static void _calculate_bbox(epsf *ep);
+static void _calculate_bbox(epsf *);
 static double _calculate_scale(int, int, int, int);
 static int _dimen_get(const char *);
 static int _dimen_parse(const char *, int *);
 static int _dimen_parse_pair(const char *, int *, int *);
 static int _dimen_scale(int, double);
 static int _fit_depth(int depth);
-static int _write_image_dict(epsf *ep);
-static int _write_image_l1(epsf *ep);
-static int _write_image_matrix(epsf *ep);
-static void _write_l1_datasrc(epsf *ep);
-static int _write_palette_array(epsf *ep);
+static void _write_compression_parameters(epsf *);
+static int _write_image_dict(epsf *);
+static int _write_image_l1(epsf *);
+static int _write_image_matrix(epsf *);
+static void _write_l1_datasrc(epsf *);
+static int _write_palette_array(epsf *);
 
 
 
@@ -1047,6 +1048,34 @@ _fit_depth(int depth)
 
 
 
+static void
+_write_compression_parameters(epsf *ep)
+{
+    switch (ep->i.compression) {
+    case IMAGE_CMP_CCITT:
+	stream_printf(ep->st, "\n<</Columns %d", ep->i.width);
+	switch (IMAGE_CMP_CCITT_MODE(ep->i.compression_flags)) {
+	case IMAGE_CMP_CCITT_G32D:
+	    stream_printf(ep->st, " /K 1");
+	    break;
+	case IMAGE_CMP_CCITT_G4:
+	    stream_printf(ep->st, " /K -1");
+	    break;
+	}
+	if (ep->i.compression_flags & IMAGE_CMP_CCITT_ALIGN)
+	    stream_printf(ep->st, " /EncodedBYteAlign true");
+	if ((ep->i.compression_flags & IMAGE_CMP_CCITT_EOB) == 0)
+	    stream_printf(ep->st, " /EndOfBlock false");
+	stream_printf(ep->st, ">>");
+	break;
+
+    default:
+	break;
+    }
+}
+
+
+
 static int
 _write_image_dict(epsf *ep)
 {
@@ -1076,10 +1105,7 @@ _write_image_dict(epsf *ep)
 		  epsf_asc_name(ep->ascii));
     /* XXX: handle other compression methods */
     if (ep->i.compression != IMAGE_CMP_NONE) {
-	/* XXX: this is an ugly hack */
-	if (ep->i.compression == IMAGE_CMP_CCITT)
-	    stream_printf(ep->st, "\n<</Columns %d>>",
-			  i->width);
+	_write_compression_parameters(ep);
 	stream_printf(ep->st, " /%sDecode filter",
 		      epsf_compression_name(ep->i.compression));
     }

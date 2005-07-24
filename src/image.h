@@ -2,7 +2,7 @@
 #define _HAD_IMAGE_H
 
 /*
-  $NiH: image.h,v 1.16 2005/07/07 06:31:53 dillo Exp $
+  $NiH: image.h,v 1.17 2005/07/14 12:39:40 dillo Exp $
 
   image.h -- image header
   Copyright (C) 2002 Dieter Baron
@@ -79,6 +79,17 @@ enum image_compression {
     IMAGE_CMP_DCT
 };
 
+/* flags for individual compression methods */
+#define IMAGE_CMP_CCITT_G4	0x00	/* T.6 (group 4) */
+#define IMAGE_CMP_CCITT_G31D	0x01	/* T.4 (group 3) 1-dimensional */
+#define IMAGE_CMP_CCITT_G32D	0x02	/* T.4 (group 3) 2-dimensional */
+#define IMAGE_CMP_CCITT_MODE_MASK 0x03
+#define IMAGE_CMP_CCITT_MODE(c) ((c) & IMAGE_CMP_CCITT_MODE_MASK)
+
+#define IMAGE_CMP_CCITT_EOL	0x04	/* use end of line markers */
+#define IMAGE_CMP_CCITT_EOB	0x08	/* use end of data marker */
+#define IMAGE_CMP_CCITT_ALIGN	0x10	/* byte-align row data */
+
 /* keep in sync with epsf_write_image_matrix() in epsf.c */
 enum image_order {
     IMAGE_ORD_UNKNOWN,
@@ -128,6 +139,7 @@ struct image_info {
     int width, height;			/* dimensions */
     image_cspace cspace;		/* used color space */
     image_compression compression;	/* used compression scheme */
+    int compression_flags;		/* flags for compression scheme */
     image_order order;			/* order of samples in image data */
 };    
 

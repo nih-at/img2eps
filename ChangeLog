@@ -1,5 +1,8 @@
 2005-07-24  Dieter Baron  <dillo@danbala.tuwien.ac.at>
-
+	
+	* src/st_ccitt.c: add support for Group 3 2-D, Group 4, and
+	compression flags.
+	* src/image.h, src/epsf.c: add support for compression flags.
 	* src/util.c (bitspan): new function.
 
 2005-07-23  Dieter Baron  <dillo@danbala.tuwien.ac.at>

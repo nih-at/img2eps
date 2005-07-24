@@ -1,5 +1,5 @@
 /*
-  $NiH: image.c,v 1.17 2005/07/07 06:31:53 dillo Exp $
+  $NiH: image.c,v 1.18 2005/07/23 00:17:06 dillo Exp $
 
   image.c -- general image functions
   Copyright (C) 2002 Dieter Baron
@@ -147,6 +147,7 @@ _image_create(struct image_functions *f, size_t size, const char *fname)
     im->i.cspace.transparency = IMAGE_TR_NONE;
     im->i.cspace.inverted = IMAGE_INV_DARKLOW;
     im->i.compression = IMAGE_CMP_NONE;
+    im->i.compression_flags = 0;
     im->i.order = IMAGE_ORD_ROW_LT;
     im->oi = im->i;
 
@@ -374,6 +375,7 @@ image_init_info(image_info *i)
     i->cspace.base_depth = 0;
     i->cspace.ncol = 0;
     i->compression = IMAGE_CMP_UNKNOWN;
+    i->compression_flags = 0;
     i->order = IMAGE_ORD_UNKNOWN;
 }
 

@@ -1,5 +1,5 @@
 /*
-  $NiH: st_ccitt.c,v 1.1 2005/07/23 00:20:21 dillo Exp $
+  $NiH: st_ccitt.c,v 1.2 2005/07/24 04:50:58 dillo Exp $
 
   st_ccitt.c -- CCITTFaxEncode stream
   Copyright (C) 2005 Dieter Baron
@@ -37,6 +37,8 @@
 
 #include "stream.h"
 #include "stream_types.h"
+#include "util.h"
+#include "xmalloc.h"
 
 
 
@@ -44,7 +46,12 @@ struct stream_ccitt {
     stream st;
 
     int width;
+    int flags;
+    int k;
+    int k_max;
 
+    int *ce[2];
+    int *ref;
     int remain;
     int len;
 };
@@ -53,8 +60,8 @@ STREAM_DECLARE(ccitt);
 
 
 
-#define PRINT_EOL	1
-#define PRINT_RTC	1
+#define BIT_WHITE	1
+#define BIT_BLACK	0
 
 #define CODE_MAX_TERM		  64
 #define CODE_MAX_MAKEUP		(1728+CODE_MAX_TERM)
@@ -70,7 +77,6 @@ static const struct code code_eol = {
     12, 0x0001
 };
 
-#if 0
 static const struct code code_pass = {
     4, 0x0001
 };
@@ -91,7 +97,6 @@ static const struct code code_vertical_0[] = {
 
 /* so we can use the difference as index */
 static const struct code *code_vertical = code_vertical_0+CODE_MAX_VERTICAL-1;
-#endif
 
 static const struct code code_term[2][CODE_MAX_TERM] = {
     { { 10, 0x0037 },
@@ -307,10 +312,10 @@ static const struct code code_extended[] = {
 
 static void flush(stream_ccitt *);
 static void put_code(stream_ccitt *, const struct code *);
+static void put_eofb(stream_ccitt *);
+static void put_pad(stream_ccitt *);
 static void put_run(stream_ccitt *, int, int);
-#if PRINT_RTC
 static void put_rtc(stream_ccitt *);
-#endif
 
 
 
@@ -318,18 +323,17 @@ static void put_rtc(stream_ccitt *);
 int
 ccitt_close(stream_ccitt *st)
 {
-#if PRINT_RTC
-    put_rtc(st);
-#endif
-
-    if (st->len > 0) {
-	/* pad to byte boundary */
-	if (st->len % 8)
-	    st->remain <<= 8-st->len%8;
-	/* write remaining bits */
-	flush(st);
+    if (st->flags & IMAGE_CMP_CCITT_EOB) {
+	if (IMAGE_CMP_CCITT_MODE(st->flags) == IMAGE_CMP_CCITT_G4)
+	    put_eofb(st);
+	else
+	    put_rtc(st);
     }
 
+    put_pad(st);
+
+    free(st->ce[0]);
+    free(st->ce[1]);
     stream_free((stream *)st);
 
     return 0;
@@ -352,9 +356,32 @@ stream_ccitt_open(stream *ost, void *params)
     /* XXX: check bit order */
 
     st->width = info->width;
+    st->flags = info->compression_flags;
     st->remain = 0;
     st->len = 0;
+    if (IMAGE_CMP_CCITT_MODE(st->flags) == IMAGE_CMP_CCITT_G31D)
+	st->ce[0] = st->ce[1] = NULL;
+    else {
+	st->ce[0] = xmalloc(sizeof(st->ce[0][0])*(st->width+1));
+	st->ce[1] = xmalloc(sizeof(st->ce[1][0])*(st->width+1));
+	st->ref = st->ce[0];
+    }
 
+    switch (IMAGE_CMP_CCITT_MODE(st->flags)) {
+    case IMAGE_CMP_CCITT_G32D:
+	/* end of line markers are required in Group 3 2-D */
+	st->flags |= IMAGE_CMP_CCITT_EOL;
+	/* XXX: proper values */
+	st->k_max = 4;
+	st->k = 0;
+	break;
+
+    case IMAGE_CMP_CCITT_G4:
+	st->flags &= ~IMAGE_CMP_CCITT_EOL;
+	/* init reference line to all white */
+	st->ref[0] = info->width;
+    }
+    
     return (stream *)st;
 }
 
@@ -363,23 +390,111 @@ stream_ccitt_open(stream *ost, void *params)
 int
 ccitt_write(stream_ccitt *st, const char *b, int n)
 {
-    int x;
-    int bit, len;
+    struct code code_mode;
+    int hori;
     
     /* XXX: assumes one scanline at a time */
 
-#if PRINT_EOL
-    put_code(st, &code_eol);
-#endif
+    if (st->flags & IMAGE_CMP_CCITT_EOL)
+	put_code(st, &code_eol);
 
-    x = 0;
-    bit = 1;
-    while (x < st->width) {
-	len = bitspan(b, x, st->width, bit);
-	put_run(st, bit, len);
-	x += len;
-	bit = !bit;
+    switch (IMAGE_CMP_CCITT_MODE(st->flags)) {
+    case IMAGE_CMP_CCITT_G31D:
+	hori = 1;
+	break;
+	
+    case IMAGE_CMP_CCITT_G32D:
+	/* keep track of which lines to encode 1-D/2-D */
+	hori = (st->k == 0);
+	if (st->k++ == st->k_max)
+	    st->k = 0;
+	
+	/* write 1-D/2-D indicator */
+	code_mode.len = 1;
+	code_mode.code = hori;
+	put_code(st, &code_mode);
+	break;
+	
+    case IMAGE_CMP_CCITT_G4:
+	hori = 0;
+	break;
     }
+
+    if (hori) {
+	int i, x, bit, len;
+
+	i = x = 0;
+	bit = BIT_WHITE;
+	while (x < st->width) {
+	    len = bitspan(b, x, st->width, bit);
+	    put_run(st, bit, len);
+	    if (st->ce[0])
+		st->ref[i++] = x;
+	    x += len;
+	    bit = !bit;
+	}
+	if (st->ce[0])
+	    st->ref[i] = x;
+    }
+    else {
+	int i, j, done, ce, next_ce;
+	int *next_ref;
+
+	next_ref = (st->ref == st->ce[0] ? st->ce[1] : st->ce[0]);
+
+	done = 0;
+	ce = bitspan(b, 0, st->width, BIT_WHITE);
+	j = i = 0;
+
+	while (done < st->width) {
+	    if (st->ref[i] < st->width && st->ref[i+1] < ce) {
+		/* this span doesn't exist in new line */
+		put_code(st, &code_pass);
+		done = st->ref[i+1];
+		i += 2;
+		
+		/* we're not past this change element yet */
+		continue;
+	    }
+	    else {
+		if (abs(st->ref[i]-ce) < CODE_MAX_VERTICAL) {
+		    /* vertical coding */
+		    put_code(st, &code_vertical[st->ref[i]-ce]);
+		    if (st->ref[i] < st->width)
+			i++;
+		    done = ce;
+		}
+		else {
+		    /* horizontal coding */
+		    put_code(st, &code_horizontal);
+		    next_ce = ce + bitspan(b, ce, st->width, -1);
+		    put_run(st, (j%2 ? BIT_BLACK : BIT_WHITE), ce - done);
+		    put_run(st, (j%2 ? BIT_WHITE : BIT_BLACK), next_ce - ce);
+		    next_ref[j++] = ce;
+		    done = ce = next_ce;
+
+		    if (done >= st->width)
+			break;
+		}
+	    }
+
+	    /* skip ref ces left of done */
+	    while (st->ref[i] <= done) {
+		if (st->ref[i+1] == st->width)
+		    i++;
+		else
+		    i += 2;
+	    }
+	    next_ref[j++] = ce;
+	    ce += bitspan(b, ce, st->width, -1);
+	}
+
+	next_ref[j] = done;
+	st->ref = next_ref;
+    }
+
+    if (st->flags & IMAGE_CMP_CCITT_ALIGN)
+	put_pad(st);
 
     return 0;
 }
@@ -410,6 +525,31 @@ put_code(stream_ccitt *st, const struct code *code)
 
 
 static void
+put_eofb(stream_ccitt *st)
+{
+    int i;
+
+    for (i=0; i<2; i++)
+	put_code(st, &code_eol);
+}
+
+
+
+static void
+put_pad(stream_ccitt *st)
+{
+    struct code pad;
+    
+    if (st->len % 8) {
+	pad.code = 0;
+	pad.len = 8-st->len%8;
+	put_code(st, &pad);
+    }
+}
+
+
+
+static void
 put_run(stream_ccitt *st, int bit, int len)
 {
     while (len >= CODE_MAX_EXTENDED) {
@@ -427,7 +567,6 @@ put_run(stream_ccitt *st, int bit, int len)
 
 
 
-#if PRINT_RTC
 static void
 put_rtc(stream_ccitt *st)
 {
@@ -436,4 +575,3 @@ put_rtc(stream_ccitt *st)
     for (i=0; i<6; i++)
 	put_code(st, &code_eol);
 }
-#endif
