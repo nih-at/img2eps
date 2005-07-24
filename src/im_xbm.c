@@ -1,5 +1,5 @@
 /*
-  $NiH$
+  $NiH: im_xbm.c,v 1.1 2005/07/23 00:17:06 dillo Exp $
 
   im_xbm.c -- XBM (X Bitmap) image handling
   Copyright (C) 2002, 2005 Dieter Baron
@@ -109,7 +109,7 @@ xbm_open(char *fname)
 
     if (fgets(b1, sizeof(b1), f) == NULL
 	|| strncmp(b1, "#define ", 8) != 0
-	|| (p=strchr(b1+8, '_')) == NULL
+	|| (p=strrchr(b1+8, '_')) == NULL
 	|| strncmp(p, "_width ", 7) != 0) {
 	fclose(f);
 	return NULL;
