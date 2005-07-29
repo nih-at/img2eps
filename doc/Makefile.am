@@ -14,6 +14,6 @@ all-local: image.ps stream.ps
 	rm -f $@.$$$$
 
 .mdoc.html:
-	nroff -mdoc2html $< | sed -e "s,../html1/,," > $@.$$$$ && mv $@.$$$$ $@
+	nroff -mdoc2html $< | sed -e "s,../html[0-9]/,," > $@.$$$$ && mv $@.$$$$ $@
 
 update-man: img2eps.man
