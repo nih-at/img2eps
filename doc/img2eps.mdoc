@@ -1,4 +1,4 @@
-.\"  $NiH: img2eps.mdoc,v 1.19 2005/07/19 09:54:52 dillo Exp $
+.\"  $NiH: img2eps.mdoc,v 1.20 2005/07/19 17:59:03 dillo Exp $
 .\"
 .\"  img2eps.mdoc -- man page for img2eps(1)
 .\"  Copyright (C) 2002, 2005 Dieter Baron and Thomas Klausner
@@ -32,7 +32,7 @@
 .\"  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 .\"  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd July 19, 2005
+.Dd July 30, 2005
 .Dt IMG2EPS 1
 .Os
 .Sh NAME
@@ -41,30 +41,30 @@
 .Sh SYNOPSIS
 .Nm ""
 .Op Fl 123
-.Op Fl a | Fl -ascii Ar ENC
-.Op Fl -bottom-margin Ar M
-.Op Fl C | Fl -compress Ar C
+.Op Fl a | Fl -ascii Ar enc
+.Op Fl -bottom-margin Ar m
+.Op Fl C | Fl -compress Ar c
 .Op Fl c | Fl -stdout
-.Op Fl G | Fl -gravity Ar G
+.Op Fl G | Fl -gravity Ar g
 .Op Fl g | -gray | -grey
 .Op Fl h | Fl -help
-.Op Fl -height Ar H
+.Op Fl -height Ar h
 .Op Fl -ignore-order
-.Op Fl -left-margin Ar M
+.Op Fl -left-margin Ar m
 .Op Fl -level
-.Op Fl m | Fl -margin Ar M
+.Op Fl m | Fl -margin Ar m
 .Op Fl n | Fl -dry-run
-.Op Fl O | Fl -orientation Ar O
-.Op Fl o | Fl -output Ar FILE
-.Op Fl P | Fl -paper Ar P
-.Op Fl r | Fl -resolution Ar R
+.Op Fl O | Fl -orientation Ar o
+.Op Fl o | Fl -output Ar file
+.Op Fl P | Fl -paper Ar p
+.Op Fl r | Fl -resolution Ar r
 .Op Fl R | Fl -recompress
-.Op Fl -right-margin Ar M
-.Op Fl s | Fl -size Ar S
-.Op Fl -top-margin Ar M
+.Op Fl -right-margin Ar m
+.Op Fl s | Fl -size Ar s
+.Op Fl -top-margin Ar m
 .Op Fl v | Fl -verbose
 .Op Fl V | Fl -version
-.Op Fl -width Ar W
+.Op Fl -width Ar w
 .Ar file ...
 .Sh DESCRIPTION
 .Nm
@@ -86,6 +86,8 @@ PNG
 .It
 TIFF
 .It
+XBM
+.It
 XPM
 .El
 .Pp
@@ -98,10 +100,10 @@ Use only features present in PostScript language level 1.
 Use only features present in PostScript language level 2.
 .It Fl 3
 Explicitly allow the use of PostScript language level 3 features.
-.It Fl a Ar ENC
-.It Fl -ascii Ar ENC
+.It Fl a Ar enc
+.It Fl -ascii Ar enc
 Use
-.Ar ENC
+.Ar enc
 ASCII encoding for binary data.
 Supported encodings are:
 .Bl -bullet -offset indent -compact
@@ -110,13 +112,13 @@ ASCII85
 .It
 ASCIIHEX
 .El
-.It Fl -bottom-margin Ar M
+.It Fl -bottom-margin Ar m
 Set bottom margin to
-.Ar M .
-.It Fl C Ar C
-.It Fl -compress Ar C
+.Ar m .
+.It Fl C Ar c
+.It Fl -compress Ar c
 Use compression method
-.Ar C
+.Ar c
 for image data.
 Supported compression methods are:
 .Bl -bullet -offset indent -compact
@@ -133,8 +135,8 @@ RunLength (PackBits)
 .It Fl -stdout
 Write EPSF to standard output.
 If this option is used, only one input file may be specified.
-.It Fl G Ar G
-.It Fl -gravity Ar G
+.It Fl G Ar g
+.It Fl -gravity Ar g
 Specify the placement of image within the printable area of the page.
 The gravity can be either a pair of numbers (see below) in the range
 of 0 to 1 inclusive, which specify how much of the free space is
@@ -163,9 +165,9 @@ bottom-right
 .It Fl g
 .It Fl -gray
 Convert image to grayscale.
-.It Fl -height Ar H
+.It Fl -height Ar h
 Specify the height of the image to be
-.Ar H ,
+.Ar h ,
 which should be a dimen (see below).
 If the width is not specified also, it will be computed to keep the
 aspect ratio of the original image.
@@ -175,29 +177,29 @@ Display a short help message.
 .It Fl -ignore-order
 Ignore pixel order information from image and assume row major
 left to right, top to bottom.
-.It Fl -left-margin Ar M
+.It Fl -left-margin Ar m
 Set left margin to
-.Ar M ,
+.Ar m ,
 which should be a dimen (see below).
-.It Fl -level Ar L
+.It Fl -level Ar l
 Use only features present in PostScript language level
-.Ar L .
+.Ar l .
 Alternatively, you can also use the
 .Fl 1 ,
 .Fl 2 ,
 and
 .Fl 3
 options.
-.It Fl m Ar M
-.It Fl -margin Ar M
+.It Fl m Ar m
+.It Fl -margin Ar m
 Set all margins to
-.Ar M ,
+.Ar m ,
 which should be a dimen (see below).
 .It Fl n
 .It Fl -dry-run
 Don't create EPSF, only print information about what would have been done.
-.It Fl O Ar O
-.It Fl -orientation Ar O
+.It Fl O Ar o
+.It Fl -orientation Ar o
 Set orientation (rotation) of image:
 .Bl -tag -width XXXXXXXXXXXXX -offset indent -compact
 .It portrait
@@ -211,15 +213,15 @@ Rotate image 90 degrees clockwise.
 .It auto
 Use portrait or landscape, whichever fits the image better.
 .El
-.It Fl o Ar FILE
-.It Fl -output Ar FILE
+.It Fl o Ar file
+.It Fl -output Ar file
 Write EPSF to output file
-.Ar FILE .
+.Ar file .
 If this option is used, only one input file may be specified.
-.It Fl P Ar P
-.It Fl -paper Ar P
+.It Fl P Ar p
+.It Fl -paper Ar p
 Set paper size to
-.Ar P .
+.Ar p .
 The paper size can be specified either as a pair of dimens (see
 below), or by using one of the following pre-defined sizes:
 .Bl -bullet -offset indent -compact
@@ -246,10 +248,10 @@ statement
 .It
 tabloid
 .El
-.It Fl r Ar R
-.It Fl -resolution Ar R
+.It Fl r Ar r
+.It Fl -resolution Ar r
 Specify the resolution to print the image at, in dpi (dots per inch).
-.Ar R
+.Ar r
 can be a number to specify equal horizontal and vertical resolution
 or a pair of numbers (see below) to specify horizontal and vertical
 resolutions separately.
@@ -258,25 +260,25 @@ resolutions separately.
 Force recompression of image data, even if a direct copy would be
 possible.  This might be necessary since PostScript imposes stricter
 image data constraints than other image manipulation software.
-.It Fl -right-margin Ar M
+.It Fl -right-margin Ar m
 Set right margin to
-.Ar M ,
+.Ar m ,
 which should be a dimen (see below).
-.It Fl S Ar S
-.It Fl -size Ar S
+.It Fl S Ar s
+.It Fl -size Ar s
 Specify the size of the printed image.
-.Ar S
+.Ar s
 should be a pair of dimens (see below).
-.It Fl -top-margin Ar M
+.It Fl -top-margin Ar m
 Set top margin to
-.Ar M ,
+.Ar m ,
 which should be a dimen (see below).
 .It Fl V
 .It Fl -version
 Display version number.
-.It Fl -width Ar W
+.It Fl -width Ar w
 Specify the width of the image to be
-.Ar W ,
+.Ar w ,
 which should be a dimen (see below).
 If the height is not specified also, it will be computed to keep the
 aspect ratio of the original image.
