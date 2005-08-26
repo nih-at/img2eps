@@ -1,33 +1,34 @@
 bugs:
++ [ccitt] fix illuminat-ogre-back.xbm / fax2d.tif
++ [ccitt] check colorspace for bi-level
+- [ccitt] handle inverse and different bit order
 . [jpeg] 12bit DCT encode produces broken image data (jpeg lib limitation)
 . [jpeg] fix direct-copy broken on level2 printers
 . [jpeg] fix PostScript error with pictures from Canon EOS 300D (direct copy)
 . [jpeg2000] testfiles_jp2/file3.jp2: error reading component 1 of row 0
-. [ccitt] fix illuminat-ogre-back.xbm / fax2d.tif
-. [ccitt] check colorspace for bi-level
-. [ccitt] handle inverse and different bit order
 
 enhancements:
-. [ui] in verbose mode: orientation, bit/byte order
-. [ui] force specific color space / depth
-. [ui] enable setting of compression flags
-. [ui] more information in verbose mode
-. [general] support for warnings
++ [ui] enable setting of compression flags
++ [tiff] honour orientation
+- [tiff] raw ccitt read
+- [general] support for warnings
+- [image] image_info: bit order
+- [epsf] compress palette
+- [ui] in verbose mode: orientation, bit/byte order
+- [ui] force specific color space / depth
+- [ui] more information in verbose mode
 . [compression] predictors
 . [lzw] compression flags (EarlyChange, UnitLength, LowBitFirst)
-. [image] image_info: bit order
 . [image] allow cropping of image
 . [image] allow bitmap-scaling of image
 . [image] multi-page images (TIFF, MNG, animated GIF)
 . [image] support for more graphics formats
 . [png] raw read
 . [gif] raw reading, depth always 8?
-. [tiff] tiled, planar, raw jpeg/ccitt/flate, bit/byte order
-. [tiff] honour orientation
+. [tiff] tiled, planar, raw jpeg/flate, bit/byte order
 . [jpeg2000] image depth other than 8, 16
 . [epsf] supply colorimage emulation for level1 (rgb-8 done)
 . [epsf] (optional) language level check in PostScript code
-. [epsf] compress palette
 . [epsf] masking (1-bit alpha channel)
 . [epsf] preview
 . [epsf] pdf output
