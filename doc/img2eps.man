@@ -1,6 +1,6 @@
 .\" Converted with mdoc2man 0.2
-.\" from NiH: img2eps.mdoc,v 1.20 2005/07/19 17:59:03 dillo Exp 
-.\"  $NiH: img2eps.mdoc,v 1.20 2005/07/19 17:59:03 dillo Exp $
+.\" from NiH: img2eps.mdoc,v 1.21 2005/07/30 09:16:43 dillo Exp 
+.\"  $NiH: img2eps.mdoc,v 1.21 2005/07/30 09:16:43 dillo Exp $
 .\"
 .\"  img2eps.mdoc \-- man page for img2eps(1)
 .\"  Copyright (C) 2002, 2005 Dieter Baron and Thomas Klausner
@@ -34,36 +34,36 @@
 .\"  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 .\"  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.TH IMG2EPS 1 "July 19, 2005" NiH
+.TH IMG2EPS 1 "July 30, 2005" NiH
 .SH "NAME"
 img2eps \- package raster images into EPS file
 .SH "SYNOPSIS"
 .B img2eps
 [\fB-123\fR]
-[\fB-a\fR | \fB--ascii\fR \fBENC\fR]
-[\fB--bottom-margin\fR \fBM\fR]
-[\fB-C\fR | \fB--compress\fR \fBC\fR]
+[\fB-a\fR | \fB--ascii\fR \fBenc\fR]
+[\fB--bottom-margin\fR \fBm\fR]
+[\fB-C\fR | \fB--compress\fR \fBc\fR]
 [\fB-c\fR | \fB--stdout\fR]
-[\fB-G\fR | \fB--gravity\fR \fBG\fR]
+[\fB-G\fR | \fB--gravity\fR \fBg\fR]
 [\fB-g\fR | \-gray | \-grey]
 [\fB-h\fR | \fB--help\fR]
-[\fB--height\fR \fBH\fR]
+[\fB--height\fR \fBh\fR]
 [\fB--ignore-order\fR]
-[\fB--left-margin\fR \fBM\fR]
+[\fB--left-margin\fR \fBm\fR]
 [\fB--level\fR]
-[\fB-m\fR | \fB--margin\fR \fBM\fR]
+[\fB-m\fR | \fB--margin\fR \fBm\fR]
 [\fB-n\fR | \fB--dry-run\fR]
-[\fB-O\fR | \fB--orientation\fR \fBO\fR]
-[\fB-o\fR | \fB--output\fR \fBFILE\fR]
-[\fB-P\fR | \fB--paper\fR \fBP\fR]
-[\fB-r\fR | \fB--resolution\fR \fBR\fR]
+[\fB-O\fR | \fB--orientation\fR \fBo\fR]
+[\fB-o\fR | \fB--output\fR \fBfile\fR]
+[\fB-P\fR | \fB--paper\fR \fBp\fR]
+[\fB-r\fR | \fB--resolution\fR \fBr\fR]
 [\fB-R\fR | \fB--recompress\fR]
-[\fB--right-margin\fR \fBM\fR]
-[\fB-s\fR | \fB--size\fR \fBS\fR]
-[\fB--top-margin\fR \fBM\fR]
+[\fB--right-margin\fR \fBm\fR]
+[\fB-s\fR | \fB--size\fR \fBs\fR]
+[\fB--top-margin\fR \fBm\fR]
 [\fB-v\fR | \fB--verbose\fR]
 [\fB-V\fR | \fB--version\fR]
-[\fB--width\fR \fBW\fR]
+[\fB--width\fR \fBw\fR]
 \fBfile ...\fR
 .SH "DESCRIPTION"
 .B img2eps
@@ -85,6 +85,8 @@ PNG
 .IP \(bu 
 TIFF
 .IP \(bu 
+XBM
+.IP \(bu 
 XPM
 .RE
 .PP
@@ -101,11 +103,11 @@ Use only features present in PostScript language level 2.
 \fB-3\fR
 Explicitly allow the use of PostScript language level 3 features.
 .TP 20
-\fB-a\fR \fBENC\fR
+\fB-a\fR \fBenc\fR
 .TP 20
-\fB--ascii\fR \fBENC\fR
+\fB--ascii\fR \fBenc\fR
 Use
-\fBENC\fR
+\fBenc\fR
 ASCII encoding for binary data.
 Supported encodings are:
 .RS
@@ -115,15 +117,15 @@ ASCII85
 ASCIIHEX
 .RE
 .TP 20
-\fB--bottom-margin\fR \fBM\fR
+\fB--bottom-margin\fR \fBm\fR
 Set bottom margin to
-\fBM.\fR
+\fBm.\fR
 .TP 20
-\fB-C\fR \fBC\fR
+\fB-C\fR \fBc\fR
 .TP 20
-\fB--compress\fR \fBC\fR
+\fB--compress\fR \fBc\fR
 Use compression method
-\fBC\fR
+\fBc\fR
 for image data.
 Supported compression methods are:
 .RS
@@ -143,9 +145,9 @@ RunLength (PackBits)
 Write EPSF to standard output.
 If this option is used, only one input file may be specified.
 .TP 20
-\fB-G\fR \fBG\fR
+\fB-G\fR \fBg\fR
 .TP 20
-\fB--gravity\fR \fBG\fR
+\fB--gravity\fR \fBg\fR
 Specify the placement of image within the printable area of the page.
 The gravity can be either a pair of numbers (see below) in the range
 of 0 to 1 inclusive, which specify how much of the free space is
@@ -177,9 +179,9 @@ bottom-right
 \fB--gray\fR
 Convert image to grayscale.
 .TP 20
-\fB--height\fR \fBH\fR
+\fB--height\fR \fBh\fR
 Specify the height of the image to be
-\fBH,\fR
+\fBh,\fR
 which should be a dimen (see below).
 If the width is not specified also, it will be computed to keep the
 aspect ratio of the original image.
@@ -193,14 +195,14 @@ Display a short help message.
 Ignore pixel order information from image and assume row major
 left to right, top to bottom.
 .TP 20
-\fB--left-margin\fR \fBM\fR
+\fB--left-margin\fR \fBm\fR
 Set left margin to
-\fBM,\fR
+\fBm,\fR
 which should be a dimen (see below).
 .TP 20
-\fB--level\fR \fBL\fR
+\fB--level\fR \fBl\fR
 Use only features present in PostScript language level
-\fBL.\fR
+\fBl.\fR
 Alternatively, you can also use the
 \fB-1\fR,
 \fB-2\fR,
@@ -208,11 +210,11 @@ and
 \fB-3\fR
 options.
 .TP 20
-\fB-m\fR \fBM\fR
+\fB-m\fR \fBm\fR
 .TP 20
-\fB--margin\fR \fBM\fR
+\fB--margin\fR \fBm\fR
 Set all margins to
-\fBM,\fR
+\fBm,\fR
 which should be a dimen (see below).
 .TP 20
 \fB-n\fR
@@ -220,9 +222,9 @@ which should be a dimen (see below).
 \fB--dry-run\fR
 Don't create EPSF, only print information about what would have been done.
 .TP 20
-\fB-O\fR \fBO\fR
+\fB-O\fR \fBo\fR
 .TP 20
-\fB--orientation\fR \fBO\fR
+\fB--orientation\fR \fBo\fR
 Set orientation (rotation) of image:
 .RS
 .TP 15
@@ -242,18 +244,18 @@ auto
 Use portrait or landscape, whichever fits the image better.
 .RE
 .TP 15
-\fB-o\fR \fBFILE\fR
+\fB-o\fR \fBfile\fR
 .TP 15
-\fB--output\fR \fBFILE\fR
+\fB--output\fR \fBfile\fR
 Write EPSF to output file
-\fBFILE.\fR
+\fBfile.\fR
 If this option is used, only one input file may be specified.
 .TP 15
-\fB-P\fR \fBP\fR
+\fB-P\fR \fBp\fR
 .TP 15
-\fB--paper\fR \fBP\fR
+\fB--paper\fR \fBp\fR
 Set paper size to
-\fBP.\fR
+\fBp.\fR
 The paper size can be specified either as a pair of dimens (see
 below), or by using one of the following pre-defined sizes:
 .RS
@@ -281,11 +283,11 @@ statement
 tabloid
 .RE
 .TP 15
-\fB-r\fR \fBR\fR
+\fB-r\fR \fBr\fR
 .TP 15
-\fB--resolution\fR \fBR\fR
+\fB--resolution\fR \fBr\fR
 Specify the resolution to print the image at, in dpi (dots per inch).
-\fBR\fR
+\fBr\fR
 can be a number to specify equal horizontal and vertical resolution
 or a pair of numbers (see below) to specify horizontal and vertical
 resolutions separately.
@@ -297,21 +299,21 @@ Force recompression of image data, even if a direct copy would be
 possible.  This might be necessary since PostScript imposes stricter
 image data constraints than other image manipulation software.
 .TP 15
-\fB--right-margin\fR \fBM\fR
+\fB--right-margin\fR \fBm\fR
 Set right margin to
-\fBM,\fR
+\fBm,\fR
 which should be a dimen (see below).
 .TP 15
-\fB-S\fR \fBS\fR
+\fB-S\fR \fBs\fR
 .TP 15
-\fB--size\fR \fBS\fR
+\fB--size\fR \fBs\fR
 Specify the size of the printed image.
-\fBS\fR
+\fBs\fR
 should be a pair of dimens (see below).
 .TP 15
-\fB--top-margin\fR \fBM\fR
+\fB--top-margin\fR \fBm\fR
 Set top margin to
-\fBM,\fR
+\fBm,\fR
 which should be a dimen (see below).
 .TP 15
 \fB-V\fR
@@ -319,9 +321,9 @@ which should be a dimen (see below).
 \fB--version\fR
 Display version number.
 .TP 15
-\fB--width\fR \fBW\fR
+\fB--width\fR \fBw\fR
 Specify the width of the image to be
-\fBW,\fR
+\fBw,\fR
 which should be a dimen (see below).
 If the height is not specified also, it will be computed to keep the
 aspect ratio of the original image.
@@ -401,7 +403,7 @@ gs(1)
 .%D 1999
 .Re
 .SH "AUTHORS"
-
+-nosplit
 .B img2eps
 was written by
 Dieter Baron <dillo@giga.or.at.>
@@ -418,7 +420,7 @@ PostScript errors for some images.  This is not detected by
 .Nm.
 Use
 \fB-R\fR
-(\fB--recompress\fR)
+.Pq \fB--recompress\fR
 for such images.
 .PP
 Emulation of the colorimage operator is provided only for 8bit RGB

@@ -3,6 +3,7 @@ bugs:
 . [jpeg] fix direct-copy broken on level2 printers
 . [jpeg] fix PostScript error with pictures from Canon EOS 300D (direct copy)
 . [jpeg2000] testfiles_jp2/file3.jp2: error reading component 1 of row 0
+. [ccitt] fix illuminat-ogre-back.xbm / fax2d.tif
 . [ccitt] check colorspace for bi-level
 . [ccitt] handle inverse and different bit order
 
@@ -11,6 +12,7 @@ enhancements:
 . [ui] force specific color space / depth
 . [ui] enable setting of compression flags
 . [ui] more information in verbose mode
+. [general] support for warnings
 . [compression] predictors
 . [lzw] compression flags (EarlyChange, UnitLength, LowBitFirst)
 . [image] image_info: bit order
