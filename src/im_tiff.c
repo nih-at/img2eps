@@ -1,5 +1,5 @@
 /*
-  $NiH: im_tiff.c,v 1.15 2002/10/12 15:07:50 dillo Exp $
+  $NiH: im_tiff.c,v 1.16 2002/10/13 01:25:07 dillo Exp $
 
   im_tiff.c -- TIFF image handling
   Copyright (C) 2002 Dieter Baron
@@ -130,7 +130,8 @@ tiff_open(char *fname)
     TIFFSetErrorHandler(_error_handler);
 
     /* check for unsupported image types */
-    if (TIFFGetField(tif, TIFFTAG_PLANARCONFIG, &u16) && u16 != 1) {
+    if (TIFFGetField(tif, TIFFTAG_PLANARCONFIG, &u16)
+	&& u16 != PLANARCONFIG_CONTIG) {
 	TIFFClose(tif);
 	throws(EOPNOTSUPP, "unsupported planar config (not chunky)");
     }
