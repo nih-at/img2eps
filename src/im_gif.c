@@ -1,5 +1,5 @@
 /*
-  $NiH: im_gif.c,v 1.10 2002/11/10 04:22:29 dillo Exp $
+  $NiH: im_gif.c,v 1.11 2005/01/04 19:18:57 dillo Exp $
 
   im_gif.c -- GIF image handling
   Copyright (C) 2002, 2005 Dieter Baron
@@ -119,12 +119,13 @@ gif_open(char *fname)
     if ((gif=DGifOpenFileName(fname)) == NULL)
 	return NULL;
 
+    im = NULL;
     if (catch(&ex) == 0) {
 	im = image_create(gif, fname);
 	drop();
     }
     else {
-	DGifCloseFile(im->gif);
+	DGifCloseFile(gif);
 	throw(&ex);
     }
 
