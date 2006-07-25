@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.21 2005/07/07 09:04:44 dillo Exp $
+  $NiH: img2eps.c,v 1.22 2005/07/07 09:30:34 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002, 2005 Dieter Baron
@@ -132,7 +132,7 @@ enum {
     OPT_WIDTH
 };
 
-#define OPTIONS "hV123a:cC:gG:m:o:O:P:r:RS:v"
+#define OPTIONS "hV123a:cC:gG:m:no:O:P:r:RS:v"
 
 static const struct option options[] = {
     { "help",          0, 0, 'h' },
