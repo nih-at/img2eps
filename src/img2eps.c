@@ -1,5 +1,5 @@
 /*
-  $NiH: img2eps.c,v 1.22 2005/07/07 09:30:34 dillo Exp $
+  $NiH: img2eps.c,v 1.23 2006/07/25 10:37:19 dillo Exp $
 
   img2eps.c -- main function
   Copyright (C) 2002, 2005 Dieter Baron
@@ -118,7 +118,7 @@ static const char help_tail[] = "\
 Report bugs to <dillo@giga.or.at>.\n";
 
 static const char usage[] =
-"usage: %s [-hV] [-123cgv] [-a asc] [-C comp] [-G grav] [-m marg] [-O ori] [-o file] [-P paper] [-S size] file [...]\n";
+"usage: %s [-hV] [-123cgnv] [-a asc] [-C comp] [-G grav] [-m marg] [-O ori] [-o file] [-P paper] [-S size] file [...]\n";
 
 
 enum {
