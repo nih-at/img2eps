@@ -4,7 +4,7 @@
   st_lzw.c -- LZWEncode filter
 
   This file is part of img2eps, an image to EPS file converter.
-  The author can be contacted at <dillo@giga.or.at>
+  The author can be contacted at <img2eps@nih.at>
 */
 
 /*	$NetBSD: zopen.c,v 1.7 2002/05/26 22:25:38 wiz Exp $	*/
@@ -61,7 +61,7 @@
  * Diomidis Spinellis <dds@doc.ic.ac.uk>.
  *
  * Adapted to PostScript variant and img2eps stream framework by
- * Dieter Baron <dillo@giga.or.at>.
+ * Dieter Baron <img2eps@nih.at>.
  */
 
 
