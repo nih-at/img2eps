@@ -100,8 +100,9 @@ dnl NIH_CHECK_SUPPORT(WHAT)
 dnl check whether support for WHAT can and should be compiled in
 AC_DEFUN([NIH_CHECK_SUPPORT], [
   AC_MSG_CHECKING([for $1 support])
-  eval "support=\$have_`echo -n $1 | tr A-Z a-z`"
-  eval "enabled=\$with_`echo -n $1 | tr A-Z a-z`"
+  lc=`echo $1 | tr A-Z a-z`
+  eval "support=\$have_$lc"
+  eval "enabled=\$with_$lc"
   if test "$enabled" = "yes"
   then
     if test "$support" = "yes"
