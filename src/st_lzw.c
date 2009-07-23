@@ -68,6 +68,7 @@
 
 #include <errno.h>
 #include <stddef.h>
+#include <sys/types.h>
 
 #include "config.h"
 #include "exceptions.h"
