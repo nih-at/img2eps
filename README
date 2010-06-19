@@ -16,11 +16,8 @@ documents in the doc subdirectory.
 distribution site:
 	http://nih.at/img2eps/
 	ftp.nih.at /pub/nih/img2eps
-The latest version can always be found there and on the backup site:
-	ftp.giga.or.at /pub/nih/img2eps
-	http://ftp.giga.or.at/pub/nih/img2eps
 
-  Mail suggestions and bug reports to <dillo@giga.or.at>.
+  Mail suggestions and bug reports to <img2eps@nih.at>.
 
 
 REQUIREMENTS:

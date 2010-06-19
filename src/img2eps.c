@@ -5,7 +5,7 @@
   Copyright (C) 2002, 2005 Dieter Baron
 
   This file is part of img2eps, an image to EPS file converter.
-  The author can be contacted at <dillo@giga.or.at>
+  The author can be contacted at <img2eps@nih.at>
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -20,10 +20,10 @@
      products derived from this software without specific prior
      written permission.
  
-  THIS SOFTWARE IS PROVIDED BY DIETER BARON ``AS IS'' AND ANY EXPRESS
+  THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS
   OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-  ARE DISCLAIMED.  IN NO EVENT SHALL DIETER BARON BE LIABLE FOR ANY
+  ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY
   DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
   GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -56,11 +56,11 @@
 char *prg;
 
 static char const help_version[] = PACKAGE " " VERSION "\n\
-Copyright (C) 2002 Dieter Baron\n\
+Copyright (C) 2005 Dieter Baron\n\
 img2eps comes with ABSOLUTELY NO WARRANTY, to the extent permitted by law.\n";
 
 static const char help_head[] =
-PACKAGE " " VERSION " by Dieter Baron <dillo@giga.or.at>\n\n";
+PACKAGE " " VERSION "\n\n";
 
 static const char help_tail[] = "\
   -h, --help             display this help message\n\
@@ -115,7 +115,7 @@ static const char help_tail[] = "\
 "\n"
 #endif /* any optional feature */
 "\n\
-Report bugs to <dillo@giga.or.at>.\n";
+Report bugs to <img2eps@nih.at>.\n";
 
 static const char usage[] =
 "usage: %s [-hV] [-123cgnv] [-a asc] [-C comp] [-G grav] [-m marg] [-O ori] [-o file] [-P paper] [-S size] file [...]\n";

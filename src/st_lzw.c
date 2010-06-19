@@ -4,7 +4,7 @@
   st_lzw.c -- LZWEncode filter
 
   This file is part of img2eps, an image to EPS file converter.
-  The author can be contacted at <dillo@giga.or.at>
+  The author can be contacted at <img2eps@nih.at>
 */
 
 /*	$NetBSD: zopen.c,v 1.7 2002/05/26 22:25:38 wiz Exp $	*/
@@ -61,13 +61,14 @@
  * Diomidis Spinellis <dds@doc.ic.ac.uk>.
  *
  * Adapted to PostScript variant and img2eps stream framework by
- * Dieter Baron <dillo@giga.or.at>.
+ * Dieter Baron <img2eps@nih.at>.
  */
 
 
 
 #include <errno.h>
 #include <stddef.h>
+#include <sys/types.h>
 
 #include "config.h"
 #include "exceptions.h"
@@ -115,7 +116,7 @@ struct stream_lzw {
 	code_int zs_maxcode;		/* Maximum code, given n_bits. */
 	code_int zs_maxmaxcode;		/* Should NEVER generate this code. */
 	count_int zs_htab [HSIZE];
-	u_short zs_codetab [HSIZE];
+	unsigned short zs_codetab [HSIZE];
 	code_int zs_hsize;		/* For dynamic table sizing. */
 	code_int zs_free_ent;		/* First unused entry. */
 	/*
@@ -267,14 +268,14 @@ lzw_write(stream_lzw *zs, const char *wbp, int num)
 {
 	code_int i;
 	int c, disp;
-	const u_char *bp;
+	const unsigned char *bp;
 	int count;
 
 	if (num == 0)
 		return (0);
 
 	count = num;
-	bp = (u_char *)wbp;
+	bp = (unsigned char *)wbp;
 	if (state == S_MIDDLE)
 		goto middle;
 	state = S_MIDDLE;
