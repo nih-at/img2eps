@@ -357,7 +357,6 @@ main(int argc, char *argv[])
 	    }
 	    if (st)
 		stream_close(st);
-	    free(outfile);
 
 	    if (ex.code) {
 		remove(outfile);
@@ -367,6 +366,7 @@ main(int argc, char *argv[])
 		/* free(ex.data); */
 		ret = 1;
 	    }
+	    free(outfile);
 	}
     }
     
