@@ -10,10 +10,10 @@ all-local: image.ps stream.ps
 	groff -Tps -mandoc $< > $@
 
 .mdoc.man:
-	mdoc2man $< > $@.$$$$ && diff -u -I NiH $@ $@.$$$$ || mv $@.$$$$ $@; \
+	mandoc -T man $< | sed '/TH/s,"NetBSD [^"]*","NiH",' > $@.$$$$ && diff -u -I NiH $@ $@.$$$$ || mv $@.$$$$ $@; \
 	rm -f $@.$$$$
 
 .mdoc.html:
-	nroff -mdoc2html $< | sed -e "s,../html[0-9]/,," > $@.$$$$ && mv $@.$$$$ $@
+	mandoc -Thtml -Oman="%N.html",style=../nih-man.css $< > $@.$$$$ && mv $@.$$$$ $@
 
 update-man: img2eps.man
