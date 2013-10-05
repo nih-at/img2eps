@@ -1,4 +1,5 @@
 bugs:
++ [gif] does not compile against giflib-5.x
 + [ccitt] fix illuminat-ogre-back.xbm / fax2d.tif
 + [ccitt] check colorspace for bi-level
 - [ccitt] handle inverse and different bit order
