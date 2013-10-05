@@ -32,3 +32,5 @@
 ^stamp-h1$
 ^test-driver$
 ~$
+^doc/image.ps$
+^doc/stream.ps$
