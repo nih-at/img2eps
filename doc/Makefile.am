@@ -5,9 +5,10 @@ EXTRA_DIST=img2eps.mdoc img2eps.man image.mdoc image.ps stream.mdoc stream.ps
 SUFFIXES=.ps .mdoc .man .html
 
 all-local: image.ps stream.ps
+CLEANFILES=	image.ps stream.ps
 
 .mdoc.ps:
-	groff -Tps -mandoc $< > $@
+	mandoc -Tps $< > $@
 
 .mdoc.man:
 	mandoc -T man $< | sed '/TH/s,"NetBSD [^"]*","NiH",' > $@.$$$$ && diff -u -I NiH $@ $@.$$$$ || mv $@.$$$$ $@; \
