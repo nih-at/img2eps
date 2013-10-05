@@ -1,352 +1,363 @@
-.\" Converted with mdoc2man 0.2
-.\" from NiH: img2eps.mdoc,v 1.21 2005/07/30 09:16:43 dillo Exp 
-.\"  $NiH: img2eps.mdoc,v 1.21 2005/07/30 09:16:43 dillo Exp $
-.\"
-.\"  img2eps.mdoc \-- man page for img2eps(1)
-.\"  Copyright (C) 2002, 2005 Dieter Baron and Thomas Klausner
-.\"
-.\"  This file is part of img2eps, an image to EPS file converter.
-.\"  The authors can be contacted at <img2eps@nih.at>
-.\"
-.\"  Redistribution and use in source and binary forms, with or without
-.\"  modification, are permitted provided that the following conditions
-.\"  are met:
-.\"  1. Redistributions of source code must retain the above copyright
-.\"     notice, this list of conditions and the following disclaimer.
-.\"  2. Redistributions in binary form must reproduce the above copyright
-.\"     notice, this list of conditions and the following disclaimer in
-.\"     the documentation and/or other materials provided with the
-.\"     distribution.
-.\"  3. The name of the author may not be used to endorse or promote
-.\"     products derived from this software without specific prior
-.\"     written permission.
-.\" 
-.\"  THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS
-.\"  OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-.\"  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-.\"  ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY
-.\"  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-.\"  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
-.\"  GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-.\"  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-.\"  IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-.\"  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
-.\"  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-.\"
-.TH IMG2EPS 1 "July 30, 2005" NiH
+.TH "IMG2EPS" "1" "July 30, 2005" "NiH" "General Commands Manual"
+.nh
+.if n .ad l
 .SH "NAME"
-img2eps \- package raster images into EPS file
+\fBimg2eps\fR
+\- package raster images into EPS file
 .SH "SYNOPSIS"
-.B img2eps
-[\fB-123\fR]
-[\fB-a\fR | \fB--ascii\fR \fBenc\fR]
-[\fB--bottom-margin\fR \fBm\fR]
-[\fB-C\fR | \fB--compress\fR \fBc\fR]
-[\fB-c\fR | \fB--stdout\fR]
-[\fB-G\fR | \fB--gravity\fR \fBg\fR]
-[\fB-g\fR | \-gray | \-grey]
-[\fB-h\fR | \fB--help\fR]
-[\fB--height\fR \fBh\fR]
-[\fB--ignore-order\fR]
-[\fB--left-margin\fR \fBm\fR]
-[\fB--level\fR]
-[\fB-m\fR | \fB--margin\fR \fBm\fR]
-[\fB-n\fR | \fB--dry-run\fR]
-[\fB-O\fR | \fB--orientation\fR \fBo\fR]
-[\fB-o\fR | \fB--output\fR \fBfile\fR]
-[\fB-P\fR | \fB--paper\fR \fBp\fR]
-[\fB-r\fR | \fB--resolution\fR \fBr\fR]
-[\fB-R\fR | \fB--recompress\fR]
-[\fB--right-margin\fR \fBm\fR]
-[\fB-s\fR | \fB--size\fR \fBs\fR]
-[\fB--top-margin\fR \fBm\fR]
-[\fB-v\fR | \fB--verbose\fR]
-[\fB-V\fR | \fB--version\fR]
-[\fB--width\fR \fBw\fR]
-\fBfile ...\fR
+.HP 1n
+\fB\fR
+[\fB\-123\fR]
+[\fB\-a\fR\ |\ \fB\--ascii\fR\ \fIenc\fR]
+[\fB\--bottom-margin\fR\ \fIm\fR]
+[\fB\-C\fR\ |\ \fB\--compress\fR\ \fIc\fR]
+[\fB\-c\fR\ |\ \fB\--stdout\fR]
+[\fB\-G\fR\ |\ \fB\--gravity\fR\ \fIg\fR]
+[\fB\-g\fR\ |\ \fB\--gray\fR\ |\ \fB\--grey\fR]
+[\fB\-h\fR\ |\ \fB\--help\fR]
+[\fB\--height\fR\ \fIh\fR]
+[\fB\--ignore-order\fR]
+[\fB\--left-margin\fR\ \fIm\fR]
+[\fB\--level\fR]
+[\fB\-m\fR\ |\ \fB\--margin\fR\ \fIm\fR]
+[\fB\-n\fR\ |\ \fB\--dry-run\fR]
+[\fB\-O\fR\ |\ \fB\--orientation\fR\ \fIo\fR]
+[\fB\-o\fR\ |\ \fB\--output\fR\ \fIfile\fR]
+[\fB\-P\fR\ |\ \fB\--paper\fR\ \fIp\fR]
+[\fB\-r\fR\ |\ \fB\--resolution\fR\ \fIr\fR]
+[\fB\-R\fR\ |\ \fB\--recompress\fR]
+[\fB\--right-margin\fR\ \fIm\fR]
+[\fB\-s\fR\ |\ \fB\--size\fR\ \fIs\fR]
+[\fB\--top-margin\fR\ \fIm\fR]
+[\fB\-v\fR\ |\ \fB\--verbose\fR]
+[\fB\-V\fR\ |\ \fB\--version\fR]
+[\fB\--width\fR\ \fIw\fR]
+\fIfile\ ...\fR
 .SH "DESCRIPTION"
-.B img2eps
+\fBimg2eps\fR
 packages each
-\fBfile\fR
+\fIfile\fR
 into an EPS (Embedded PostScript) file, using whatever PostScript
 features are advantageous.
 The default name for each output file is the name of the input file
 with its extension changed to
-.I .eps.
+\fI\&.eps\fR.
 Supported image file formats are:
-.RS
-.IP \(bu 
+.RS 6n
+.PD 0
+.TP 4n
+\fBo\fR
 GIF
-.IP \(bu 
+.TP 4n
+\fBo\fR
 JPEG
-.IP \(bu 
+.TP 4n
+\fBo\fR
 PNG
-.IP \(bu 
+.TP 4n
+\fBo\fR
 TIFF
-.IP \(bu 
+.TP 4n
+\fBo\fR
 XBM
-.IP \(bu 
+.TP 4n
+\fBo\fR
 XPM
 .RE
+.PD
 .PP
 If possible, the compressed image data is copied directly to the EPS file.
 .SH "The Options"
-.RS
-.TP 20
-\fB-1\fR
+.RS 6n
+.TP 20n
+\fB\-1\fR
 Use only features present in PostScript language level 1.
-.TP 20
-\fB-2\fR
+.PD 0
+.TP 20n
+\fB\-2\fR
 Use only features present in PostScript language level 2.
-.TP 20
-\fB-3\fR
+.TP 20n
+\fB\-3\fR
 Explicitly allow the use of PostScript language level 3 features.
-.TP 20
-\fB-a\fR \fBenc\fR
-.TP 20
-\fB--ascii\fR \fBenc\fR
+.TP 20n
+\fB\-a\fR \fIenc\fR
+.TP 20n
+\fB\--ascii\fR \fIenc\fR
 Use
-\fBenc\fR
+\fIenc\fR
 ASCII encoding for binary data.
 Supported encodings are:
-.RS
-.IP \(bu 20
+.RS 26n
+.TP 4n
+\fBo\fR
 ASCII85
-.IP \(bu 20
+.TP 4n
+\fBo\fR
 ASCIIHEX
 .RE
-.TP 20
-\fB--bottom-margin\fR \fBm\fR
+.TP 20n
+\fB\--bottom-margin\fR \fIm\fR
 Set bottom margin to
-\fBm.\fR
-.TP 20
-\fB-C\fR \fBc\fR
-.TP 20
-\fB--compress\fR \fBc\fR
+\fIm\fR.
+.TP 20n
+\fB\-C\fR \fIc\fR
+.TP 20n
+\fB\--compress\fR \fIc\fR
 Use compression method
-\fBc\fR
+\fIc\fR
 for image data.
 Supported compression methods are:
-.RS
-.IP \(bu 20
+.RS 26n
+.TP 4n
+\fBo\fR
 DCT (jpeg)
-.IP \(bu 20
+.TP 4n
+\fBo\fR
 Flate (zlib)
-.IP \(bu 20
+.TP 4n
+\fBo\fR
 LZW
-.IP \(bu 20
+.TP 4n
+\fBo\fR
 RunLength (PackBits)
 .RE
-.TP 20
-\fB-c\fR
-.TP 20
-\fB--stdout\fR
+.TP 20n
+\fB\-c\fR
+.TP 20n
+\fB\--stdout\fR
 Write EPSF to standard output.
 If this option is used, only one input file may be specified.
-.TP 20
-\fB-G\fR \fBg\fR
-.TP 20
-\fB--gravity\fR \fBg\fR
+.TP 20n
+\fB\-G\fR \fIg\fR
+.TP 20n
+\fB\--gravity\fR \fIg\fR
 Specify the placement of image within the printable area of the page.
 The gravity can be either a pair of numbers (see below) in the range
 of 0 to 1 inclusive, which specify how much of the free space is
 placed to the left / above the image, or one of the following
 pre-defined settings:
-.RS
-.IP \(bu 20
+.RS 26n
+.TP 4n
+\fBo\fR
 top-left
-.IP \(bu 20
+.TP 4n
+\fBo\fR
 top
-.IP \(bu 20
+.TP 4n
+\fBo\fR
 top-right
-.IP \(bu 20
+.TP 4n
+\fBo\fR
 left
-.IP \(bu 20
+.TP 4n
+\fBo\fR
 center
-.IP \(bu 20
+.TP 4n
+\fBo\fR
 right
-.IP \(bu 20
+.TP 4n
+\fBo\fR
 bottom-left
-.IP \(bu 20
+.TP 4n
+\fBo\fR
 bottom
-.IP \(bu 20
+.TP 4n
+\fBo\fR
 bottom-right
 .RE
-.TP 20
-\fB-g\fR
-.TP 20
-\fB--gray\fR
+.TP 20n
+\fB\-g\fR
+.TP 20n
+\fB\--gray\fR
 Convert image to grayscale.
-.TP 20
-\fB--height\fR \fBh\fR
+.TP 20n
+\fB\--height\fR \fIh\fR
 Specify the height of the image to be
-\fBh,\fR
+\fIh\fR,
 which should be a dimen (see below).
 If the width is not specified also, it will be computed to keep the
 aspect ratio of the original image.
-.TP 20
-\fB-h\fR
-.TP 20
-\fB--help\fR
+.TP 20n
+\fB\-h\fR
+.TP 20n
+\fB\--help\fR
 Display a short help message.
-.TP 20
-\fB--ignore-order\fR
+.TP 20n
+\fB\--ignore-order\fR
 Ignore pixel order information from image and assume row major
 left to right, top to bottom.
-.TP 20
-\fB--left-margin\fR \fBm\fR
+.TP 20n
+\fB\--left-margin\fR \fIm\fR
 Set left margin to
-\fBm,\fR
+\fIm\fR,
 which should be a dimen (see below).
-.TP 20
-\fB--level\fR \fBl\fR
+.TP 20n
+\fB\--level\fR \fIl\fR
 Use only features present in PostScript language level
-\fBl.\fR
+\fIl\fR.
 Alternatively, you can also use the
-\fB-1\fR,
-\fB-2\fR,
+\fB\-1\fR,
+\fB\-2\fR,
 and
-\fB-3\fR
+\fB\-3\fR
 options.
-.TP 20
-\fB-m\fR \fBm\fR
-.TP 20
-\fB--margin\fR \fBm\fR
+.TP 20n
+\fB\-m\fR \fIm\fR
+.TP 20n
+\fB\--margin\fR \fIm\fR
 Set all margins to
-\fBm,\fR
+\fIm\fR,
 which should be a dimen (see below).
-.TP 20
-\fB-n\fR
-.TP 20
-\fB--dry-run\fR
+.TP 20n
+\fB\-n\fR
+.TP 20n
+\fB\--dry-run\fR
 Don't create EPSF, only print information about what would have been done.
-.TP 20
-\fB-O\fR \fBo\fR
-.TP 20
-\fB--orientation\fR \fBo\fR
+.TP 20n
+\fB\-O\fR \fIo\fR
+.TP 20n
+\fB\--orientation\fR \fIo\fR
 Set orientation (rotation) of image:
-.RS
-.TP 15
+.RS 26n
+.TP 15n
 portrait
 Don't rotate image.
-.TP 15
+.TP 15n
 landscape
 Rotate image 90 degrees counter-clockwise.
-.TP 15
+.TP 15n
 upside-down
 Rotate image 180 degrees.
-.TP 15
+.TP 15n
 seascape
 Rotate image 90 degrees clockwise.
-.TP 15
+.TP 15n
 auto
 Use portrait or landscape, whichever fits the image better.
 .RE
-.TP 15
-\fB-o\fR \fBfile\fR
-.TP 15
-\fB--output\fR \fBfile\fR
+.TP 20n
+\fB\-o\fR \fIfile\fR
+.TP 20n
+\fB\--output\fR \fIfile\fR
 Write EPSF to output file
-\fBfile.\fR
+\fIfile\fR.
 If this option is used, only one input file may be specified.
-.TP 15
-\fB-P\fR \fBp\fR
-.TP 15
-\fB--paper\fR \fBp\fR
+.TP 20n
+\fB\-P\fR \fIp\fR
+.TP 20n
+\fB\--paper\fR \fIp\fR
 Set paper size to
-\fBp.\fR
+\fIp\fR.
 The paper size can be specified either as a pair of dimens (see
 below), or by using one of the following pre-defined sizes:
-.RS
-.IP \(bu 15
+.RS 26n
+.TP 4n
+\fBo\fR
 10x14
-.IP \(bu 15
+.TP 4n
+\fBo\fR
 A3, A4, A5
-.IP \(bu 15
+.TP 4n
+\fBo\fR
 B4, B5
-.IP \(bu 15
+.TP 4n
+\fBo\fR
 executive
-.IP \(bu 15
+.TP 4n
+\fBo\fR
 folio
-.IP \(bu 15
+.TP 4n
+\fBo\fR
 ledger
-.IP \(bu 15
+.TP 4n
+\fBo\fR
 legal
-.IP \(bu 15
+.TP 4n
+\fBo\fR
 letter
-.IP \(bu 15
+.TP 4n
+\fBo\fR
 quarto
-.IP \(bu 15
+.TP 4n
+\fBo\fR
 statement
-.IP \(bu 15
+.TP 4n
+\fBo\fR
 tabloid
 .RE
-.TP 15
-\fB-r\fR \fBr\fR
-.TP 15
-\fB--resolution\fR \fBr\fR
+.TP 20n
+\fB\-r\fR \fIr\fR
+.TP 20n
+\fB\--resolution\fR \fIr\fR
 Specify the resolution to print the image at, in dpi (dots per inch).
-\fBr\fR
+\fIr\fR
 can be a number to specify equal horizontal and vertical resolution
 or a pair of numbers (see below) to specify horizontal and vertical
 resolutions separately.
-.TP 15
-\fB-R\fR
-.TP 15
-\fB--recompress\fR
+.TP 20n
+\fB\-R\fR
+.TP 20n
+\fB\--recompress\fR
 Force recompression of image data, even if a direct copy would be
 possible.  This might be necessary since PostScript imposes stricter
 image data constraints than other image manipulation software.
-.TP 15
-\fB--right-margin\fR \fBm\fR
+.TP 20n
+\fB\--right-margin\fR \fIm\fR
 Set right margin to
-\fBm,\fR
+\fIm\fR,
 which should be a dimen (see below).
-.TP 15
-\fB-S\fR \fBs\fR
-.TP 15
-\fB--size\fR \fBs\fR
+.TP 20n
+\fB\-S\fR \fIs\fR
+.TP 20n
+\fB\--size\fR \fIs\fR
 Specify the size of the printed image.
-\fBs\fR
+\fIs\fR
 should be a pair of dimens (see below).
-.TP 15
-\fB--top-margin\fR \fBm\fR
+.TP 20n
+\fB\--top-margin\fR \fIm\fR
 Set top margin to
-\fBm,\fR
+\fIm\fR,
 which should be a dimen (see below).
-.TP 15
-\fB-V\fR
-.TP 15
-\fB--version\fR
+.TP 20n
+\fB\-V\fR
+.TP 20n
+\fB\--version\fR
 Display version number.
-.TP 15
-\fB--width\fR \fBw\fR
+.TP 20n
+\fB\--width\fR \fIw\fR
 Specify the width of the image to be
-\fBw,\fR
+\fIw\fR,
 which should be a dimen (see below).
 If the height is not specified also, it will be computed to keep the
 aspect ratio of the original image.
 .RE
+.PD
 .SS "Dimens and Pairs"
 A dimen is a number optionally followed by a unit.
 Supported units are:
-.RS
-.IP \(bu 15
+.RS 6n
+.PD 0
+.TP 4n
+\fBo\fR
 cm
-.IP \(bu 15
+.TP 4n
+\fBo\fR
 in
-.IP \(bu 15
+.TP 4n
+\fBo\fR
 mm
-.IP \(bu 15
+.TP 4n
+\fBo\fR
 pt (PostScript point, 1/72in)
 .RE
 If no unit is specified, pt is assumed.
+.PD
 .PP
 A pair of numbers should be separated by any one of
-.Sq x,
-.Sq *,
+\(oqx\(cq,
+\(oq*\(cq,
 or
-.Sq \&,.
+\(oq\&,\(cq.
 .PP
 A pair of dimens is a pair of numbers optionally followed by a unit,
 which applies to both numbers of the pair.
@@ -392,23 +403,21 @@ color space type, depth, and, for direct copy or DCT encoding, the
 compression method used.
 .SH "EXIT STATUS"
 The
-.B img2eps
-utility exits 0 on success, and \*[Gt]0 if an error occurs.
+\fBimg2eps\fR
+utility exits 0 on success, and >0 if an error occurs.
 .SH "SEE ALSO"
 gs(1)
-.Rs
-.%A Adobe Systems Incorporated
-.%B PostScript Language Reference, 3rd edition
-.%D 1999
-.Re
+.PP
+Adobe Systems Incorporated,
+\fIPostScript Language Reference, 3rd edition\fR,
+1999.
 .SH "AUTHORS"
--nosplit
-.B img2eps
+\fBimg2eps\fR
 was written by
-Dieter Baron <dillo@nih.at.>
+Dieter Baron <\fIdillo@nih.at\fR>.
 .PP
 The manual page was written with the help of
-Thomas Klausner <tk@giga.or.at.>
+Thomas Klausner <\fItk@giga.or.at\fR>.
 .PP
 The LZW compression routines and various library function replacements
 (for portability) were taken from the NetBSD Project.
@@ -416,10 +425,10 @@ The LZW compression routines and various library function replacements
 Since PostScript's JPEG decoder is stricter than most software
 implementations, directly copying JPEG compressed data causes
 PostScript errors for some images.  This is not detected by
-.Nm.
+\fBimg2eps\fR.
 Use
-\fB-R\fR
-.Pq \fB--recompress\fR
+\fB\-R\fR
+(\fB\--recompress\fR)
 for such images.
 .PP
 Emulation of the colorimage operator is provided only for 8bit RGB
