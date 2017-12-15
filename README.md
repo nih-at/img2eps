@@ -1,4 +1,4 @@
-** Development on this project has stopped. It will no longer be updated. **
+**_Development on this project has stopped. It will no longer be updated._**
 
 This is `img2eps`, a raster image to EPSF converter.
 
